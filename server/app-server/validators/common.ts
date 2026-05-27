@@ -1,13 +1,13 @@
-import type { NextFunction, Request, Response } from 'express';
-import { z, type ZodSchema } from 'zod';
+import type { NextFunction, Request, Response } from "express";
+import { z, type ZodSchema } from "zod";
 
-import { AppError } from '../utils/app-error.js';
+import { AppError } from "../utils/app-error.js";
 
 export function validateBody<T extends ZodSchema>(schema: T) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      return next(new AppError('Validation failed', 422, 'VALIDATION_ERROR'));
+      return next(new AppError("Validation failed", 422, "VALIDATION_ERROR"));
     }
     req.validatedBody = result.data;
     return next();
@@ -18,7 +18,7 @@ export function validateQuery<T extends ZodSchema>(schema: T) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      return next(new AppError('Validation failed', 422, 'VALIDATION_ERROR'));
+      return next(new AppError("Validation failed", 422, "VALIDATION_ERROR"));
     }
     req.validatedQuery = result.data;
     return next();
@@ -41,9 +41,9 @@ export const paginationQuery = z.object({
 export const usersListQuery = z.object({
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
-  role: z.enum(['student', 'instructor', 'admin']).optional(),
+  role: z.enum(["student", "instructor", "admin"]).optional(),
   q: z.string().max(200).optional(),
-  status: z.enum(['active', 'banned', 'suspended']).optional(),
+  status: z.enum(["active", "banned", "suspended"]).optional(),
 });
 
 export const authRegisterSchema = z.object({
@@ -114,9 +114,9 @@ export const conversationSchema = z.object({
 });
 
 export const reviewGenerateSchema = z.object({
-  mode: z.enum(['random', 'weakness', 'flashcard']).optional(),
+  mode: z.enum(["random", "weakness", "flashcard"]).optional(),
   count: z.number().int().min(1).max(50).optional(),
-  type: z.enum(['kanji', 'vocabulary', 'grammar', 'mixed']).optional(),
+  type: z.enum(["kanji", "vocabulary", "grammar", "mixed"]).optional(),
 });
 
 export const assignIdsSchema = z.object({
@@ -136,10 +136,30 @@ export const questionSchema = z.object({
 
 export const kanjiSchema = z.object({
   character: z.string().min(1).max(10),
+  hanVietPronunciation: z.string().max(100).optional(),
   meaning: z.string().min(1),
+  memoryTip: z.string().max(500).optional(),
+  memoryImageUrl: z.string().min(1).max(2000).optional(),
   jlptLevel: z.string().min(2).max(5),
   readingsOn: z.array(z.string()).optional(),
   readingsKun: z.array(z.string()).optional(),
   strokeCount: z.number().int().optional(),
   radical: z.string().optional(),
+  examples: z
+    .array(
+      z.object({
+        word: z.string().min(1).max(200),
+        reading: z.string().max(200).optional(),
+        meaning: z.string().min(1).max(200),
+      }),
+    )
+    .optional(),
+});
+
+export const radicalSchema = z.object({
+  radicalIndex: z.number().int().min(1).max(214).optional(),
+  character: z.string().min(1).max(10),
+  sinoVietnamese: z.string().min(1).max(100),
+  meaning: z.string().min(1).max(255),
+  strokeCount: z.number().int().min(1),
 });

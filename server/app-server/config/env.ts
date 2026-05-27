@@ -4,6 +4,9 @@ export const env = {
   port: Number(process.env.PORT ?? 4000),
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   databaseUrl: process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/app',
+  minioEndpoint: process.env.MINIO_ENDPOINT ?? 'localhost:9002',
+  minioAccessKey: process.env.MINIO_ACCESS_KEY ?? 'minioadmin',
+  minioSecretKey: process.env.MINIO_SECRET_KEY ?? 'minioadmin',
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-change-me',
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-change-me',
   jwtAccessExpires:

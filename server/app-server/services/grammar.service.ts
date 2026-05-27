@@ -26,8 +26,37 @@ export async function listGrammar(params: {
   const page = params.page ?? 1;
   const limit = Math.min(params.limit ?? 50, 100);
   const skip = (page - 1) * limit;
-  const search = params.search?.trim();
+  const search = params.search?.trim()?.toLowerCase();
 
+  // If lessonId provided, load via junction to avoid referencing grammar.lesson_id
+  if (params.lessonId) {
+    const linked = await db.lessonGrammar.findMany({
+      where: { lessonId: params.lessonId },
+      include: { grammar: true },
+    });
+
+    let items = linked.map((l) => l.grammar);
+    if (params.jlpt) items = items.filter((g) => g.jlpt === params.jlpt);
+    if (search)
+      items = items.filter(
+        (g) =>
+          (g.title ?? "").toLowerCase().includes(search) ||
+          (g.pattern ?? "").toLowerCase().includes(search) ||
+          (g.meaningVi ?? "").toLowerCase().includes(search),
+      );
+
+    items = items.sort(
+      (a, b) =>
+        (a.order ?? 0) - (b.order ?? 0) ||
+        (a.pattern ?? "").localeCompare(b.pattern ?? ""),
+    );
+
+    const total = items.length;
+    const pageItems = items.slice(skip, skip + limit);
+    return { items: pageItems, total, page, limit };
+  }
+
+  // No lessonId: query normally
   const where = {
     ...(params.jlpt ? { jlpt: params.jlpt } : {}),
     ...(params.lessonId ? { lessonId: params.lessonId } : {}),
@@ -48,26 +77,4 @@ export async function listGrammar(params: {
   ]);
 
   return { items, total, page, limit };
-}
-
-export async function getGrammar(id: string) {
-  const item = await db.grammar.findUnique({ where: { id } });
-  if (!item) throw new AppError('Grammar not found', 404, 'NOT_FOUND');
-  return item;
-}
-
-export async function createGrammar(data: GrammarInput, createdById?: string) {
-  return db.grammar.create({
-    data: { ...data, createdById },
-  });
-}
-
-export async function updateGrammar(id: string, data: Partial<GrammarInput>) {
-  await getGrammar(id);
-  return db.grammar.update({ where: { id }, data });
-}
-
-export async function deleteGrammar(id: string) {
-  await getGrammar(id);
-  await db.grammar.delete({ where: { id } });
 }

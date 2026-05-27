@@ -251,22 +251,41 @@ model SystemConfig {
 model Kanji {
   id                 String   @id @default(uuid())
   character          String   @unique
+  hanVietPronunciation String? @map("han_viet_pronunciation")
   readingsOn         String[] @map("readings_on")
   readingsKun        String[] @map("readings_kun")
   meaning            String
+  memoryTip          String?  @map("memory_tip")
+  memoryImageUrl     String?  @map("memory_image_url")
   strokeCount        Int?     @map("stroke_count")
   radical            String?
   jlptLevel          String   @map("jlpt_level")
   strokeAnimationUrl String?  @map("stroke_animation_url")
-  exampleWords       Json?    @map("example_words")
   createdById        String?  @map("created_by")
   createdAt          DateTime @default(now()) @map("created_at")
 
   createdBy User?         @relation("KanjiCreator", fields: [createdById], references: [id])
   lessons   LessonKanji[]
+  examples  KanjiExample[]
 
   @@index([jlptLevel])
   @@map("kanji")
+}
+
+model KanjiExample {
+  id        String   @id @default(uuid())
+  kanjiId   String   @map("kanji_id")
+  orderIndex Int     @default(0) @map("order_index")
+  word      String
+  reading   String?
+  meaning   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  kanji Kanji @relation(fields: [kanjiId], references: [id], onDelete: Cascade)
+
+  @@unique([kanjiId, orderIndex])
+  @@index([kanjiId])
+  @@map("kanji_examples")
 }
 
 model Conversation {
@@ -491,4 +510,18 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+model Radical {
+  id               String   @id @default(uuid())
+  radicalIndex     Int      @map("radical_index")
+  character        String
+  sinoVietnamese   String   @map("sino_vietnamese")
+  meaning          String
+  strokeCount      Int      @map("stroke_count")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@unique([radicalIndex])
+  @@map("radicals")
 }

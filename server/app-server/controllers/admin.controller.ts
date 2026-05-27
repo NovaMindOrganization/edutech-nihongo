@@ -5,6 +5,8 @@ import * as courseService from '../services/course.service.js';
 import * as studySetService from '../services/study-set.service.js';
 import * as grammarService from '../services/grammar.service.js';
 import * as kanjiService from '../services/kanji.service.js';
+import * as kanjiMediaService from '../services/kanji-media.service.js';
+import * as radicalService from '../services/radical.service.js';
 import * as lessonService from '../services/lesson.service.js';
 import * as questionService from '../services/question.service.js';
 import * as vocabService from '../services/vocabulary.service.js';
@@ -253,5 +255,44 @@ export const updateKanji = asyncHandler(async (req: Request, res: Response) => {
 export const deleteKanji = asyncHandler(async (req: Request, res: Response) => {
   const id = String(req.params.id);
   await kanjiService.deleteKanji(id);
+  res.json({ success: true, data: null });
+});
+
+export const uploadKanjiMemoryImage = asyncHandler(async (req: Request, res: Response) => {
+  const body = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+  const contentType = Array.isArray(req.headers["content-type"])
+    ? req.headers["content-type"][0]
+    : req.headers["content-type"];
+  const data = await kanjiMediaService.uploadKanjiMemoryImage({
+    kanjiId: String(req.params.id),
+    contentType: contentType ?? "application/octet-stream",
+    body,
+  });
+  res.json({ success: true, data });
+});
+
+// Radicals
+export const listRadicals = asyncHandler(async (req: Request, res: Response) => {
+  const data = await radicalService.listRadicals((req.validatedQuery ?? req.query) as never);
+  res.json({ success: true, data });
+});
+
+export const getRadical = asyncHandler(async (req: Request, res: Response) => {
+  const data = await radicalService.getRadical(req.params.id);
+  res.json({ success: true, data });
+});
+
+export const createRadical = asyncHandler(async (req: Request, res: Response) => {
+  const data = await radicalService.createRadical(req.body);
+  res.status(201).json({ success: true, data });
+});
+
+export const updateRadical = asyncHandler(async (req: Request, res: Response) => {
+  const data = await radicalService.updateRadical(req.params.id, req.body);
+  res.json({ success: true, data });
+});
+
+export const deleteRadical = asyncHandler(async (req: Request, res: Response) => {
+  await radicalService.deleteRadical(req.params.id);
   res.json({ success: true, data: null });
 });
