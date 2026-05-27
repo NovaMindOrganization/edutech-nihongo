@@ -29,6 +29,7 @@ export const paginationQuery = z.object({
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
   jlptLevel: z.string().optional(),
+  jlpt: z.string().optional(),
   topic: z.string().optional(),
   courseId: z.string().uuid().optional(),
   lessonId: z.string().uuid().optional(),
@@ -69,15 +70,17 @@ export const vocabSchema = z.object({
 });
 
 export const grammarSchema = z.object({
+  title: z.string().min(1).max(200),
+  jlpt: z.string().min(2).max(5),
+  type: z.string().optional(),
   pattern: z.string().min(1).max(200),
-  meaning: z.string().min(1),
-  meaningEn: z.string().optional(),
-  structure: z.string().optional(),
-  grammarType: z.string().optional(),
-  usageNote: z.string().optional(),
-  jlptLevel: z.string().min(2).max(5),
-  sourceLesson: z.number().int().optional(),
-  exampleSentences: z.unknown().optional(),
+  meaningVi: z.string().min(1),
+  usage: z.string().optional(),
+  notes: z.string().optional(),
+  lessonId: z.string().uuid().optional(),
+  order: z.number().int().min(1).optional(),
+  examples: z.unknown().optional(),
+  quiz: z.unknown().optional(),
 });
 
 export const courseSchema = z.object({

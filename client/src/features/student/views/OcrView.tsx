@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 type OcrResult = {
   extracted_text: string;
   matched_vocabulary: Array<{ id: string; word: string; reading: string | null; meaning: string }>;
-  matched_grammar: Array<{ id: string; pattern: string; meaning: string }>;
+  matched_grammar: Array<{ id: string; pattern: string; meaningVi: string }>;
   grammar_explanation: string | null;
   meta?: OcrMeta | null;
 };

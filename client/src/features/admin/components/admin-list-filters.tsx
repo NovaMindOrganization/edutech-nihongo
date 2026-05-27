@@ -257,12 +257,11 @@ export function SourceLessonFilter({
   onChange: (value: string) => void;
 }) {
   return (
-    <FilterField label="Bài (source)">
+    <FilterField label="Lesson ID">
       <Input
         className="h-9 w-24"
-        type="number"
-        min={1}
-        placeholder="—"
+        type="text"
+        placeholder="UUID"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

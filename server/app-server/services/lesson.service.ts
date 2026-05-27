@@ -112,12 +112,25 @@ export async function assignVocabularyToLesson(lessonId: string, vocabularyIds: 
 }
 
 export async function assignGrammarToLesson(lessonId: string, grammarIds: string[]) {
-  await db.lessonGrammar.deleteMany({ where: { lessonId } });
-  if (grammarIds.length === 0) return { count: 0 };
-  await db.lessonGrammar.createMany({
-    data: grammarIds.map((grammarId) => ({ lessonId, grammarId })),
-    skipDuplicates: true,
+  await db.$transaction(async (tx) => {
+    await tx.lessonGrammar.deleteMany({ where: { lessonId } });
+    await tx.grammar.updateMany({ where: { lessonId }, data: { lessonId: null, order: null } });
+
+    if (grammarIds.length === 0) return;
+
+    await tx.lessonGrammar.createMany({
+      data: grammarIds.map((grammarId) => ({ lessonId, grammarId })),
+      skipDuplicates: true,
+    });
+
+    for (let i = 0; i < grammarIds.length; i++) {
+      await tx.grammar.update({
+        where: { id: grammarIds[i] },
+        data: { lessonId, order: i + 1 },
+      });
+    }
   });
+
   return { count: grammarIds.length };
 }
 
