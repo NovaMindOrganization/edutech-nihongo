@@ -1,18 +1,20 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { Volume2 } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { generateReview } from '@/features/student/services/studentApi';
-import { paths } from '@/router/paths';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useSpeech } from "@/hooks/use-speech";
+import { generateReview } from "@/features/student/services/studentApi";
+import { paths } from "@/router/paths";
 
-type ReviewType = 'kanji' | 'vocabulary' | 'grammar';
+type ReviewType = "kanji" | "vocabulary" | "grammar";
 
 const titles: Record<ReviewType, string> = {
-  kanji: 'Kanji',
-  vocabulary: 'Từ vựng',
-  grammar: 'Ngữ pháp',
+  kanji: "Kanji",
+  vocabulary: "Từ vựng",
+  grammar: "Ngữ pháp",
 };
 
 export function ReviewByTypeView({ type }: { type: ReviewType }) {
@@ -21,16 +23,18 @@ export function ReviewByTypeView({ type }: { type: ReviewType }) {
   >([]);
   const [idx, setIdx] = useState(0);
   const [showBack, setShowBack] = useState(false);
+  const { playTts, speaking } = useSpeech();
 
   async function start() {
     try {
-      const res = await generateReview('flashcard', 15, type);
+      const res = await generateReview("flashcard", 15, type);
       setItems(res.items);
       setIdx(0);
       setShowBack(false);
-      if (res.items.length === 0) toast.message('Hoàn thành thêm bài học để ôn tập');
+      if (res.items.length === 0)
+        toast.message("Hoàn thành thêm bài học để ôn tập");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Lỗi');
+      toast.error(e instanceof Error ? e.message : "Lỗi");
     }
   }
 
@@ -38,10 +42,15 @@ export function ReviewByTypeView({ type }: { type: ReviewType }) {
 
   return (
     <div className="mx-auto max-w-lg">
-      <Link to={paths.student.review} className="text-sm text-primary hover:underline">
+      <Link
+        to={paths.student.review}
+        className="text-sm text-primary hover:underline"
+      >
         ← Ôn tập
       </Link>
-      <h1 className="font-display mt-4 text-2xl font-bold">Ôn {titles[type]}</h1>
+      <h1 className="font-display mt-4 text-2xl font-bold">
+        Ôn {titles[type]}
+      </h1>
       <Button className="mt-4" onClick={start}>
         Bắt đầu
       </Button>
@@ -49,11 +58,21 @@ export function ReviewByTypeView({ type }: { type: ReviewType }) {
         <Card className="mt-6">
           <CardContent className="pt-6 text-center">
             <p className="font-jp text-3xl font-bold">{current.front}</p>
-            {current.reading && <p className="text-primary/80">{current.reading}</p>}
+            {current.reading && (
+              <p className="text-primary/80">{current.reading}</p>
+            )}
             {showBack && <p className="mt-4 text-lg">{current.back}</p>}
-            <div className="mt-6 flex justify-center gap-2">
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
               <Button variant="outline" onClick={() => setShowBack(!showBack)}>
-                {showBack ? 'Ẩn' : 'Xem'} đáp án
+                {showBack ? "Ẩn" : "Xem"} đáp án
+              </Button>
+              <Button
+                variant="outline"
+                disabled={speaking}
+                onClick={() => playTts(current.reading ?? current.front)}
+              >
+                <Volume2 className="mr-2 size-4" />
+                Nghe
               </Button>
               <Button
                 onClick={() => {

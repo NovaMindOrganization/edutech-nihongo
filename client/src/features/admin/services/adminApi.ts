@@ -1,4 +1,4 @@
-import { apiFetch } from '@/services/httpClient';
+import { ApiRequestError, apiAssetUrl, apiFetch, getAccessToken } from "@/services/httpClient";
 
 export type VocabItem = {
   id: string;
@@ -26,7 +26,12 @@ export type GrammarItem = {
   sourceLesson: number | null;
 };
 
-export type Paginated<T> = { items: T[]; total: number; page: number; limit: number };
+export type Paginated<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+};
 
 export type ConversationItem = {
   id: string;
@@ -41,15 +46,21 @@ export function listVocabulary(params?: Record<string, string | number>) {
 }
 
 export function createVocabulary(body: Partial<VocabItem>) {
-  return apiFetch<VocabItem>('/admin/vocabulary', { method: 'POST', body: JSON.stringify(body) });
+  return apiFetch<VocabItem>("/admin/vocabulary", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function updateVocabulary(id: string, body: Partial<VocabItem>) {
-  return apiFetch<VocabItem>(`/admin/vocabulary/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+  return apiFetch<VocabItem>(`/admin/vocabulary/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
 }
 
 export function deleteVocabulary(id: string) {
-  return apiFetch<null>(`/admin/vocabulary/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/vocabulary/${id}`, { method: "DELETE" });
 }
 
 export function listGrammar(params?: Record<string, string | number>) {
@@ -58,15 +69,21 @@ export function listGrammar(params?: Record<string, string | number>) {
 }
 
 export function createGrammar(body: Partial<GrammarItem>) {
-  return apiFetch<GrammarItem>('/admin/grammar', { method: 'POST', body: JSON.stringify(body) });
+  return apiFetch<GrammarItem>("/admin/grammar", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function updateGrammar(id: string, body: Partial<GrammarItem>) {
-  return apiFetch<GrammarItem>(`/admin/grammar/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+  return apiFetch<GrammarItem>(`/admin/grammar/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
 }
 
 export function deleteGrammar(id: string) {
-  return apiFetch<null>(`/admin/grammar/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/grammar/${id}`, { method: "DELETE" });
 }
 
 export type CourseItem = {
@@ -95,12 +112,42 @@ export type CourseDetail = CourseItem & {
 export type KanjiItem = {
   id: string;
   character: string;
+  hanVietPronunciation: string | null;
   meaning: string;
+  memoryTip: string | null;
+  memoryImageUrl: string | null;
   jlptLevel: string;
   readingsOn: string[];
   readingsKun: string[];
   strokeCount: number | null;
   radical: string | null;
+  examples: KanjiExampleItem[];
+};
+
+export type KanjiExampleItem = {
+  id: string;
+  orderIndex: number;
+  word: string;
+  reading: string | null;
+  meaning: string;
+};
+
+export type KanjiUpsertBody = {
+  character: string;
+  hanVietPronunciation?: string;
+  meaning: string;
+  memoryTip?: string;
+  memoryImageUrl?: string;
+  jlptLevel: string;
+  readingsOn?: string[];
+  readingsKun?: string[];
+  strokeCount?: number;
+  radical?: string;
+  examples?: Array<{
+    word: string;
+    reading?: string;
+    meaning: string;
+  }>;
 };
 
 export type LessonDetail = LessonSummary & {
@@ -113,13 +160,13 @@ export type LessonDetail = LessonSummary & {
 
 export function assignLessonVocabulary(lessonId: string, ids: string[]) {
   return apiFetch(`/admin/lessons/${lessonId}/assign/vocabulary`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({ ids }),
   });
 }
 
 export function listCourses() {
-  return apiFetch<CourseItem[]>('/admin/courses');
+  return apiFetch<CourseItem[]>("/admin/courses");
 }
 
 export function getCourse(id: string) {
@@ -132,18 +179,29 @@ export function createCourse(body: {
   description?: string;
   isPublished?: boolean;
 }) {
-  return apiFetch<CourseItem>('/admin/courses', { method: 'POST', body: JSON.stringify(body) });
+  return apiFetch<CourseItem>("/admin/courses", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function updateCourse(
   id: string,
-  body: Partial<{ title: string; jlptLevel: string; description: string; isPublished: boolean }>,
+  body: Partial<{
+    title: string;
+    jlptLevel: string;
+    description: string;
+    isPublished: boolean;
+  }>,
 ) {
-  return apiFetch<CourseItem>(`/admin/courses/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+  return apiFetch<CourseItem>(`/admin/courses/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
 }
 
 export function deleteCourse(id: string) {
-  return apiFetch<null>(`/admin/courses/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/courses/${id}`, { method: "DELETE" });
 }
 
 export function getLesson(id: string) {
@@ -158,7 +216,10 @@ export function createLesson(body: {
   isBonus?: boolean;
   speakingPrompt?: string | null;
 }) {
-  return apiFetch<LessonSummary>('/admin/lessons', { method: 'POST', body: JSON.stringify(body) });
+  return apiFetch<LessonSummary>("/admin/lessons", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function updateLesson(
@@ -171,23 +232,26 @@ export function updateLesson(
     speakingPrompt: string | null;
   }>,
 ) {
-  return apiFetch<LessonSummary>(`/admin/lessons/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+  return apiFetch<LessonSummary>(`/admin/lessons/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
 }
 
 export function deleteLesson(id: string) {
-  return apiFetch<null>(`/admin/lessons/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/lessons/${id}`, { method: "DELETE" });
 }
 
 export function assignLessonGrammar(lessonId: string, ids: string[]) {
   return apiFetch(`/admin/lessons/${lessonId}/assign/grammar`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({ ids }),
   });
 }
 
 export function assignLessonKanji(lessonId: string, ids: string[]) {
   return apiFetch(`/admin/lessons/${lessonId}/assign/kanji`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({ ids }),
   });
 }
@@ -197,42 +261,119 @@ export function listKanji(params?: Record<string, string | number>) {
   return apiFetch<Paginated<KanjiItem>>(`/admin/kanji?${q}`);
 }
 
-export function createKanji(body: {
-  character: string;
-  meaning: string;
-  jlptLevel: string;
-  readingsOn?: string[];
-  readingsKun?: string[];
-  strokeCount?: number;
-  radical?: string;
-}) {
-  return apiFetch<KanjiItem>('/admin/kanji', { method: 'POST', body: JSON.stringify(body) });
+export function createKanji(body: KanjiUpsertBody) {
+  return apiFetch<KanjiItem>("/admin/kanji", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
-export function updateKanji(id: string, body: Partial<KanjiItem>) {
-  return apiFetch<KanjiItem>(`/admin/kanji/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+export function updateKanji(id: string, body: Partial<KanjiUpsertBody>) {
+  return apiFetch<KanjiItem>(`/admin/kanji/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function uploadKanjiMemoryImage(id: string, file: File) {
+  const token = getAccessToken();
+  const headers = new Headers({ "Content-Type": file.type || "image/png" });
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const res = await fetch(apiAssetUrl(`/api/admin/kanji/${encodeURIComponent(id)}/memory-image`), {
+    method: "POST",
+    credentials: "include",
+    headers,
+    body: file,
+  });
+  const json = (await res.json()) as {
+    success: boolean;
+    data?: {
+      kanji: KanjiItem;
+      bucket: string;
+      objectKey: string;
+      storagePath: string;
+      assetUrl: string;
+    };
+    error?: { code: string; message: string };
+  };
+
+  if (!res.ok || !json.data) {
+    throw new ApiRequestError(
+      json.error?.message ?? `HTTP ${res.status}`,
+      res.status,
+      json.error?.code,
+    );
+  }
+
+  return json.data;
 }
 
 export function deleteKanji(id: string) {
-  return apiFetch<null>(`/admin/kanji/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/kanji/${id}`, { method: "DELETE" });
+}
+
+export type RadicalItem = {
+  id: string;
+  radicalIndex: number;
+  character: string;
+  sinoVietnamese: string;
+  meaning: string;
+  strokeCount: number;
+};
+
+export type RadicalUpsertBody = {
+  radicalIndex?: number;
+  character: string;
+  sinoVietnamese: string;
+  meaning: string;
+  strokeCount: number;
+};
+
+export function listRadicals(params?: Record<string, string | number>) {
+  const q = new URLSearchParams(params as Record<string, string>).toString();
+  return apiFetch<Paginated<RadicalItem>>(`/admin/radicals?${q}`);
+}
+
+export function createRadical(body: RadicalUpsertBody) {
+  return apiFetch<RadicalItem>("/admin/radicals", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateRadical(id: string, body: Partial<RadicalUpsertBody>) {
+  return apiFetch<RadicalItem>(`/admin/radicals/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteRadical(id: string) {
+  return apiFetch<null>(`/admin/radicals/${id}`, { method: "DELETE" });
 }
 
 export function updateConversation(
   id: string,
   body: {
     title?: string;
-    dialogue?: Array<{ speaker: string; text: string; reading?: string; translation?: string }>;
+    dialogue?: Array<{
+      speaker: string;
+      text: string;
+      reading?: string;
+      translation?: string;
+    }>;
     jlptLevel?: string;
   },
 ) {
   return apiFetch<ConversationItem>(`/admin/conversations/${id}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteConversation(id: string) {
-  return apiFetch<null>(`/admin/conversations/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/conversations/${id}`, { method: "DELETE" });
 }
 
 export function listConversations(params?: Record<string, string>) {
@@ -242,18 +383,23 @@ export function listConversations(params?: Record<string, string>) {
 
 export function createConversation(body: {
   title?: string;
-  dialogue: Array<{ speaker: string; text: string; reading?: string; translation?: string }>;
+  dialogue: Array<{
+    speaker: string;
+    text: string;
+    reading?: string;
+    translation?: string;
+  }>;
   jlptLevel?: string;
 }) {
-  return apiFetch<ConversationItem>('/admin/conversations', {
-    method: 'POST',
+  return apiFetch<ConversationItem>("/admin/conversations", {
+    method: "POST",
     body: JSON.stringify(body),
   });
 }
 
 export function assignLessonConversations(lessonId: string, ids: string[]) {
   return apiFetch(`/admin/lessons/${lessonId}/assign/conversations`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({ ids }),
   });
 }
@@ -277,11 +423,14 @@ export function createQuestion(body: {
   jlptLevel?: string;
   options?: unknown;
 }) {
-  return apiFetch<QuestionItem>('/admin/questions', { method: 'POST', body: JSON.stringify(body) });
+  return apiFetch<QuestionItem>("/admin/questions", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function deleteQuestion(id: string) {
-  return apiFetch<null>(`/admin/questions/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/questions/${id}`, { method: "DELETE" });
 }
 
 export function listPendingStudySets() {
@@ -293,12 +442,12 @@ export function listPendingStudySets() {
       owner: { email: string; displayName: string | null };
       _count: { cards: number };
     }>
-  >('/admin/studysets/pending');
+  >("/admin/studysets/pending");
 }
 
-export function moderateStudySet(id: string, status: 'approved' | 'rejected') {
+export function moderateStudySet(id: string, status: "approved" | "rejected") {
   return apiFetch(`/admin/studysets/${id}/moderate`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({ status }),
   });
 }

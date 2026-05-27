@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 
 import { db } from '../config/db.js';
 import * as admin from '../controllers/admin.controller.js';
@@ -24,6 +24,7 @@ import {
   validateBody,
   validateQuery,
   vocabSchema,
+  radicalSchema,
 } from '../validators/common.js';
 
 const router = Router();
@@ -60,6 +61,7 @@ router.get('/public/courses', publicCtrl.listCourses);
 router.get('/public/courses/:id/outline', publicCtrl.getCourseOutline);
 router.get('/public/courses/:id/lessons', publicCtrl.getCourseOutline);
 router.get('/public/lessons/:id/preview', publicCtrl.getLessonPreview);
+router.get('/public/kanji/:id/memory-image', publicCtrl.getKanjiMemoryImage);
 router.post('/public/placement-test/start', publicCtrl.placementStart);
 router.post('/public/placement-test/submit', optionalAuth, publicCtrl.placementSubmit);
 router.get('/public/dictionary/search', publicCtrl.dictionarySearch);
@@ -157,6 +159,17 @@ contentRouter.get('/kanji/:id', admin.getKanji);
 contentRouter.post('/kanji', validateBody(kanjiSchema), admin.createKanji);
 contentRouter.put('/kanji/:id', validateBody(kanjiSchema.partial()), admin.updateKanji);
 contentRouter.delete('/kanji/:id', admin.deleteKanji);
+contentRouter.post(
+  '/kanji/:id/memory-image',
+  express.raw({ type: 'image/*', limit: '10mb' }),
+  admin.uploadKanjiMemoryImage,
+);
+
+contentRouter.get('/radicals', validateQuery(paginationQuery), admin.listRadicals);
+contentRouter.get('/radicals/:id', admin.getRadical);
+contentRouter.post('/radicals', validateBody(radicalSchema), admin.createRadical);
+contentRouter.put('/radicals/:id', validateBody(radicalSchema.partial()), admin.updateRadical);
+contentRouter.delete('/radicals/:id', admin.deleteRadical);
 
 router.use('/instructor', contentRouter);
 router.use('/admin', contentRouter);

@@ -27,6 +27,17 @@ export function setAccessToken(token: string | null) {
   else localStorage.removeItem('accessToken');
 }
 
+export function apiAssetUrl(path: string): string {
+  if (/^https?:\/\//i.test(path) || path.startsWith('blob:') || path.startsWith('data:')) {
+    return path;
+  }
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+export function kanjiMemoryImageAssetUrl(kanjiId: string): string {
+  return apiAssetUrl(`/api/public/kanji/${encodeURIComponent(kanjiId)}/memory-image`);
+}
+
 const AUTH_NO_RETRY = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
 
 function shouldAttemptRefresh(path: string, status: number, code?: string): boolean {
