@@ -1,5 +1,6 @@
 import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
+import type { Prisma } from '@prisma/client';
 
 export type GrammarInput = {
   title: string;
@@ -11,8 +12,8 @@ export type GrammarInput = {
   notes?: string;
   lessonId?: string;
   order?: number;
-  examples?: unknown;
-  quiz?: unknown;
+  examples?: Prisma.InputJsonValue;
+  quiz?: Prisma.InputJsonValue;
 };
 
 export async function listGrammar(params: {

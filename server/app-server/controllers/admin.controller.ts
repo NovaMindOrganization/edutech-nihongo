@@ -17,7 +17,8 @@ export const listVocabulary = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const getVocabulary = asyncHandler(async (req: Request, res: Response) => {
-  const data = await vocabService.getVocabulary(req.params.id);
+  const id = String(req.params.id);
+  const data = await vocabService.getVocabulary(id);
   res.json({ success: true, data });
 });
 
@@ -27,12 +28,14 @@ export const createVocabulary = asyncHandler(async (req: Request, res: Response)
 });
 
 export const updateVocabulary = asyncHandler(async (req: Request, res: Response) => {
-  const data = await vocabService.updateVocabulary(req.params.id, (req.validatedBody ?? req.body) as never);
+  const id = String(req.params.id);
+  const data = await vocabService.updateVocabulary(id, (req.validatedBody ?? req.body) as never);
   res.json({ success: true, data });
 });
 
 export const deleteVocabulary = asyncHandler(async (req: Request, res: Response) => {
-  await vocabService.deleteVocabulary(req.params.id);
+  const id = String(req.params.id);
+  await vocabService.deleteVocabulary(id);
   res.json({ success: true, data: null });
 });
 
@@ -43,22 +46,26 @@ export const listGrammar = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getGrammar = asyncHandler(async (req: Request, res: Response) => {
-  const data = await grammarService.getGrammar(req.params.id);
+  const id = String(req.params.id);
+  const data = await grammarService.getGrammar(id);
   res.json({ success: true, data });
 });
 
 export const createGrammar = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id);
   const data = await grammarService.createGrammar(req.body, req.user?.id);
   res.status(201).json({ success: true, data });
 });
 
 export const updateGrammar = asyncHandler(async (req: Request, res: Response) => {
-  const data = await grammarService.updateGrammar(req.params.id, req.body);
+  const id = String(req.params.id);
+  const data = await grammarService.updateGrammar(id, req.body);
   res.json({ success: true, data });
 });
 
 export const deleteGrammar = asyncHandler(async (req: Request, res: Response) => {
-  await grammarService.deleteGrammar(req.params.id);
+  const id = String(req.params.id);
+  await grammarService.deleteGrammar(id);
   res.json({ success: true, data: null });
 });
 
@@ -74,7 +81,8 @@ export const listCoursesWithLessons = asyncHandler(async (_req: Request, res: Re
 });
 
 export const getCourse = asyncHandler(async (req: Request, res: Response) => {
-  const data = await courseService.getCourse(req.params.id);
+  const id = String(req.params.id);
+  const data = await courseService.getCourse(id);
   res.json({ success: true, data });
 });
 
@@ -84,12 +92,14 @@ export const createCourse = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateCourse = asyncHandler(async (req: Request, res: Response) => {
-  const data = await courseService.updateCourse(req.params.id, req.body);
+  const id = String(req.params.id);
+  const data = await courseService.updateCourse(id, req.body);
   res.json({ success: true, data });
 });
 
 export const deleteCourse = asyncHandler(async (req: Request, res: Response) => {
-  await courseService.deleteCourse(req.params.id);
+  const id = String(req.params.id);
+  await courseService.deleteCourse(id);
   res.json({ success: true, data: null });
 });
 
@@ -100,42 +110,50 @@ export const createLesson = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateLesson = asyncHandler(async (req: Request, res: Response) => {
-  const data = await lessonService.updateLesson(req.params.id, req.body);
+  const id = String(req.params.id);
+  const data = await lessonService.updateLesson(id, req.body);
   res.json({ success: true, data });
 });
 
 export const deleteLesson = asyncHandler(async (req: Request, res: Response) => {
-  await lessonService.deleteLesson(req.params.id);
+  const id = String(req.params.id);
+  await lessonService.deleteLesson(id);
   res.json({ success: true, data: null });
 });
 
 export const getLesson = asyncHandler(async (req: Request, res: Response) => {
-  const data = await lessonService.getLessonForAdmin(req.params.id);
+  const id = String(req.params.id);
+  const data = await lessonService.getLessonForAdmin(id);
   res.json({ success: true, data });
 });
 
 export const assignLessonVocabulary = asyncHandler(async (req: Request, res: Response) => {
-  const data = await lessonService.assignVocabularyToLesson(req.params.id, req.body.ids);
+  const id = String(req.params.id);
+  const data = await lessonService.assignVocabularyToLesson(id, req.body.ids);
   res.json({ success: true, data });
 });
 
 export const assignLessonGrammar = asyncHandler(async (req: Request, res: Response) => {
-  const data = await lessonService.assignGrammarToLesson(req.params.id, req.body.ids);
+  const id = String(req.params.id);
+  const data = await lessonService.assignGrammarToLesson(id, req.body.ids);
   res.json({ success: true, data });
 });
 
 export const assignLessonKanji = asyncHandler(async (req: Request, res: Response) => {
-  const data = await lessonService.assignKanjiToLesson(req.params.id, req.body.ids);
+  const id = String(req.params.id);
+  const data = await lessonService.assignKanjiToLesson(id, req.body.ids);
   res.json({ success: true, data });
 });
 
 export const assignLessonQuestions = asyncHandler(async (req: Request, res: Response) => {
-  const data = await lessonService.assignQuestionsToLesson(req.params.id, req.body.ids);
+  const id = String(req.params.id);
+  const data = await lessonService.assignQuestionsToLesson(id, req.body.ids);
   res.json({ success: true, data });
 });
 
 export const assignLessonConversations = asyncHandler(async (req: Request, res: Response) => {
-  const data = await conversationService.assignConversationsToLesson(req.params.id, req.body.ids);
+  const id = String(req.params.id);
+  const data = await conversationService.assignConversationsToLesson(id, req.body.ids);
   res.json({ success: true, data });
 });
 
@@ -146,7 +164,8 @@ export const listConversations = asyncHandler(async (req: Request, res: Response
 });
 
 export const getConversation = asyncHandler(async (req: Request, res: Response) => {
-  const data = await conversationService.getConversation(req.params.id);
+  const id = String(req.params.id);
+  const data = await conversationService.getConversation(id);
   res.json({ success: true, data });
 });
 
@@ -156,12 +175,14 @@ export const createConversation = asyncHandler(async (req: Request, res: Respons
 });
 
 export const updateConversation = asyncHandler(async (req: Request, res: Response) => {
-  const data = await conversationService.updateConversation(req.params.id, req.body);
+  const id = String(req.params.id);
+  const data = await conversationService.updateConversation(id, req.body);
   res.json({ success: true, data });
 });
 
 export const deleteConversation = asyncHandler(async (req: Request, res: Response) => {
-  await conversationService.deleteConversation(req.params.id);
+  const id = String(req.params.id);
+  await conversationService.deleteConversation(id);
   res.json({ success: true, data: null });
 });
 
@@ -172,7 +193,8 @@ export const listPendingStudySets = asyncHandler(async (_req: Request, res: Resp
 
 export const moderateStudySet = asyncHandler(async (req: Request, res: Response) => {
   const status = req.body.status as 'approved' | 'rejected';
-  const data = await studySetService.moderateStudySet(req.params.id, status);
+  const id = String(req.params.id);
+  const data = await studySetService.moderateStudySet(id, status);
   res.json({ success: true, data });
 });
 
@@ -183,7 +205,8 @@ export const listQuestions = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const getQuestion = asyncHandler(async (req: Request, res: Response) => {
-  const data = await questionService.getQuestion(req.params.id);
+  const id = String(req.params.id);
+  const data = await questionService.getQuestion(id);
   res.json({ success: true, data });
 });
 
@@ -193,12 +216,14 @@ export const createQuestion = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const updateQuestion = asyncHandler(async (req: Request, res: Response) => {
-  const data = await questionService.updateQuestion(req.params.id, req.body);
+  const id = String(req.params.id);
+  const data = await questionService.updateQuestion(id, req.body);
   res.json({ success: true, data });
 });
 
 export const deleteQuestion = asyncHandler(async (req: Request, res: Response) => {
-  await questionService.deleteQuestion(req.params.id);
+  const id = String(req.params.id);
+  await questionService.deleteQuestion(id);
   res.json({ success: true, data: null });
 });
 
@@ -209,7 +234,8 @@ export const listKanji = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getKanji = asyncHandler(async (req: Request, res: Response) => {
-  const data = await kanjiService.getKanji(req.params.id);
+  const id = String(req.params.id);
+  const data = await kanjiService.getKanji(id);
   res.json({ success: true, data });
 });
 
@@ -219,11 +245,13 @@ export const createKanji = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateKanji = asyncHandler(async (req: Request, res: Response) => {
-  const data = await kanjiService.updateKanji(req.params.id, req.body);
+  const id = String(req.params.id);
+  const data = await kanjiService.updateKanji(id, req.body);
   res.json({ success: true, data });
 });
 
 export const deleteKanji = asyncHandler(async (req: Request, res: Response) => {
-  await kanjiService.deleteKanji(req.params.id);
+  const id = String(req.params.id);
+  await kanjiService.deleteKanji(id);
   res.json({ success: true, data: null });
 });
