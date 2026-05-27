@@ -90,16 +90,22 @@ async function main() {
 
   const vocabPath = join(__dirname, "../data/vocabulary-n5.csv");
   const grammarPath = join(__dirname, "../data/grammar-n5.csv");
+  const kanjiPath = join(
+    __dirname,
+    "../data/Database Kanji and Example - N5.csv",
+  );
 
   const vocabRows = loadCsv(vocabPath);
   const grammarRows = loadCsv(grammarPath);
+  const kanjiRows = loadCsv(kanjiPath);
 
   console.log(
-    `[seed] Importing ${vocabRows.length} vocabulary, ${grammarRows.length} grammar...`,
+    `[seed] Importing ${vocabRows.length} vocabulary, ${grammarRows.length} grammar, ${kanjiRows.length} kanji...`,
   );
 
   await db.vocabulary.deleteMany({ where: { jlptLevel: "N5" } });
-  await db.grammar.deleteMany({ where: { jlpt: "N5" } });
+  await db.grammar.deleteMany({ where: { jlptLevel: "N5" } });
+  await db.kanji.deleteMany({ where: { jlptLevel: "N5" } });
 
   const vocabBatchSize = 100;
   for (let i = 0; i < vocabRows.length; i += vocabBatchSize) {
@@ -118,10 +124,89 @@ async function main() {
     });
   }
 
+  function splitMultiValue(value: string | undefined): string[] {
+    if (!value || !value.trim() || value.trim() === "(không có)") return [];
+    return value
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+
+  function parseKanjiExample(value: string | undefined) {
+    if (!value || !value.trim()) return null;
+    const match = value.match(/^(.*?)【(.*?)】(.*)$/);
+    if (!match) {
+      return { word: value.trim(), reading: null, meaning: value.trim() };
+    }
+    return {
+      word: match[1].trim(),
+      reading: match[2].trim() || null,
+      meaning: match[3].trim() || match[1].trim(),
+    };
+  }
+
   const pendingGrammarLinks: Array<{
     grammarId: string;
     sourceLessonNumber: number | null;
   }> = [];
+
+  const pendingKanjiLinks: Array<{
+    kanjiId: string;
+    sourceLessonNumber: number | null;
+  }> = [];
+
+  for (const row of kanjiRows) {
+    const created = await db.kanji.upsert({
+      where: { character: row.Kanji },
+      create: {
+        character: row.Kanji,
+        hanVietPronunciation: row["Han-Viet Pronunciation"] || null,
+        readingsKun: splitMultiValue(row.Kun),
+        readingsOn: splitMultiValue(row.On),
+        meaning: row.Meaning,
+        memoryTip: row.MemoryTip || null,
+        strokeCount: row.StrokeCount ? Number(row.StrokeCount) : null,
+        jlptLevel: row.Level || "N5",
+        radical: row["Bộ thủ chính"] || null,
+        createdById: admin.id,
+      },
+      update: {
+        hanVietPronunciation: row["Han-Viet Pronunciation"] || null,
+        readingsKun: splitMultiValue(row.Kun),
+        readingsOn: splitMultiValue(row.On),
+        meaning: row.Meaning,
+        memoryTip: row.MemoryTip || null,
+        strokeCount: row.StrokeCount ? Number(row.StrokeCount) : null,
+        jlptLevel: row.Level || "N5",
+        radical: row["Bộ thủ chính"] || null,
+      },
+    });
+
+    pendingKanjiLinks.push({
+      kanjiId: created.id,
+      sourceLessonNumber: row.Level === "N5" ? 1 : null,
+    });
+
+    const examples = [row["Word 1"], row["Word 2"], row["Word 3"]]
+      .map((value, index) => ({
+        parsed: parseKanjiExample(value),
+        orderIndex: index,
+      }))
+      .filter((entry) => entry.parsed !== null);
+
+    if (examples.length > 0) {
+      await db.kanjiExample.createMany({
+        data: examples.map(({ parsed, orderIndex }) => ({
+          kanjiId: created.id,
+          orderIndex,
+          word: parsed!.word,
+          reading: parsed!.reading,
+          meaning: parsed!.meaning,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
 
   for (const row of grammarRows) {
     const examples =
@@ -138,14 +223,18 @@ async function main() {
 
     const created = await db.grammar.create({
       data: {
-        title: row.grammar,
         pattern: row.grammar,
-        jlpt: row.jlpt || "N5",
-        type: row.grammar_type || null,
-        meaningVi: row.meaning_vi,
-        usage: row.usage_note || null,
-        notes: row.structure || null,
-        examples,
+        meaning: row.meaning_vi,
+        meaningEn: row.meaning_en || null,
+        structure: row.structure || null,
+        grammarType: row.grammar_type || null,
+        usageNote: row.usage_note || null,
+        explanation: null,
+        jlptLevel: row.jlpt || "N5",
+        topic: null,
+        exampleSentences: examples,
+        sourceLesson:
+          row.lesson && row.lesson !== "Extra" ? Number(row.lesson) : null,
         createdById: admin.id,
       },
     });
@@ -278,33 +367,6 @@ async function main() {
     }
   }
 
-  // Sample kanji
-  const kanjiSamples = [
-    {
-      character: "私",
-      readingsOn: ["シ"],
-      readingsKun: ["わたし"],
-      meaning: "tôi",
-      jlptLevel: "N5",
-      radical: "人",
-    },
-    {
-      character: "本",
-      readingsOn: ["ホン"],
-      readingsKun: ["もと"],
-      meaning: "sách",
-      jlptLevel: "N5",
-      radical: "木",
-    },
-    {
-      character: "日",
-      readingsOn: ["ニチ", "ジツ"],
-      readingsKun: ["ひ", "か"],
-      meaning: "ngày, mặt trời",
-      jlptLevel: "N5",
-      radical: "日",
-    },
-  ];
   const dialogue1 = await db.conversation.upsert({
     where: { id: "00000000-0000-4000-8000-000000000001" },
     create: {
@@ -357,18 +419,17 @@ async function main() {
     });
   }
 
-  for (const k of kanjiSamples) {
-    const row = await db.kanji.upsert({
-      where: { character: k.character },
-      create: { ...k, createdById: admin.id },
-      update: k,
-    });
-    const lesson1 = lessons.find((l) => l.orderIndex === 1);
-    if (lesson1) {
-      await db.lessonKanji.upsert({
-        where: { lessonId_kanjiId: { lessonId: lesson1.id, kanjiId: row.id } },
-        create: { lessonId: lesson1.id, kanjiId: row.id },
-        update: {},
+  if (lesson1) {
+    const kanjiForLesson1 = pendingKanjiLinks.filter(
+      (entry) => entry.sourceLessonNumber === 1,
+    );
+    if (kanjiForLesson1.length > 0) {
+      await db.lessonKanji.createMany({
+        data: kanjiForLesson1.map((entry) => ({
+          lessonId: lesson1.id,
+          kanjiId: entry.kanjiId,
+        })),
+        skipDuplicates: true,
       });
     }
   }
