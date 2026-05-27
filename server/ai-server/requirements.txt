@@ -1,0 +1,27 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+sqlalchemy>=2.0.0
+
+# --- Optional dependencies (bootstrap checklist: BE_Py_Deps) ---
+alembic>=1.13.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt>=4.0.0
+httpx>=0.27.0
+fastapi-offline>=1.7.6
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+
+# RAG dependencies
+langchain>=0.2.0
+langchain-community>=0.2.0
+pgvector>=0.2.0
+psycopg2-binary>=2.9.0
+sentence-transformers>=2.3.0
+
+# Speech (optional — graceful fallback if missing)
+edge-tts>=6.1.0
+faster-whisper>=1.0.0

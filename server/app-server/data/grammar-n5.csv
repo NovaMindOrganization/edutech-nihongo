@@ -1,0 +1,161 @@
+lesson,grammar,meaning_vi,meaning_en,structure,grammar_type,usage_note,jlpt,example_japanese,example_reading,example_vi,example_en
+1,～は～です,là,to be,N1 は N2 です,Basic sentence,"Dùng để giới thiệu, định nghĩa",N5,わたしは学生です。,わたしはがくせいです。,Tôi là học sinh.,I am a student.
+1,～は～じゃありません,không phải là,is not,N1 は N2 じゃありません,Negative,Phủ định danh từ,N5,わたしは先生じゃありません。,わたしはせんせいじゃありません。,Tôi không phải giáo viên.,I am not a teacher.
+1,～は～ですか,có phải ~ không,question form,N は N ですか,Question,Dùng để hỏi xác nhận,N5,あなたは学生ですか。,あなたはがくせいですか。,Bạn là học sinh phải không?,Are you a student?
+1,も,cũng,"also, too",N も,Particle,Thay thế は,N5,わたしも日本人です。,わたしもにほんじんです。,Tôi cũng là người Nhật.,I am Japanese too.
+2,これ・それ・あれ,cái này/đó/kia,this/that,これ / それ / あれ,Demonstrative,Chỉ đồ vật,N5,これは本です。,これはほんです。,Đây là quyển sách.,This is a book.
+2,この・その・あの,cái ~ này/đó/kia,this ~ / that ~,この N,Demonstrative,Phải đi với danh từ,N5,この本は高いです。,このほんはたかいです。,Quyển sách này đắt.,This book is expensive.
+2,～の,của,possession,N1 の N2,Particle,Chỉ sở hữu/bổ nghĩa,N5,日本の車です。,にほんのくるまです。,Xe của Nhật.,It is a Japanese car.
+2,だれの,của ai,whose,だれの N,Question,Hỏi sở hữu,N5,これはだれの傘ですか。,これはだれのかさですか。,Đây là ô của ai?,Whose umbrella is this?
+3,ここ・そこ・あそこ,ở đây/đó/kia,here/there,ここ / そこ / あそこ,Place demonstrative,Chỉ địa điểm,N5,ここは教室です。,ここはきょうしつです。,Đây là lớp học.,This is a classroom.
+3,～にあります,có ở,there is,N は Place にあります,Existence,Dùng cho đồ vật,N5,本は机の上にあります。,ほんはつくえのうえにあります。,Sách ở trên bàn.,The book is on the desk.
+3,～にいます,có ở,there is,N は Place にいます,Existence,Dùng cho người/động vật,N5,猫が部屋にいます。,ねこがへやにいます。,Có con mèo trong phòng.,There is a cat in the room.
+3,～の上・下・前・後ろ,phía trên/dưới/trước/sau,positional words,N の 上,Position,Chỉ vị trí,N5,机の下に猫がいます。,つくえのしたにねこがいます。,Có mèo dưới bàn.,There is a cat under the desk.
+4,い-adjective,tính từ đuôi い,i-adjective,Aいです,Adjective,Miêu tả tính chất,N5,この本はおもしろいです。,このほんはおもしろいです。,Quyển sách này thú vị.,This book is interesting.
+4,な-adjective,tính từ đuôi な,na-adjective,Aなです,Adjective,Dùng với danh từ,N5,この町は静かです。,このまちはしずかです。,Thành phố này yên tĩnh.,This town is quiet.
+4,Aい → Aくないです,không ~,not ~,Aくないです,Negative adjective,Phủ định tính từ い,N5,この店は高くないです。,このみせはたかくないです。,Cửa hàng này không đắt.,This shop is not expensive.
+4,Aな → Aじゃありません,không ~,not ~,Aじゃありません,Negative adjective,Phủ định tính từ な,N5,この町は便利じゃありません。,このまちはべんりじゃありません。,Thành phố này không tiện lợi.,This town is not convenient.
+4,とても,rất,very,とても + Adj,Adverb,Nhấn mạnh mức độ,N5,とても暑いです。,とてもあついです。,Rất nóng.,It is very hot.
+4,あまり～ません,không ~ lắm,not very,あまり + negative,Adverb,Đi với phủ định,N5,あまり寒くないです。,あまりさむくないです。,Không lạnh lắm.,It is not very cold.
+5,～時～分,giờ phút,time,～時～分,Time,Nói thời gian,N5,今は七時です。,いまはしちじです。,Bây giờ là 7 giờ.,It is 7 o'clock now.
+5,～曜日,thứ,day of week,月曜日 etc,Time,Chỉ thứ,N5,今日は月曜日です。,きょうはげつようびです。,Hôm nay là thứ hai.,Today is Monday.
+5,Vます,thể lịch sự,polite form,Vます,Verb form,Thể cơ bản lịch sự,N5,毎日勉強します。,まいにちべんきょうします。,Học mỗi ngày.,I study every day.
+5,Vません,không làm,do not,Vません,Negative verb,Phủ định lịch sự,N5,肉を食べません。,にくをたべません。,Không ăn thịt.,I do not eat meat.
+5,Vました,đã làm,did,Vました,Past tense,Quá khứ lịch sự,N5,昨日映画を見ました。,きのうえいがをみました。,Hôm qua đã xem phim.,I watched a movie yesterday.
+5,Vませんでした,đã không làm,did not,Vませんでした,Past negative,Phủ định quá khứ,N5,昨日勉強しませんでした。,きのうべんきょうしませんでした。,Hôm qua không học.,I did not study yesterday.
+6,～へ行きます,đi đến,go to,Place へ行きます,Movement,Di chuyển,N5,学校へ行きます。,がっこうへいきます。,Đi đến trường.,Go to school.
+6,～へ来ます,đến,come to,Place へ来ます,Movement,Di chuyển tới nơi nói,N5,日本へ来ました。,にほんへきました。,Đã đến Nhật.,Came to Japan.
+6,～へ帰ります,trở về,return to,Place へ帰ります,Movement,Trở về,N5,家へ帰ります。,いえへかえります。,Về nhà.,Go home.
+6,～で行きます,đi bằng,go by,Vehicle で行きます,Means,Phương tiện di chuyển,N5,バスで行きます。,バスでいきます。,Đi bằng xe buýt.,Go by bus.
+6,～と,cùng với,with,N と,Particle,Chỉ đối tượng cùng hành động,N5,友達と行きます。,ともだちといきます。,Đi cùng bạn.,Go with a friend.
+6,いつ,khi nào,when,いつ,Question,Hỏi thời gian,N5,いつ日本へ行きますか。,いつにほんへいきますか。,Khi nào đi Nhật?,When will you go to Japan?
+7,～を,tân ngữ,object marker,N を V,Particle,Chỉ đối tượng hành động,N5,水を飲みます。,みずをのみます。,Uống nước.,Drink water.
+7,なん・なに,cái gì,what,なん / なに,Question,Hỏi vật/sự việc,N5,何を食べますか。,なにをたべますか。,Ăn gì?,What will you eat?
+7,どこで,ở đâu,where,Place で,Question,Địa điểm xảy ra hành động,N5,どこで勉強しますか。,どこでべんきょうしますか。,Học ở đâu?,Where do you study?
+7,～ませんか,làm cùng nhé,won't you,Vませんか,Invitation,Rủ rê lịch sự,N5,一緒に行きませんか。,いっしょにいきませんか。,Đi cùng nhé?,Won't you come with me?
+7,～ましょう,hãy cùng,let's,Vましょう,Suggestion,Rủ cùng làm,N5,食べましょう。,たべましょう。,Cùng ăn nhé.,Let's eat.
+8,あげます,cho tặng,give,A は B に N をあげます,Giving,Cho người khác,N5,友達に本をあげます。,ともだちにほんをあげます。,Tặng bạn sách.,Give a book to a friend.
+8,もらいます,nhận,receive,A は B に N をもらいます,Receiving,Nhận từ ai,N5,先生に花をもらいました。,せんせいにはなをもらいました。,Nhận hoa từ giáo viên.,Received flowers from teacher.
+8,くれます,cho tôi,give me,A は わたしに N をくれます,Giving,Ai cho tôi/người phe tôi,N5,母がケーキをくれました。,ははがケーキをくれました。,Mẹ cho bánh.,My mother gave me cake.
+9,好きです,thích,like,N が好きです,Preference,Thể hiện sở thích,N5,日本語が好きです。,にほんごがすきです。,Thích tiếng Nhật.,I like Japanese.
+9,嫌いです,ghét,dislike,N が嫌いです,Preference,Thể hiện không thích,N5,野菜が嫌いです。,やさいがきらいです。,Ghét rau.,I dislike vegetables.
+9,上手です,giỏi,good at,N が上手です,Ability,Khen kỹ năng,N5,歌が上手です。,うたがじょうずです。,Hát giỏi.,Good at singing.
+9,下手です,kém,poor at,N が下手です,Ability,Kỹ năng kém,N5,絵が下手です。,えがへたです。,Vẽ kém.,Poor at drawing.
+9,わかります,hiểu,understand,N がわかります,Understanding,Dùng với が,N5,日本語がわかります。,にほんごがわかります。,Hiểu tiếng Nhật.,Understand Japanese.
+9,あります (sở hữu),có,have,N があります,Possession,Chỉ sở hữu,N5,車があります。,くるまがあります。,Có xe hơi.,I have a car.
+9,～から,vì,because,Sentence から,Reason,Chỉ lý do,N5,忙しいから行きません。,いそがしいからいきません。,Vì bận nên không đi.,I won't go because I'm busy.
+10,あります,tồn tại vật,there is,N があります,Existence,Đồ vật tồn tại,N5,公園があります。,こうえんがあります。,Có công viên.,There is a park.
+10,います,tồn tại người,there is,N がいます,Existence,Người/động vật,N5,子どもがいます。,こどもがいます。,Có trẻ em.,There are children.
+10,～や～など,~ và ~ v.v.,and so on,N や N など,Listing,Liệt kê chưa đầy đủ,N5,パンや牛乳などを買いました。,パンやぎゅうにゅうなどをかいました。,Đã mua bánh mì và sữa...,Bought bread and milk etc.
+11,数量 + あります,có bao nhiêu,quantity exists,Number + counter,Quantity,Đếm đồ vật,N5,椅子が三つあります。,いすがみっつあります。,Có 3 cái ghế.,There are 3 chairs.
+11,～だけ,chỉ,only,N だけ,Limitation,Giới hạn phạm vi,N5,水だけ飲みます。,みずだけのみます。,Chỉ uống nước.,Drink only water.
+11,～ぐらい,khoảng,about,Number + ぐらい,Approximation,Chỉ mức độ/số lượng,N5,一時間ぐらい勉強します。,いちじかんぐらいべんきょうします。,Học khoảng 1 giờ.,Study about one hour.
+11,どのくらい,bao lâu,how long,どのくらい,Question,Hỏi khoảng thời gian,N5,どのくらい日本にいましたか。,どのくらいにほんにいましたか。,Ở Nhật bao lâu?,How long were you in Japan?
+12,Aい + N,danh từ được bổ nghĩa,adjective+noun,Aい N,Modifier,Bổ nghĩa danh từ,N5,白い車です。,しろいくるまです。,Xe màu trắng.,A white car.
+12,Aな + N,danh từ được bổ nghĩa,adjective+noun,Aな N,Modifier,Tính từ な bổ nghĩa,N5,静かな町です。,しずかなまちです。,Thành phố yên tĩnh.,A quiet town.
+12,どんな,như thế nào,what kind of,どんな N,Question,Hỏi tính chất,N5,どんな映画が好きですか。,どんなえいががすきですか。,Thích phim thế nào?,What kind of movies do you like?
+12,～がほしいです,muốn có,want,N がほしいです,Desire,Muốn vật,N5,新しい車がほしいです。,あたらしいくるまがほしいです。,Muốn xe mới.,I want a new car.
+12,Vたいです,muốn làm,want to,Vます-stem + たい,Desire,Muốn hành động,N5,日本へ行きたいです。,にほんへいきたいです。,Muốn đi Nhật.,I want to go to Japan.
+13,～こと,việc ~,nominalization,V dictionary + こと,Nominalizer,Danh từ hóa động từ,N5,本を読むことが好きです。,ほんをよむことがすきです。,Thích việc đọc sách.,I like reading books.
+13,N ができます,có thể,can do,N ができます,Ability,Năng lực/khả năng,N5,スキーができます。,スキーができます。,Có thể trượt tuyết.,Can ski.
+13,趣味は～です,sở thích là,hobby is,趣味はNです,Expression,Nói sở thích,N5,趣味は音楽です。,しゅみはおんがくです。,Sở thích là âm nhạc.,My hobby is music.
+14,Vてください,hãy ~,please do,Vてください,Request,Yêu cầu lịch sự,N5,座ってください。,すわってください。,Hãy ngồi xuống.,Please sit down.
+14,Vないでください,đừng ~,please don't,Vないでください,Prohibition,Cấm/yêu cầu không làm,N5,入らないでください。,はいらないでください。,Xin đừng vào.,Please don't enter.
+14,Vてもいいです,được phép,may,Vてもいいです,Permission,Xin/cho phép,N5,写真を撮ってもいいです。,しゃしんをとってもいいです。,Có thể chụp ảnh.,You may take photos.
+14,Vてはいけません,không được,must not,Vてはいけません,Prohibition,Cấm đoán,N5,ここでタバコを吸ってはいけません。,ここでタバコをすってはいけません。,Không được hút thuốc ở đây.,You must not smoke here.
+15,Vています,đang ~,be doing,Vています,Progressive,Hành động đang diễn ra,N5,ご飯を食べています。,ごはんをたべています。,Đang ăn cơm.,I am eating.
+15,Vています (trạng thái),đang ở trạng thái,state,Vています,State,Trạng thái kết quả,N5,結婚しています。,けっこんしています。,Đã kết hôn.,I am married.
+15,Vても,dù,even if,Vても,Concession,Nhượng bộ,N5,高くても買います。,たかくてもかいます。,Dù đắt vẫn mua.,I will buy it even if expensive.
+16,Vて、Vます,rồi,and then,Vて、V,Sequence,Nối hành động,N5,朝ご飯を食べて学校へ行きます。,あさごはんをたべてがっこうへいきます。,Ăn sáng rồi đi học.,Eat breakfast and go to school.
+16,Aくて,và,and,Aくて,Connector,Nối tính từ い,N5,安くて便利です。,やすくてべんりです。,Rẻ và tiện.,Cheap and convenient.
+16,Aなで,và,and,Aで,Connector,Nối tính từ な/danh từ,N5,静かで有名です。,しずかでゆうめいです。,Yên tĩnh và nổi tiếng.,Quiet and famous.
+17,Vなければなりません,phải,must,Vない→なければなりません,Obligation,Nghĩa vụ,N5,勉強しなければなりません。,べんきょうしなければなりません。,Phải học.,Must study.
+17,Vなくてもいいです,không cần,don't have to,Vなくてもいいです,Permission,Không bắt buộc,N5,行かなくてもいいです。,いかなくてもいいです。,Không cần đi.,You don't have to go.
+17,Vないでください,đừng,please don't,Vないでください,Prohibition,Nhắc lại mẫu cấm,N5,話さないでください。,はなさないでください。,Đừng nói chuyện.,Please don't talk.
+18,Vることができます,có thể làm,can do,Vることができます,Ability,Diễn tả khả năng,N5,漢字を読むことができます。,かんじをよむことができます。,Có thể đọc kanji.,Can read kanji.
+18,趣味はVることです,sở thích là ~,hobby is doing,趣味はVることです,Expression,Nói sở thích,N5,趣味は料理することです。,しゅみはりょうりすることです。,Sở thích là nấu ăn.,My hobby is cooking.
+19,Vたことがあります,đã từng,have experienced,Vたことがあります,Experience,Kinh nghiệm,N5,日本へ行ったことがあります。,にほんへいったことがあります。,Đã từng đi Nhật.,I have been to Japan.
+19,VたりVたりします,nào là ~ nào là ~,do things like,VたりVたりします,Listing,Liệt kê hành động,N5,土曜日は映画を見たり買い物したりします。,どようびはえいがをみたりかいものしたりします。,Thứ bảy xem phim rồi mua sắm.,On Saturdays I do things like watch movies and shop.
+20,普通形,thể thường,plain form,dictionary/plain forms,Plain form,Văn nói thân mật,N5,日本へ行く。,にほんへいく。,Đi Nhật.,Go to Japan.
+20,～と思います,tôi nghĩ,I think,Sentence と思います,Opinion,Nêu ý kiến,N5,日本はきれいだと思います。,にほんはきれいだとおもいます。,Tôi nghĩ Nhật đẹp.,I think Japan is beautiful.
+20,～と言います,nói rằng,say that,Sentence と言います,Quotation,Trích dẫn lời nói,N5,先生は「頑張って」と言いました。,せんせいは「がんばって」といいました。,Giáo viên nói “cố lên”.,The teacher said “do your best”.
+21,～と思っています,đang nghĩ rằng,have been thinking,Sentence と思っています,Ongoing thought,Ý định/suy nghĩ kéo dài,N5,日本へ行こうと思っています。,にほんへいこうとおもっています。,Đang định đi Nhật.,I am thinking of going to Japan.
+21,～でしょう,có lẽ,probably,Sentence でしょう,Probability,Phỏng đoán,N5,明日は雨でしょう。,あしたはあめでしょう。,Mai chắc mưa.,It will probably rain tomorrow.
+21,～ないと思います,nghĩ là không,don't think,Sentence ないと思います,Opinion,Phủ định ý kiến,N5,高くないと思います。,たかくないとおもいます。,Tôi nghĩ không đắt.,I don't think it's expensive.
+22,修飾節,mệnh đề bổ nghĩa,relative clause,Clause + N,Relative clause,Bổ nghĩa danh từ,N5,昨日買った本です。,きのうかったほんです。,Quyển sách đã mua hôm qua.,The book I bought yesterday.
+22,～が (nhưng),nhưng,but,Sentence が,Conjunction,Nối hai vế trái nghĩa,N5,行きたいですが、時間がありません。,いきたいですが、じかんがありません。,Muốn đi nhưng không có thời gian.,I want to go but have no time.
+23,Vるとき,khi chuẩn bị làm,when,Vるとき,Time clause,Trước hành động,N5,日本へ行くとき、お金を持って行きます。,にほんへいくとき、おかねをもっていきます。,Khi đi Nhật mang theo tiền.,"When going to Japan, I bring money."
+23,Vたとき,khi đã làm,when,Vたとき,Time clause,Sau hành động,N5,日本へ行ったとき、写真を撮りました。,にほんへいったとき、しゃしんをとりました。,Khi đã đi Nhật thì chụp ảnh.,"When I went to Japan, I took photos."
+23,～前に,trước khi,before,Vる前に,Time,Chỉ thời điểm trước,N5,寝る前に歯を磨きます。,ねるまえにはをみがきます。,Đánh răng trước khi ngủ.,Brush teeth before sleeping.
+24,Vてあげます,làm cho ai,do for someone,Vてあげます,Giving favor,Làm cho người khác,N5,友達に教えてあげます。,ともだちにおしえてあげます。,Chỉ cho bạn.,Teach my friend.
+24,Vてもらいます,được ai làm cho,have someone do,Vてもらいます,Receiving favor,Nhận sự giúp đỡ,N5,先生に日本語を教えてもらいました。,せんせいににほんごをおしえてもらいました。,Được giáo viên dạy tiếng Nhật.,I had my teacher teach me Japanese.
+24,Vてくれます,ai làm cho tôi,do for me,Vてくれます,Favor,Ai đó làm cho tôi,N5,母が料理を作ってくれました。,ははがりょうりをつくってくれました。,Mẹ nấu ăn cho tôi.,My mother cooked for me.
+25,～たら,nếu / sau khi,if / when,Vたら,Conditional,Điều kiện,N5,暇だったら行きます。,ひまだったらいきます。,Nếu rảnh thì đi.,"If free, I will go."
+25,～ても,dù cho,even if,Vても,Concession,Giả định nhượng bộ,N5,雨でも行きます。,あめでもいきます。,Dù mưa vẫn đi.,I will go even if it rains.
+25,もし,nếu,if,もし～,Conditional,Nhấn mạnh giả định,N5,もし時間があったら来てください。,もしじかんがあったらきてください。,Nếu có thời gian hãy đến.,"If you have time, please come."
+Extra,なかなか～ない,mãi mà không,not easily,なかなか Vない,Difficulty,Việc khó xảy ra,N5,なかなか寝られません。,なかなかねられません。,Mãi không ngủ được.,I cannot sleep easily.
+Extra,ぜひ～てください,nhất định hãy,please definitely,ぜひVてください,Recommendation,Khuyên mạnh,N5,ぜひ来てください。,ぜひきてください。,Nhất định hãy đến.,Please definitely come.
+Extra,ぜひ～たいです,rất muốn,really want to,ぜひVたいです,Desire,Mong muốn mạnh,N5,ぜひ日本へ行きたいです。,ぜひにほんへいきたいです。,Rất muốn đi Nhật.,I really want to go to Japan.
+Extra,Aくなります,trở nên,become,Aくなります,Change,Biến đổi tính chất,N5,寒くなりました。,さむくなりました。,Trở nên lạnh.,It became cold.
+Extra,Nになります,trở thành,become,Nになります,Change,Thay đổi trạng thái,N5,医者になりました。,いしゃになりました。,Đã trở thành bác sĩ.,Became a doctor.
+Extra,Vた形,thể quá khứ ngắn,ta-form,Verb ta-form,Verb form,Cơ sở nhiều ngữ pháp,N5,食べた。,たべた。,Đã ăn.,Ate.
+Extra,～でしょうか,có thể ~ không,could it be,Sentence でしょうか,Polite question,Hỏi lịch sự mềm mại,N5,先生でしょうか。,せんせいでしょうか。,Có phải giáo viên không?,Could it be the teacher?
+Extra,～ませんか (mời),mời gọi,invitation,Vませんか,Invitation,Rủ rê lịch sự,N5,お茶を飲みませんか。,おちゃをのみませんか。,Uống trà nhé?,Would you like tea?
+Extra,～ましょうか,để tôi ~ nhé,shall I,Vましょうか,Offer,Đề nghị giúp,N5,荷物を持ちましょうか。,にもつをもちましょうか。,Để tôi mang hành lý nhé?,Shall I carry your luggage?
+Extra,～てから,sau khi,after doing,Vてから,Sequence,Hành động sau,N5,ご飯を食べてから勉強します。,ごはんをたべてからべんきょうします。,Ăn xong rồi học.,Study after eating.
+Extra,～ながら,vừa ~ vừa,while doing,Vます-stemながら,Simultaneous,Hai hành động cùng lúc,N5,音楽を聞きながら勉強します。,おんがくをききながらべんきょうします。,Vừa nghe nhạc vừa học.,Study while listening to music.
+Extra,～たいと思います,nghĩ là muốn,think want to,Vたいと思います,Intention,Ý định lịch sự,N5,日本へ行きたいと思います。,にほんへいきたいとおもいます。,Tôi nghĩ mình muốn đi Nhật.,I think I want to go to Japan.
+Extra,～でしょうね,nhỉ,"probably, isn't it",Sentence でしょうね,Confirmation,Đồng cảm/xác nhận,N5,きれいでしょうね。,きれいでしょうね。,Đẹp nhỉ.,"It's beautiful, isn't it?"
+Extra,～まで,đến,until,N まで,Limit,Giới hạn thời gian/nơi,N5,五時まで働きます。,ごじまではたらきます。,Làm việc đến 5 giờ.,Work until 5.
+Extra,～から～まで,từ ~ đến ~,from ~ to ~,NからNまで,Range,Khoảng thời gian/nơi,N5,九時から五時までです。,くじからごじまでです。,Từ 9 giờ đến 5 giờ.,From 9 to 5.
+Extra,～より,hơn,than,Nより,Comparison,So sánh,N5,日本語は英語より難しいです。,にほんごはえいごよりむずかしいです。,Tiếng Nhật khó hơn tiếng Anh.,Japanese is harder than English.
+Extra,～のほうが,hơn,more,Nのほうが,Comparison,Nhấn mạnh đối tượng,N5,犬のほうが好きです。,いぬのほうがすきです。,Thích chó hơn.,I like dogs more.
+Extra,～つもりです,dự định,intend to,Vるつもりです,Intention,Kế hoạch dự định,N5,日本へ行くつもりです。,にほんへいくつもりです。,Dự định đi Nhật.,I intend to go to Japan.
+Extra,～たい,muốn,want to,Vますたい,Desire,Mong muốn cá nhân,N5,水を飲みたいです。,みずをのみたいです。,Muốn uống nước.,I want to drink water.
+Extra,～し,và còn,"and, moreover",Sentence し,Listing reasons,Liệt kê lý do,N5,安いし、おいしいです。,やすいし、おいしいです。,Rẻ mà còn ngon.,It's cheap and tasty.
+Extra,～ので,vì,because,Sentence ので,Reason,Lý do mềm hơn から,N5,雨なので行きません。,あめなのでいきません。,Vì mưa nên không đi.,I won't go because it's raining.
+Extra,～かもしれません,có lẽ,might,Sentence かもしれません,Probability,Khả năng không chắc,N5,明日は雨かもしれません。,あしたはあめかもしれません。,Mai có thể mưa.,It might rain tomorrow.
+Extra,～ようです,có vẻ,seems,Sentence ようです,Appearance,Phỏng đoán,N5,元気なようです。,げんきなようです。,Có vẻ khỏe.,Seems healthy.
+Extra,～そうです,trông có vẻ,looks like,Stem + そうです,Appearance,Nhìn bề ngoài,N5,おいしそうです。,おいしそうです。,Trông ngon.,Looks delicious.
+Extra,～てしまいました,lỡ / hoàn tất,ended up,Vてしまいました,Completion/regret,Nhấn mạnh hoàn tất/hối tiếc,N5,財布をなくしてしまいました。,さいふをなくしてしまいました。,Lỡ làm mất ví.,I ended up losing my wallet.
+Extra,～始めます,bắt đầu,start to,Vます始めます,Beginning,Khởi đầu hành động,N5,雨が降り始めました。,あめがふりはじめました。,Trời bắt đầu mưa.,It started raining.
+Extra,～終わります,làm xong,finish doing,Vます終わります,Completion,Kết thúc hành động,N5,宿題をやり終わりました。,しゅくだいをやりおわりました。,Làm xong bài tập.,Finished homework.
+Extra,～中です,đang trong lúc,in the middle of,Vている + 中です,Ongoing,Nhấn mạnh đang làm,N5,会議中です。,かいぎちゅうです。,Đang họp.,In a meeting.
+Extra,～予定です,dự định,scheduled to,Vる予定です,Plan,Kế hoạch dự kiến,N5,来年結婚する予定です。,らいねんけっこんするよていです。,Dự định kết hôn năm sau.,Planning to marry next year.
+Extra,～ほうがいいです,nên,should,Vたほうがいい,Advice,Khuyên nhủ,N5,早く寝たほうがいいです。,はやくねたほうがいいです。,Nên ngủ sớm.,You should sleep early.
+Extra,～なくてもかまいません,không làm cũng được,don't mind not doing,Vなくてもかまいません,Permission,Cách nói lịch sự,N5,来なくてもかまいません。,こなくてもかまいません。,Không đến cũng được.,It's okay if you don't come.
+Extra,～てはいけない,không được,must not,Vてはいけない,Prohibition,Văn thường,N5,ここで遊んではいけない。,ここであそんではいけない。,Không được chơi ở đây.,You must not play here.
+Extra,～ないほうがいい,không nên,shouldn't,Vないほうがいい,Advice,Khuyên không nên,N5,食べないほうがいいです。,たべないほうがいいです。,Không nên ăn.,You shouldn't eat it.
+Extra,～てみます,thử làm,try doing,Vてみます,Trial,Thử hành động,N5,食べてみます。,たべてみます。,Thử ăn xem.,I'll try eating it.
+Extra,～ことにします,quyết định,decide to,Vることにします,Decision,Quyết định cá nhân,N5,日本へ行くことにします。,にほんへいくことにします。,Quyết định đi Nhật.,I decided to go to Japan.
+Extra,～ことになります,được quyết định,it has been decided,Vることになります,Decision,Quyết định khách quan,N5,来月帰国することになりました。,らいげつきこくすることになりました。,Được quyết định về nước tháng sau.,It has been decided I will return next month.
+Extra,～すぎます,quá,too much,V/Aますすぎます,Excessive,Quá mức,N5,食べすぎました。,たべすぎました。,Ăn quá nhiều.,Ate too much.
+Extra,～やすい,dễ,easy to,Vますやすい,Ease,Dễ thực hiện,N5,この本は読みやすいです。,このほんはよみやすいです。,Sách này dễ đọc.,This book is easy to read.
+Extra,～にくい,khó,difficult to,Vますにくい,Difficulty,Khó thực hiện,N5,この字は読みにくいです。,このじはよみにくいです。,Chữ này khó đọc.,This character is hard to read.
+Extra,～ように,để,so that,Vるように,Purpose,Mục đích,N5,忘れないように書きます。,わすれないようにかきます。,Viết để không quên.,Write so as not to forget.
+Extra,～ために,để,for the purpose of,Vるために,Purpose,Mục đích rõ ràng,N5,日本へ行くために勉強します。,にほんへいくためにべんきょうします。,Học để đi Nhật.,Study to go to Japan.
+Extra,～ながらも,mặc dù vừa,although,Vながらも,Concession,Văn viết nhẹ,N5,働きながらも勉強します。,はたらきながらもべんきょうします。,Dù đi làm vẫn học.,"Although working, I study."
+Extra,～しか～ない,chỉ,nothing but,NしかVない,Limitation,Chỉ có,N5,千円しかありません。,せんえんしかありません。,Chỉ có 1000 yên.,I only have 1000 yen.
+Extra,～でも,ngay cả,even,Nでも,Example/emphasis,Đưa ví dụ,N5,お茶でも飲みませんか。,おちゃでものみませんか。,Uống trà gì đó nhé?,Would you like some tea or something?
+Extra,～ながら,vừa ~ vừa,while,Vますながら,Simultaneous,Hai hành động đồng thời,N5,歩きながら話します。,あるきながらはなします。,Vừa đi vừa nói.,Talk while walking.
+Extra,～ばかり,toàn là,"only, just",Nばかり,Limitation,Nghĩa tiêu cực/trung tính,N5,甘いものばかり食べます。,あまいものばかりたべます。,Toàn ăn đồ ngọt.,Eat only sweets.
+Extra,～ずつ,mỗi,each,Numberずつ,Distribution,Chia đều,N5,一人ずつ入ってください。,ひとりずつはいってください。,Mỗi người vào một lượt.,Please enter one by one.
+Extra,～によって,tùy theo,depending on,Nによって,Condition,Phụ thuộc điều kiện,N5,人によって違います。,ひとによってちがいます。,Tùy người mà khác nhau.,It differs depending on the person.
+Extra,～について,về,about,Nについて,Topic,Nói về chủ đề,N5,日本文化について勉強します。,にほんぶんかについてべんきょうします。,Học về văn hóa Nhật.,Study about Japanese culture.
+Extra,～に行きます,đi để,go to do,Stem に行きます,Purpose movement,Di chuyển có mục đích,N5,映画を見に行きます。,えいがをみにいきます。,Đi xem phim.,Go to watch a movie.
+Extra,～に来ます,đến để,come to do,Stem に来ます,Purpose movement,Di chuyển có mục đích,N5,日本へ勉強しに来ました。,にほんへべんきょうしにきました。,Đến Nhật để học.,Came to Japan to study.
+Extra,～たり～たり,nào là,things like,VたりVたり,Listing,Liệt kê ví dụ,N5,読んだり書いたりします。,よんだりかいたりします。,Nào là đọc nào là viết.,Do things like reading and writing.
+Extra,～そうにない,có vẻ không,doesn't look like,Vますそうにない,Appearance,Dự đoán phủ định,N5,雨はやみそうにないです。,あめはやみそうにないです。,Có vẻ mưa không tạnh.,It doesn't look like the rain will stop.
+Extra,～でしょう？,đúng không,right?,Sentence でしょう,Confirmation,Xác nhận,N5,寒いでしょう？,さむいでしょう？,Lạnh đúng không?,"It's cold, right?"
+Extra,～ておきます,làm trước,do in advance,Vておきます,Preparation,Chuẩn bị trước,N5,予約しておきます。,よやくしておきます。,Đặt trước.,I'll make a reservation in advance.
+Extra,～てあります,được làm sẵn,has been done,Vてあります,Prepared state,Trạng thái chuẩn bị,N5,ドアが閉めてあります。,ドアがしめてあります。,Cửa đã được đóng sẵn.,The door has been closed.
+Extra,～てほしい,muốn ai làm,want someone to,Person にVてほしい,Desire,Mong người khác làm,N5,来てほしいです。,きてほしいです。,Muốn bạn đến.,I want you to come.
+Extra,～ていただけませんか,có thể vui lòng ~,could you please,Vていただけませんか,Polite request,Yêu cầu cực lịch sự,N5,教えていただけませんか。,おしえていただけませんか。,Có thể chỉ giúp tôi không?,Could you please teach me?
+Extra,～てもらえませんか,có thể làm giúp,could you do for me,Vてもらえませんか,Request,Nhờ vả lịch sự,N5,手伝ってもらえませんか。,てつだってもらえませんか。,Có thể giúp tôi không?,Could you help me?
+Extra,～なければいけません,phải,have to,Vない→なければいけません,Obligation,Nghĩa giống なければなりません,N5,行かなければいけません。,いかなければいけません。,Phải đi.,I have to go.
+Extra,～なくちゃ,phải,gotta,Vなくちゃ,Casual obligation,Văn nói,N5,勉強しなくちゃ。,べんきょうしなくちゃ。,Phải học thôi.,Gotta study.
+Extra,～でしょうか,liệu có,I wonder,Sentence でしょうか,Soft question,Hỏi lịch sự,N5,大丈夫でしょうか。,だいじょうぶでしょうか。,Liệu có ổn không?,I wonder if it's okay.
+Extra,～ようと思います,định,intend to,Volitional + と思います,Intention,Dự định,N5,明日早く起きようと思います。,あしたはやくおきようとおもいます。,Định mai dậy sớm.,I intend to wake up early tomorrow.
+Extra,～まま,giữ nguyên,as it is,N/Vたまま,State,Giữ nguyên trạng thái,N5,ドアを開けたまま寝ました。,ドアをあけたままねました。,Ngủ quên khi mở cửa.,Slept with the door open.
+Extra,～ていきます,tiếp tục đi,go on doing,Vていきます,Continuation,Hướng ra xa hiện tại,N5,日本語を勉強していきます。,にほんごをべんきょうしていきます。,Sẽ tiếp tục học tiếng Nhật.,I will continue studying Japanese.
+Extra,～てきます,đã rồi quay lại,come after doing,Vてきます,Movement,Đi rồi quay lại,N5,昼ご飯を食べてきます。,ひるごはんをたべてきます。,Tôi đi ăn trưa rồi quay lại.,I'll go eat lunch and come back.

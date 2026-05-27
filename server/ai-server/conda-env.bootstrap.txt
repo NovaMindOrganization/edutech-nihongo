@@ -1,0 +1,4 @@
+# Ghi chú bootstrap — conda cho server/ai-server
+CONDA_ENV_NAME=edutech-nihongo
+CONDA_PYTHON_VERSION=3.12
+# Cài đặt: conda activate edutech-nihongo && pip install -r requirements.txt

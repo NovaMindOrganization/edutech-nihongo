@@ -1,0 +1,149 @@
+import { db } from '../config/db.js';
+
+type ReviewType = 'kanji' | 'vocabulary' | 'grammar' | 'mixed';
+
+export async function generateReview(
+  userId: string,
+  mode: 'random' | 'weakness' | 'flashcard',
+  count: number,
+  type: ReviewType = 'mixed',
+) {
+  const completed = await db.userLessonProgress.findMany({
+    where: { userId, status: 'completed' },
+    select: { lessonId: true },
+  });
+  const lessonIds = completed.map((c) => c.lessonId);
+
+  if (lessonIds.length === 0) {
+    return { mode, type, questions: [], items: [] };
+  }
+
+  if (type === 'kanji') {
+    const rows = await db.lessonKanji.findMany({
+      where: { lessonId: { in: lessonIds } },
+      include: { kanji: true },
+    });
+    const unique = [...new Map(rows.map((r) => [r.kanji.id, r.kanji])).values()];
+    const shuffled = unique.sort(() => Math.random() - 0.5).slice(0, count);
+    return {
+      mode,
+      type,
+      items: shuffled.map((k) => ({
+        id: k.id,
+        itemType: 'kanji' as const,
+        front: k.character,
+        back: k.meaning,
+        readingsOn: k.readingsOn,
+        readingsKun: k.readingsKun,
+      })),
+      questions: [],
+    };
+  }
+
+  if (type === 'vocabulary') {
+    const rows = await db.lessonVocabulary.findMany({
+      where: { lessonId: { in: lessonIds } },
+      include: { vocabulary: true },
+    });
+    const unique = [...new Map(rows.map((r) => [r.vocabulary.id, r.vocabulary])).values()];
+    const shuffled = unique.sort(() => Math.random() - 0.5).slice(0, count);
+    return {
+      mode,
+      type,
+      items: shuffled.map((v) => ({
+        id: v.id,
+        itemType: 'vocabulary' as const,
+        front: v.word,
+        reading: v.reading,
+        back: v.meaning,
+      })),
+      questions: [],
+    };
+  }
+
+  if (type === 'grammar') {
+    const rows = await db.lessonGrammar.findMany({
+      where: { lessonId: { in: lessonIds } },
+      include: { grammar: true },
+    });
+    const unique = [...new Map(rows.map((r) => [r.grammar.id, r.grammar])).values()];
+    const shuffled = unique.sort(() => Math.random() - 0.5).slice(0, count);
+    return {
+      mode,
+      type,
+      items: shuffled.map((g) => ({
+        id: g.id,
+        itemType: 'grammar' as const,
+        front: g.pattern,
+        back: g.meaning,
+        structure: g.structure,
+      })),
+      questions: [],
+    };
+  }
+
+  if (mode === 'weakness') {
+    const errors = await db.userErrorLog.findMany({
+      where: { userId, lessonId: { in: lessonIds } },
+      orderBy: { createdAt: 'desc' },
+      take: count * 2,
+    });
+    if (errors.length > 0) {
+      const lessonQuestions = await db.lessonQuestion.findMany({
+        where: { lessonId: { in: lessonIds } },
+        include: { question: true },
+        take: count,
+      });
+      return {
+        mode,
+        type,
+        questions: lessonQuestions.map((lq) => ({
+          ...lq.question,
+          lessonId: lq.lessonId,
+        })),
+        items: [],
+      };
+    }
+  }
+
+  const lessonQuestions = await db.lessonQuestion.findMany({
+    where: { lessonId: { in: lessonIds } },
+    include: { question: true },
+  });
+
+  const shuffled = lessonQuestions.sort(() => Math.random() - 0.5).slice(0, count);
+
+  return {
+    mode,
+    type,
+    questions: shuffled.map((lq) => ({
+      id: lq.question.id,
+      questionText: lq.question.questionText,
+      questionType: lq.question.questionType,
+      options: lq.question.options,
+      lessonId: lq.lessonId,
+      ...(mode === 'flashcard' ? { flashcard: true } : {}),
+    })),
+    items: [],
+  };
+}
+
+export async function submitReview(
+  userId: string,
+  results: Array<{ questionId: string; correct: boolean; answer?: string }>,
+) {
+  for (const r of results.filter((x) => !x.correct)) {
+    const q = await db.question.findUnique({ where: { id: r.questionId } });
+    if (q) {
+      await db.userErrorLog.create({
+        data: {
+          userId,
+          source: 'review',
+          originalText: r.answer,
+          correction: q.correctAnswer,
+        },
+      });
+    }
+  }
+  return { logged: results.filter((r) => !r.correct).length };
+}

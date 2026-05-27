@@ -1,0 +1,11 @@
+{
+  "name": "edutech-nihongo",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev:client": "pnpm --dir client dev",
+    "build:client": "pnpm --dir client build",
+    "dev:app-server": "pnpm --dir server/app-server dev",
+    "build:app-server": "pnpm --dir server/app-server build"
+  }
+}

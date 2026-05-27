@@ -1,0 +1,861 @@
+lesson,word,reading,meaning_vi,meaning_en,type,jlpt
+1,私,わたし,tôi,"I, me",Pronoun,N5
+1,私たち,わたしたち,"chúng tôi, chúng ta","we, us",Pronoun,N5
+1,彼,かれ,"anh ấy, bạn trai","he, boyfriend",Pronoun,N5
+1,彼女,かのじょ,"cô ấy, bạn gái","she, girlfriend",Pronoun,N5
+1,皆さん,みなさん,"các anh chị, quý vị",everyone,Noun,N5
+1,あなた,あなた,"bạn, anh/chị",you,Pronoun,N5
+1,あの人,あのひと,người đó,that person,Noun,N5
+1,あの方,あのかた,vị kia (lịch sự),that person (polite),Noun,N5
+1,教師,きょうし,giáo viên,teacher,Noun,N5
+1,先生,せんせい,thầy/cô,teacher,Noun,N5
+1,学生,がくせい,"học sinh, sinh viên",student,Noun,N5
+1,運転手,うんてんしゅ,tài xế,driver,Noun,N5
+1,会社員,かいしゃいん,nhân viên công ty,company employee,Noun,N5
+1,社員,しゃいん,nhân viên công ty,employee,Noun,N5
+1,銀行員,ぎんこういん,nhân viên ngân hàng,bank employee,Noun,N5
+1,医者,いしゃ,bác sĩ,doctor,Noun,N5
+1,エンジニア,エンジニア,kỹ sư,engineer,Noun,N5
+1,研究者,けんきゅうしゃ,nhà nghiên cứu,researcher,Noun,N5
+1,留学生,りゅうがくせい,du học sinh,international student,Noun,N5
+1,だれ,だれ,ai,who,Pronoun,N5
+1,どなた,どなた,vị nào (lịch sự),who (polite),Pronoun,N5
+1,大学,だいがく,đại học,university,Noun,N5
+1,病院,びょういん,bệnh viện,hospital,Noun,N5
+1,日本,にほん,Nhật Bản,Japan,Proper noun,N5
+1,ベトナム,ベトナム,Việt Nam,Vietnam,Proper noun,N5
+1,韓国,かんこく,Hàn Quốc,Korea,Proper noun,N5
+1,中国,ちゅうごく,Trung Quốc,China,Proper noun,N5
+1,アメリカ,アメリカ,Mỹ,America,Proper noun,N5
+1,イギリス,イギリス,Anh,"England, UK",Proper noun,N5
+1,～人,～じん,người ~,person from ~,Suffix,N5
+1,～語,～ご,tiếng ~,language,Suffix,N5
+1,出身,しゅっしん,"xuất thân, quê quán","hometown, origin",Noun,N5
+1,～から来ました,～からきました,đến từ ~,come from ~,Expression,N5
+1,はい,はい,"vâng, dạ",yes,Interjection,N5
+1,いいえ,いいえ,không,no,Interjection,N5
+1,失礼ですが,しつれいですが,xin lỗi nhưng...,"excuse me, but...",Expression,N5
+1,お名前をもう一度お願いします,おなまえをもういちどおねがいします,vui lòng nhắc lại tên,please say your name again,Expression,N5
+1,どうぞよろしくお願いします,どうぞよろしくおねがいします,rất mong được giúp đỡ,nice to meet you,Expression,N5
+1,そうですか,そうですか,vậy à,I see,Expression,N5
+1,お仕事は何ですか,おしごとはなんですか,công việc của bạn là gì,what is your job?,Expression,N5
+2,これ,これ,"cái này, đây",this,Pronoun,N5
+2,それ,それ,"cái đó, đó",that,Pronoun,N5
+2,あれ,あれ,"cái kia, kia",that over there,Pronoun,N5
+2,この～,この,~ này,this ~,Determiner,N5
+2,その～,その,~ đó,that ~,Determiner,N5
+2,あの～,あの,~ kia,that ~ over there,Determiner,N5
+2,パソコン,パソコン,máy tính cá nhân,personal computer,Noun,N5
+2,携帯,けいたい,điện thoại di động,mobile phone,Noun,N5
+2,電話,でんわ,điện thoại,telephone,Noun,N5
+2,アイフォン,アイフォン,iPhone,iPhone,Noun,N5
+2,充電器,じゅうでんき,sạc pin,charger,Noun,N5
+2,ヘッドフォン,ヘッドフォン,tai nghe,headphones,Noun,N5
+2,カメラ,カメラ,máy ảnh,camera,Noun,N5
+2,テレビ,テレビ,tivi,television,Noun,N5
+2,車,くるま,"ô tô, xe hơi",car,Noun,N5
+2,時計,とけい,đồng hồ,"clock, watch",Noun,N5
+2,ペン,ペン,bút,pen,Noun,N5
+2,ボールペン,ボールペン,bút bi,ballpoint pen,Noun,N5
+2,鉛筆,えんぴつ,bút chì,pencil,Noun,N5
+2,シャープペンシル,シャープペンシル,bút chì kim,mechanical pencil,Noun,N5
+2,消しゴム,けしゴム,tẩy,eraser,Noun,N5
+2,本,ほん,sách,book,Noun,N5
+2,ノート,ノート,vở,notebook,Noun,N5
+2,手帳,てちょう,sổ tay,"notebook, planner",Noun,N5
+2,辞書,じしょ,từ điển,dictionary,Noun,N5
+2,新聞,しんぶん,báo,newspaper,Noun,N5
+2,雑誌,ざっし,tạp chí,magazine,Noun,N5
+2,名刺,めいし,danh thiếp,business card,Noun,N5
+2,カード,カード,"thẻ, card",card,Noun,N5
+2,クレジットカード,クレジットカード,thẻ tín dụng,credit card,Noun,N5
+2,帽子,ぼうし,mũ,"hat, cap",Noun,N5
+2,財布,さいふ,ví,wallet,Noun,N5
+2,かばん,かばん,"cặp sách, túi",bag,Noun,N5
+2,靴,くつ,giày,shoes,Noun,N5
+2,スリッパ,スリッパ,dép đi trong nhà,slippers,Noun,N5
+2,靴下,くつした,tất,socks,Noun,N5
+2,鍵,かぎ,chìa khóa,key,Noun,N5
+2,傘,かさ,"ô, dù",umbrella,Noun,N5
+2,机,つくえ,cái bàn,desk,Noun,N5
+2,椅子,いす,cái ghế,chair,Noun,N5
+2,英語,えいご,tiếng Anh,English language,Noun,N5
+2,何,なに,cái gì,what,Pronoun,N5
+2,そう,そう,đúng vậy,"so, that’s right",Expression,N5
+2,違います,ちがいます,"không phải, sai rồi","to be wrong, differ",Verb,N5
+2,ほんの気持ち,ほんのきもち,chút lòng thành,a small gift/token,Expression,N5
+3,ここ,ここ,"chỗ này, đây",here,Pronoun,N5
+3,そこ,そこ,"chỗ đó, đó",there,Pronoun,N5
+3,あそこ,あそこ,"chỗ kia, kia",over there,Pronoun,N5
+3,どこ,どこ,"chỗ nào, đâu",where,Pronoun,N5
+3,こちら,こちら,phía này,this way,Pronoun,N5
+3,そちら,そちら,phía đó,that way,Pronoun,N5
+3,あちら,あちら,phía kia,over there,Pronoun,N5
+3,どちら,どちら,phía nào,"which way, where",Pronoun,N5
+3,受付,うけつけ,quầy lễ tân,reception desk,Noun,N5
+3,フロント,フロント,quầy lễ tân,front desk,Noun,N5
+3,階段,かいだん,cầu thang,stairs,Noun,N5
+3,エレベーター,エレベーター,thang máy,elevator,Noun,N5
+3,エスカレーター,エスカレーター,thang cuốn,escalator,Noun,N5
+3,お手洗い,おてあらい,phòng vệ sinh,restroom,Noun,N5
+3,トイレ,トイレ,phòng vệ sinh,toilet,Noun,N5
+3,うち,うち,nhà,home,Noun,N5
+3,いえ,いえ,nhà,"house, home",Noun,N5
+3,部屋,へや,căn phòng,room,Noun,N5
+3,教室,きょうしつ,phòng học,classroom,Noun,N5
+3,事務所,じむしょ,văn phòng,office,Noun,N5
+3,会議室,かいぎしつ,phòng họp,meeting room,Noun,N5
+3,食堂,しょくどう,nhà ăn,cafeteria,Noun,N5
+3,ビル,ビル,tòa nhà,building,Noun,N5
+3,デパート,デパート,trung tâm thương mại,department store,Noun,N5
+3,スーパー,スーパー,siêu thị,supermarket,Noun,N5
+3,センター,センター,trung tâm,center,Noun,N5
+3,映画館,えいがかん,rạp chiếu phim,movie theater,Noun,N5
+3,喫茶店,きっさてん,"quán trà, cà phê",coffee shop,Noun,N5
+3,図書館,としょかん,thư viện,library,Noun,N5
+3,会社,かいしゃ,công ty,company,Noun,N5
+3,学校,がっこう,trường học,school,Noun,N5
+3,郵便局,ゆうびんきょく,bưu điện,post office,Noun,N5
+3,銀行,ぎんこう,ngân hàng,bank,Noun,N5
+3,バスてい,バスてい,trạm xe bus,bus stop,Noun,N5
+3,駅,えき,nhà ga,station,Noun,N5
+3,お国,おくに,đất nước (của anh/chị),your country,Noun,N5
+3,いくら,いくら,bao nhiêu tiền,how much,Adverb,N5
+3,円,えん,yên,yen,Noun,N5
+4,イケメン,イケメン,đẹp trai,handsome guy,Noun,N5
+4,綺麗 [な],きれい [な],"xinh, đẹp, sạch","beautiful, clean",Na-adjective,N5
+4,親切 [な],しんせつ [な],tốt bụng,kind,Na-adjective,N5
+4,元気 [な],げんき [な],khỏe mạnh,"healthy, energetic",Na-adjective,N5
+4,静か [な],しずか [な],yên tĩnh,quiet,Na-adjective,N5
+4,賑やか [な],にぎやか [な],náo nhiệt,lively,Na-adjective,N5
+4,有名 [な],ゆうめい [な],nổi tiếng,famous,Na-adjective,N5
+4,便利 [な],べんり [な],tiện lợi,convenient,Na-adjective,N5
+4,大切 [な],たいせつ [な],quan trọng,important,Na-adjective,N5
+4,暇 [な],ひま [な],rảnh rỗi,"free, available",Na-adjective,N5
+4,忙しい,いそがしい,bận rộn,busy,I-adjective,N5
+4,大きい,おおきい,"to, lớn",big,I-adjective,N5
+4,小さい,ちいさい,"nhỏ, bé",small,I-adjective,N5
+4,新しい,あたらしい,mới,new,I-adjective,N5
+4,古い,ふるい,cũ,old,I-adjective,N5
+4,いい（よい）,いい（よい）,tốt,good,I-adjective,N5
+4,悪い,わるい,xấu,bad,I-adjective,N5
+4,暑い,あつい,nóng (thời tiết),hot (weather),I-adjective,N5
+4,寒い,さむい,"lạnh, rét",cold (weather),I-adjective,N5
+4,熱い,あつい,nóng (cảm giác),hot (touch/feeling),I-adjective,N5
+4,冷たい,つめたい,"lạnh, buốt",cold (touch),I-adjective,N5
+4,難しい,むずかしい,khó,difficult,I-adjective,N5
+4,易しい / 優しい,やさしい,dễ / hiền lành,easy / kind,I-adjective,N5
+4,高い,たかい,"đắt, cao","expensive, tall",I-adjective,N5
+4,安い,やすい,rẻ,cheap,I-adjective,N5
+4,低い,ひくい,thấp,low,I-adjective,N5
+4,明るい,あかるい,"sáng sủa, tươi sáng",bright,I-adjective,N5
+4,暗い,くらい,"tối, u ám",dark,I-adjective,N5
+4,面白い,おもしろい,thú vị,interesting,I-adjective,N5
+4,可愛い,かわいい,dễ thương,cute,I-adjective,N5
+4,美味しい,おいしい,ngon,delicious,I-adjective,N5
+4,楽しい,たのしい,vui vẻ,"enjoyable, fun",I-adjective,N5
+4,白い,しろい,trắng,white,I-adjective,N5
+4,赤い,あかい,đỏ,red,I-adjective,N5
+4,青い,あおい,xanh,blue,I-adjective,N5
+4,黒い,くろい,đen,black,I-adjective,N5
+4,寂しい,さびしい,cô đơn,lonely,I-adjective,N5
+4,花,はな,hoa,flower,Noun,N5
+4,桜,さくら,hoa anh đào,cherry blossom,Noun,N5
+4,山,やま,núi,mountain,Noun,N5
+4,富士山,ふじさん,núi Phú Sĩ,Mount Fuji,Proper noun,N5
+4,町,まち,"thị trấn, thành phố","town, city",Noun,N5
+4,食べ物,たべもの,đồ ăn,food,Noun,N5
+4,着物,きもの,kimono,kimono,Noun,N5
+4,機械,きかい,máy móc,machine,Noun,N5
+4,所,ところ,"nơi, chỗ",place,Noun,N5
+4,勉強,べんきょう,"học, việc học",study,Noun,N5
+4,生活,せいかつ,"cuộc sống, sinh hoạt","life, living",Noun,N5
+4,物価,ぶっか,vật giá,prices,Noun,N5
+4,お仕事,おしごと,công việc,"job, work",Noun,N5
+4,料理,りょうり,món ăn,"cuisine, cooking",Noun,N5
+4,パスポート,パスポート,hộ chiếu,passport,Noun,N5
+4,どう,どう,thế nào,how,Adverb,N5
+4,どんな,どんな,như thế nào,what kind of,Determiner,N5
+4,どれ,どれ,cái nào,which,Pronoun,N5
+4,とても,とても,rất,very,Adverb,N5
+4,あまり,あまり,không ~ lắm,not very,Adverb,N5
+4,そして,そして,"hơn nữa, và","and, moreover",Conjunction,N5
+4,～が、～,～が、～,~ nhưng ~,but,Grammar,N5
+5,月曜日,げつようび,thứ hai,Monday,Noun,N5
+5,火曜日,かようび,thứ ba,Tuesday,Noun,N5
+5,水曜日,すいようび,thứ tư,Wednesday,Noun,N5
+5,木曜日,もくようび,thứ năm,Thursday,Noun,N5
+5,金曜日,きんようび,thứ sáu,Friday,Noun,N5
+5,土曜日,どようび,thứ bảy,Saturday,Noun,N5
+5,日曜日,にちようび,chủ nhật,Sunday,Noun,N5
+5,何曜日,なんようび,thứ mấy,what day,Noun,N5
+5,今,いま,bây giờ,now,Noun,N5
+5,午前,ごぜん,"sáng, trước 12 giờ trưa","a.m., morning",Noun,N5
+5,午後,ごご,"chiều, sau 12 giờ trưa","p.m., afternoon",Noun,N5
+5,半,はん,"rưỡi, nửa",half,Noun,N5
+5,朝,あさ,buổi sáng,morning,Noun,N5
+5,昼,ひる,buổi trưa,"noon, daytime",Noun,N5
+5,夕方,ゆうがた,buổi chiều,evening,Noun,N5
+5,晩,ばん,buổi tối,"evening, night",Noun,N5
+5,夜,よる,"đêm, khuya",night,Noun,N5
+5,一昨日,おととい,hôm kia,day before yesterday,Noun,N5
+5,昨日,きのう,hôm qua,yesterday,Noun,N5
+5,今日,きょう,hôm nay,today,Noun,N5
+5,明日,あした,ngày mai,tomorrow,Noun,N5
+5,明後日,あさって,ngày kia,day after tomorrow,Noun,N5
+5,今朝,けさ,sáng nay,this morning,Noun,N5
+5,今晩,こんばん,tối nay,tonight,Noun,N5
+5,今夜,こんや,đêm nay,tonight,Noun,N5
+5,休み,やすみ,"nghỉ, ngày nghỉ","rest, holiday",Noun,N5
+5,昼休み,ひるやすみ,nghỉ trưa,lunch break,Noun,N5
+5,毎朝,まいあさ,mỗi sáng,every morning,Noun,N5
+5,毎晩,まいばん,mỗi tối,every evening,Noun,N5
+5,毎日,まいにち,mỗi ngày,every day,Noun,N5
+5,何時,なんじ,mấy giờ,what time,Noun,N5
+5,何分,なんぷん,mấy phút,what minute,Noun,N5
+5,働く,はたらく,làm việc,to work,Verb,N5
+5,休む,やすむ,nghỉ ngơi,to rest,Verb,N5
+5,終わる,おわる,kết thúc,"to end, finish",Verb,N5
+5,起きる,おきる,thức dậy,to wake up,Verb,N5
+5,寝る,ねる,ngủ,to sleep,Verb,N5
+5,勉強する,べんきょうする,học,to study,Verb,N5
+5,～から,～から,từ ~,from ~,Grammar,N5
+5,～まで,～まで,đến ~,until ~,Grammar,N5
+5,～と～,～と～,~ và ~,and,Grammar,N5
+5,試験,しけん,kỳ thi,exam,Noun,N5
+5,会議,かいぎ,cuộc họp,meeting,Noun,N5
+6,飛行機,ひこうき,máy bay,airplane,Noun,N5
+6,船,ふね,"thuyền, tàu thủy","ship, boat",Noun,N5
+6,地下鉄,ちかてつ,tàu điện ngầm,subway,Noun,N5
+6,電車,でんしゃ,tàu điện,train,Noun,N5
+6,バイク,バイク,xe máy,motorbike,Noun,N5
+6,バス,バス,xe bus,bus,Noun,N5
+6,タクシー,タクシー,taxi,taxi,Noun,N5
+6,自転車,じてんしゃ,xe đạp,bicycle,Noun,N5
+6,歩いて,あるいて,đi bộ,on foot,Expression,N5
+6,ホテル,ホテル,khách sạn,hotel,Noun,N5
+6,美術館,びじゅつかん,bảo tàng mỹ thuật,art museum,Noun,N5
+6,ホーチミン市,ホーチミンし,Thành phố Hồ Chí Minh,Ho Chi Minh City,Proper noun,N5
+6,ハイズオン,ハイズオン,Hải Dương,Hai Duong,Proper noun,N5
+6,ハロン湾,ハロンわん,vịnh Hạ Long,Ha Long Bay,Proper noun,N5
+6,友達,ともだち,"bạn, bạn bè",friend,Noun,N5
+6,一人で,ひとりで,một mình,alone,Expression,N5
+6,人,ひと,người,person,Noun,N5
+6,家族,かぞく,gia đình,family,Noun,N5
+6,先週,せんしゅう,tuần trước,last week,Noun,N5
+6,今週,こんしゅう,tuần này,this week,Noun,N5
+6,来週,らいしゅう,tuần sau,next week,Noun,N5
+6,先月,せんげつ,tháng trước,last month,Noun,N5
+6,今月,こんげつ,tháng này,this month,Noun,N5
+6,来月,らいげつ,tháng sau,next month,Noun,N5
+6,去年,きょねん,năm ngoái,last year,Noun,N5
+6,今年,ことし,năm nay,this year,Noun,N5
+6,来年,らいねん,năm sau,next year,Noun,N5
+6,一日,ついたち,mồng 1,first day of month,Noun,N5
+6,二日,ふつか,mồng 2,second day,Noun,N5
+6,三日,みっか,mồng 3,third day,Noun,N5
+6,四日,よっか,mồng 4,fourth day,Noun,N5
+6,五日,いつか,mồng 5,fifth day,Noun,N5
+6,六日,むいか,mồng 6,sixth day,Noun,N5
+6,七日,なのか,mồng 7,seventh day,Noun,N5
+6,八日,ようか,mồng 8,eighth day,Noun,N5
+6,九日,ここのか,mồng 9,ninth day,Noun,N5
+6,十日,とおか,mồng 10,tenth day,Noun,N5
+6,十四日,じゅうよっか,ngày 14,fourteenth day,Noun,N5
+6,二十日,はつか,ngày 20,twentieth day,Noun,N5
+6,二十四日,にじゅうよっか,ngày 24,twenty-fourth day,Noun,N5
+6,誕生日,たんじょうび,sinh nhật,birthday,Noun,N5
+6,～ごろ,～ごろ,khoảng ~,"about, around",Grammar,N5
+6,何日,なんにち,"ngày mấy, bao nhiêu ngày","what date, how many days",Noun,N5
+6,何月,なんがつ,tháng mấy,what month,Noun,N5
+6,いつ,いつ,"bao giờ, khi nào",when,Pronoun,N5
+6,行く,いく,đi,to go,Verb,N5
+6,来る,くる,đến,to come,Verb,N5
+6,帰る,かえる,về,to return,Verb,N5
+6,日記,にっき,nhật ký,diary,Noun,N5
+6,本社,ほんしゃ,trụ sở chính,head office,Noun,N5
+6,空港,くうこう,sân bay,airport,Noun,N5
+7,チョコレート,チョコレート,sô cô la,chocolate,Noun,N5
+7,パン,パン,bánh mì,bread,Noun,N5
+7,ご飯,ごはん,cơm,"rice, meal",Noun,N5
+7,卵,たまご,trứng,egg,Noun,N5
+7,肉,にく,thịt,meat,Noun,N5
+7,牛肉,ぎゅうにく,thịt bò,beef,Noun,N5
+7,魚,さかな,cá,fish,Noun,N5
+7,野菜,やさい,rau củ,vegetables,Noun,N5
+7,果物,くだもの,hoa quả,fruit,Noun,N5
+7,水,みず,nước,water,Noun,N5
+7,お茶,おちゃ,trà,tea,Noun,N5
+7,コーヒー,コーヒー,cà phê,coffee,Noun,N5
+7,ワイン,ワイン,rượu vang,wine,Noun,N5
+7,ジュース,ジュース,nước hoa quả,juice,Noun,N5
+7,ビール,ビール,bia,beer,Noun,N5
+7,お酒,おさけ,rượu,"alcohol, sake",Noun,N5
+7,たばこ,たばこ,thuốc lá,"tobacco, cigarette",Noun,N5
+7,薬,くすり,thuốc,medicine,Noun,N5
+7,手紙,てがみ,thư,letter,Noun,N5
+7,メール,メール,mail,email,Noun,N5
+7,レポート,レポート,bản báo cáo,report,Noun,N5
+7,コメント,コメント,bình luận,comment,Noun,N5
+7,音楽,おんがく,âm nhạc,music,Noun,N5
+7,映画,えいが,"phim, điện ảnh",movie,Noun,N5
+7,写真,しゃしん,ảnh,photograph,Noun,N5
+7,宿題,しゅくだい,bài tập về nhà,homework,Noun,N5
+7,テニス,テニス,tennis,tennis,Noun,N5
+7,サッカー,サッカー,bóng đá,soccer,Noun,N5
+7,お花見,おはなみ,ngắm hoa anh đào,cherry blossom viewing,Noun,N5
+7,レストラン,レストラン,nhà hàng,restaurant,Noun,N5
+7,カフェ,カフェ,quán cà phê,café,Noun,N5
+7,庭,にわ,vườn,garden,Noun,N5
+7,店,みせ,"cửa hàng, tiệm","shop, store",Noun,N5
+7,お正月,おしょうがつ,"tết, năm mới",New Year,Noun,N5
+7,みんなで,みんなで,mọi người cùng,together with everyone,Expression,N5
+7,何,なに,"cái gì, gì",what,Pronoun,N5
+7,読む,よむ,đọc,to read,Verb,N5
+7,書く,かく,viết,to write,Verb,N5
+7,買う,かう,mua,to buy,Verb,N5
+7,「写真を」撮る,「しゃしんを」とる,chụp ảnh,to take a picture,Verb,N5
+7,聞く,きく,nghe,to listen,Verb,N5
+7,吸う,すう,hút thuốc,to smoke,Verb,N5
+7,する,する,làm,to do,Verb,N5
+7,会う,あう,gặp,to meet,Verb,N5
+7,飲む,のむ,uống,to drink,Verb,N5
+7,食べる,たべる,ăn,to eat,Verb,N5
+7,見る,みる,"xem, nhìn","to see, watch",Verb,N5
+7,食事する,しょくじする,dùng bữa,to have a meal,Verb,N5
+7,一緒に,いっしょに,cùng nhau,together,Adverb,N5
+7,ちょっと,ちょっと,một chút,a little,Adverb,N5
+7,いつも,いつも,luôn luôn,always,Adverb,N5
+7,時々,ときどき,thỉnh thoảng,sometimes,Adverb,N5
+8,父,ちち,bố (của mình),my father,Noun,N5
+8,母,はは,mẹ (của mình),my mother,Noun,N5
+8,お父さん,おとうさん,bố,"father, dad",Noun,N5
+8,お母さん,おかあさん,mẹ,"mother, mom",Noun,N5
+8,夫 / 主人,おっと / しゅじん,chồng (mình),husband,Noun,N5
+8,妻 / 家内,つま / かない,vợ (mình),wife,Noun,N5
+8,ご主人,ごしゅじん,chồng (người khác),someone else's husband,Noun,N5
+8,奥さん,おくさん,vợ (người khác),someone else's wife,Noun,N5
+8,手,て,tay,hand,Noun,N5
+8,箸,はし,đũa,chopsticks,Noun,N5
+8,スプーン,スプーン,thìa,spoon,Noun,N5
+8,フォーク,フォーク,"dĩa, nĩa",fork,Noun,N5
+8,ナイフ,ナイフ,dao,knife,Noun,N5
+8,はさみ,はさみ,kéo,scissors,Noun,N5
+8,紙,かみ,giấy,paper,Noun,N5
+8,花,はな,hoa,flower,Noun,N5
+8,シャツ,シャツ,áo sơ mi,shirt,Noun,N5
+8,プレゼント,プレゼント,quà tặng,"present, gift",Noun,N5
+8,切符,きっぷ,vé,ticket,Noun,N5
+8,お茶碗,おちゃわん,bát,rice bowl,Noun,N5
+8,お金,おかね,tiền,money,Noun,N5
+8,クリスマス,クリスマス,Giáng sinh,Christmas,Proper noun,N5
+8,インターネット,インターネット,internet,internet,Noun,N5
+8,ニュース,ニュース,tin tức,news,Noun,N5
+8,切る,きる,cắt,to cut,Verb,N5
+8,送る,おくる,gửi,to send,Verb,N5
+8,貰う,もらう,nhận,to receive,Verb,N5
+8,習う,ならう,học,to learn,Verb,N5
+8,貸す,かす,cho mượn,to lend,Verb,N5
+8,あげる,あげる,"cho, tặng",to give,Verb,N5
+8,教える,おしえる,dạy,to teach,Verb,N5
+8,「電話を～」かける,「でんわを～」かける,gọi điện thoại,to make a phone call,Verb,N5
+8,借りる,かりる,"vay, mượn",to borrow,Verb,N5
+8,もう,もう,đã,already,Adverb,N5
+8,まだ,まだ,"vẫn, chưa","still, not yet",Adverb,N5
+8,これから,これから,từ bây giờ,from now on,Expression,N5
+8,この間,このあいだ,"vừa rồi, hôm nọ",the other day,Expression,N5
+8,好き [な],すき [な],thích,like,Na-adjective,N5
+8,嫌い [な],きらい [な],"ghét, không thích",dislike,Na-adjective,N5
+8,上手 [な],じょうず [な],"giỏi, khéo","skillful, good at",Na-adjective,N5
+9,下手 [な],へた [な],kém,"unskillful, poor at",Na-adjective,N5
+9,痛い,いたい,đau,painful,I-adjective,N5
+9,お祖父さん,おじいさん,ông,grandfather,Noun,N5
+9,お祖父ちゃん,おじいちゃん,ông,grandpa,Noun,N5
+9,お祖母さん,おばあさん,bà,grandmother,Noun,N5
+9,お祖母ちゃん,おばあちゃん,bà,grandma,Noun,N5
+9,歯医者,はいしゃ,nha sĩ,dentist,Noun,N5
+9,料理,りょうり,"món ăn, việc nấu ăn","cooking, cuisine",Noun,N5
+9,飲み物,のみもの,đồ uống,"drink, beverage",Noun,N5
+9,スポーツ,スポーツ,thể thao,sports,Noun,N5
+9,野球,やきゅう,bóng chày,baseball,Noun,N5
+9,ダンス,ダンス,"nhảy, khiêu vũ",dance,Noun,N5
+9,カラオケ,カラオケ,karaoke,karaoke,Noun,N5
+9,歌,うた,bài hát,song,Noun,N5
+9,歌舞伎,かぶき,kịch kabuki,Kabuki,Noun,N5
+9,絵,え,"tranh, hội họa","picture, painting",Noun,N5
+9,字,じ,chữ,"character, letter",Noun,N5
+9,漢字,かんじ,chữ Hán,kanji,Noun,N5
+9,風邪,かぜ,"cảm, cúm","cold, flu",Noun,N5
+9,熱,ねつ,sốt,fever,Noun,N5
+9,時間,じかん,thời gian,time,Noun,N5
+9,用事,ようじ,"việc bận, công chuyện","errand, business",Noun,N5
+9,約束,やくそく,"cuộc hẹn, lời hứa","promise, appointment",Noun,N5
+9,歯,は,răng,tooth,Noun,N5
+9,どうして,どうして,tại sao,why,Adverb,N5
+9,分かる,わかる,hiểu,to understand,Verb,N5
+9,有る,ある,có (sở hữu),to have,Verb,N5
+9,よく,よく,"tốt, rõ, thường","well, often",Adverb,N5
+9,だいたい,だいたい,đại khái,"roughly, generally",Adverb,N5
+9,たくさん,たくさん,nhiều,"many, a lot",Adverb,N5
+9,少し,すこし,"ít, một ít",a little,Adverb,N5
+9,全然,ぜんぜん,hoàn toàn không ~,not at all,Adverb,N5
+9,早く,はやく,"sớm, nhanh","early, quickly",Adverb,N5
+9,～から,～から,vì ~,because ~,Grammar,N5
+9,他に,ほかに,ngoài ra,"besides, in addition",Adverb,N5
+9,コンサート,コンサート,buổi hòa nhạc,concert,Noun,N5
+9,チケット,チケット,vé,ticket,Noun,N5
+9,残念,ざんねん,đáng tiếc,regrettable,Na-adjective,N5
+9,色々 [な],いろいろ [な],"nhiều, đa dạng",various,Na-adjective,N5
+9,男の人,おとこのひと,người đàn ông,man,Noun,N5
+9,女の人,おんなのひと,người phụ nữ,woman,Noun,N5
+10,男の子,おとこのこ,cậu bé,boy,Noun,N5
+10,女の子,おんなのこ,cô bé,girl,Noun,N5
+10,犬,いぬ,chó,dog,Noun,N5
+10,猫,ねこ,mèo,cat,Noun,N5
+10,木,き,"cây, gỗ","tree, wood",Noun,N5
+10,物,もの,"vật, đồ vật","thing, object",Noun,N5
+10,箱,はこ,hộp,box,Noun,N5
+10,冷蔵庫,れいぞうこ,tủ lạnh,refrigerator,Noun,N5
+10,テーブル,テーブル,bàn,table,Noun,N5
+10,ベッド,ベッド,giường,bed,Noun,N5
+10,公園,こうえん,công viên,park,Noun,N5
+10,本屋,ほんや,hiệu sách,bookstore,Noun,N5
+10,池,いけ,cái ao,pond,Noun,N5
+10,～屋,～や,"hiệu ~, cửa hàng ~","shop, store",Suffix,N5
+10,地下,ちか,tầng hầm,"basement, underground",Noun,N5
+10,上,うえ,trên,"above, on",Noun,N5
+10,下,した,dưới,"below, under",Noun,N5
+10,前,まえ,trước,"front, before",Noun,N5
+10,後ろ,うしろ,sau,behind,Noun,N5
+10,右,みぎ,phải,right,Noun,N5
+10,左,ひだり,trái,left,Noun,N5
+10,中,なか,"trong, giữa","inside, middle",Noun,N5
+10,外,そと,ngoài,outside,Noun,N5
+10,隣,となり,bên cạnh,next to,Noun,N5
+10,近く,ちかく,gần,nearby,Noun,N5
+10,間,あいだ,giữa,between,Noun,N5
+10,有る,ある,có (đồ vật tồn tại),to exist (things),Verb,N5
+10,居る,いる,"có, ở (người/động vật tồn tại)",to exist (people/animals),Verb,N5
+10,～や～など,～や～など,"~ và ~, v.v.",~ and ~ etc.,Grammar,N5
+10,男の人,おとこのひと,người đàn ông,man,Noun,N5
+10,女の人,おんなのひと,người phụ nữ,woman,Noun,N5
+10,子供,こども,"trẻ con, trẻ em",child,Noun,N5
+11,恋人,こいびと,người yêu,"lover, boyfriend/girlfriend",Noun,N5
+11,兄,あに,anh trai (mình),my older brother,Noun,N5
+11,お兄さん,おにいさん,anh trai,older brother,Noun,N5
+11,姉,あね,chị gái (mình),my older sister,Noun,N5
+11,お姉さん,おねえさん,chị gái,older sister,Noun,N5
+11,弟,おとうと,em trai,younger brother,Noun,N5
+11,妹,いもうと,em gái,younger sister,Noun,N5
+11,兄弟,きょうだい,anh em,siblings,Noun,N5
+11,子供,こども,trẻ em,child,Noun,N5
+11,アイスクリーム,アイスクリーム,kem,ice cream,Noun,N5
+11,はがき,はがき,bưu thiếp,postcard,Noun,N5
+11,奥,おく,"bên trong, phía trong","inner part, back",Noun,N5
+11,机,つくえ,"bàn học, bàn làm việc",desk,Noun,N5
+11,棚,たな,cái kệ,shelf,Noun,N5
+11,ドア,ドア,cửa,door,Noun,N5
+11,窓,まど,cửa sổ,window,Noun,N5
+11,ポスト,ポスト,hộp thư,mailbox,Noun,N5
+11,ビデオ,ビデオ,video,video,Noun,N5
+11,CD,シーディー,đĩa CD,CD,Noun,N5
+11,カセットテープ,カセットテープ,băng cassette,cassette tape,Noun,N5
+11,セーター,セーター,áo len,sweater,Noun,N5
+11,コート,コート,áo khoác,coat,Noun,N5
+11,ノートパソコン,ノートパソコン,laptop,laptop,Noun,N5
+11,カレー,カレー,cà ri,curry,Noun,N5
+11,スイッチ,スイッチ,công tắc,switch,Noun,N5
+11,電気,でんき,"điện, đèn điện","electricity, light",Noun,N5
+11,電車,でんしゃ,tàu điện,train,Noun,N5
+11,空,そら,bầu trời,sky,Noun,N5
+11,海,うみ,biển,sea,Noun,N5
+11,世界,せかい,thế giới,world,Noun,N5
+11,パーティー,パーティー,bữa tiệc,party,Noun,N5
+11,[お]祭り,おまつり,lễ hội,festival,Noun,N5
+11,試合,しあい,trận đấu,"match, game",Noun,N5
+11,どう,どう,như thế nào,how,Adverb,N5
+11,好き,すき,thích,like,Na-adjective,N5
+11,嫌い,きらい,ghét,dislike,Na-adjective,N5
+11,怖い,こわい,đáng sợ,scary,I-adjective,N5
+11,天気,てんき,thời tiết,weather,Noun,N5
+11,晴れ,はれ,trời nắng,sunny weather,Noun,N5
+11,雨,あめ,mưa,rain,Noun,N5
+11,雪,ゆき,tuyết,snow,Noun,N5
+11,曇り,くもり,nhiều mây,cloudy weather,Noun,N5
+11,降る,ふる,rơi (mưa/tuyết),to fall,Verb,N5
+11,洗う,あらう,rửa,to wash,Verb,N5
+11,弾く,ひく,chơi (nhạc cụ dây),to play (instrument),Verb,N5
+11,歌う,うたう,hát,to sing,Verb,N5
+11,集める,あつめる,"sưu tầm, tập hợp",to collect,Verb,N5
+11,捨てる,すてる,vứt bỏ,to throw away,Verb,N5
+11,登る,のぼる,"leo, trèo",to climb,Verb,N5
+11,遊ぶ,あそぶ,chơi,to play,Verb,N5
+11,泳ぐ,およぐ,bơi,to swim,Verb,N5
+12,簡単 [な],かんたん [な],đơn giản,"easy, simple",Na-adjective,N5
+12,近い,ちかい,gần,near,I-adjective,N5
+12,遠い,とおい,xa,far,I-adjective,N5
+12,早い,はやい,"sớm, nhanh","early, fast",I-adjective,N5
+12,速い,はやい,nhanh,fast,I-adjective,N5
+12,多い,おおい,nhiều,"many, much",I-adjective,N5
+12,少ない,すくない,ít,"few, little",I-adjective,N5
+12,暖かい,あたたかい,ấm áp,warm,I-adjective,N5
+12,涼しい,すずしい,mát mẻ,cool,I-adjective,N5
+12,甘い,あまい,ngọt,sweet,I-adjective,N5
+12,辛い,からい,cay,spicy,I-adjective,N5
+12,重い,おもい,nặng,heavy,I-adjective,N5
+12,軽い,かるい,nhẹ,light,I-adjective,N5
+12,季節,きせつ,mùa,season,Noun,N5
+12,春,はる,mùa xuân,spring,Noun,N5
+12,夏,なつ,mùa hè,summer,Noun,N5
+12,秋,あき,mùa thu,autumn,Noun,N5
+12,冬,ふゆ,mùa đông,winter,Noun,N5
+12,気候,きこう,khí hậu,climate,Noun,N5
+12,景色,けしき,phong cảnh,scenery,Noun,N5
+12,旅行,りょこう,du lịch,travel,Noun,N5
+12,お祭り,おまつり,lễ hội,festival,Noun,N5
+12,お寺,おてら,chùa,temple,Noun,N5
+12,神社,じんじゃ,đền thần đạo,shrine,Noun,N5
+12,食べ物,たべもの,đồ ăn,food,Noun,N5
+12,飲み物,のみもの,đồ uống,"drink, beverage",Noun,N5
+12,着物,きもの,kimono,kimono,Noun,N5
+12,スポーツ,スポーツ,thể thao,sports,Noun,N5
+12,サービス,サービス,dịch vụ,service,Noun,N5
+12,サークル,サークル,câu lạc bộ,"club, circle",Noun,N5
+12,テスト,テスト,bài kiểm tra,test,Noun,N5
+12,練習,れんしゅう,luyện tập,practice,Noun,N5
+12,生活,せいかつ,cuộc sống,"life, living",Noun,N5
+12,仕事,しごと,công việc,"work, job",Noun,N5
+12,勉強,べんきょう,học tập,study,Noun,N5
+12,住む,すむ,"sống, cư trú",to live,Verb,N5
+12,働く,はたらく,làm việc,to work,Verb,N5
+12,勉強する,べんきょうする,học,to study,Verb,N5
+12,旅行する,りょこうする,du lịch,to travel,Verb,N5
+12,一番,いちばん,nhất,"most, best",Adverb,N5
+12,どちら,どちら,"bên nào, cái nào",which,Pronoun,N5
+12,どちらも,どちらも,cái nào cũng,both,Pronoun,N5
+13,遅い,おそい,"chậm, muộn","slow, late",I-adjective,N5
+13,狭い,せまい,hẹp,narrow,I-adjective,N5
+13,広い,ひろい,rộng,"wide, spacious",I-adjective,N5
+13,長い,ながい,dài,long,I-adjective,N5
+13,短い,みじかい,ngắn,short,I-adjective,N5
+13,背が高い,せがたかい,cao (người),tall,Expression,N5
+13,背が低い,せがひくい,thấp (người),short (height),Expression,N5
+13,頭がいい,あたまがいい,thông minh,"smart, intelligent",Expression,N5
+13,髪,かみ,tóc,hair,Noun,N5
+13,目,め,mắt,eye,Noun,N5
+13,耳,みみ,tai,ear,Noun,N5
+13,口,くち,miệng,mouth,Noun,N5
+13,顔,かお,khuôn mặt,face,Noun,N5
+13,体,からだ,cơ thể,body,Noun,N5
+13,頭,あたま,đầu,head,Noun,N5
+13,手,て,tay,hand,Noun,N5
+13,足,あし,chân,"leg, foot",Noun,N5
+13,猫,ねこ,mèo,cat,Noun,N5
+13,犬,いぬ,chó,dog,Noun,N5
+13,鳥,とり,chim,bird,Noun,N5
+13,魚,さかな,cá,fish,Noun,N5
+13,牛,うし,bò,cow,Noun,N5
+13,豚,ぶた,heo,pig,Noun,N5
+13,鶏,にわとり,gà,chicken,Noun,N5
+13,可愛い,かわいい,dễ thương,cute,I-adjective,N5
+13,ハンサム,ハンサム,đẹp trai,handsome,Na-adjective,N5
+14,開ける,あける,mở,to open,Verb,N5
+14,閉める,しめる,đóng,to close,Verb,N5
+14,付ける,つける,bật,to turn on,Verb,N5
+14,消す,けす,tắt,to turn off,Verb,N5
+14,座る,すわる,ngồi,to sit,Verb,N5
+14,立つ,たつ,đứng,to stand,Verb,N5
+14,使う,つかう,sử dụng,to use,Verb,N5
+14,置く,おく,"đặt, để",to put,Verb,N5
+14,作る,つくる,"làm, chế tạo",to make,Verb,N5
+14,売る,うる,bán,to sell,Verb,N5
+14,知る,しる,biết,to know,Verb,N5
+14,住む,すむ,"sống, cư trú",to live,Verb,N5
+14,研究する,けんきゅうする,nghiên cứu,to research,Verb,N5
+14,資料,しりょう,tài liệu,"material, document",Noun,N5
+14,カタログ,カタログ,catalogue,catalog,Noun,N5
+14,時刻表,じこくひょう,bảng giờ tàu,timetable,Noun,N5
+14,服,ふく,quần áo,clothes,Noun,N5
+14,製品,せいひん,sản phẩm,product,Noun,N5
+14,ソフト,ソフト,phần mềm,software,Noun,N5
+14,専門,せんもん,chuyên môn,specialty,Noun,N5
+14,歯医者,はいしゃ,nha sĩ,dentist,Noun,N5
+14,床屋,とこや,tiệm cắt tóc,barber shop,Noun,N5
+14,プレイガイド,プレイガイド,quầy bán vé,ticket agency,Noun,N5
+14,独身,どくしん,độc thân,"single, unmarried",Noun,N5
+14,特に,とくに,đặc biệt,especially,Adverb,N5
+14,思い出す,おもいだす,nhớ ra,to recall,Verb,N5
+14,ご家族,ごかぞく,gia đình (kính ngữ),family,Noun,N5
+14,僕,ぼく,tôi (nam giới),"I, me",Pronoun,N5
+14,君,きみ,"cậu, bạn",you,Pronoun,N5
+14,うん,うん,ừ,yeah,Interjection,N5
+14,ううん,ううん,không,no,Interjection,N5
+14,今度,こんど,"lần này, lần tới","this time, next time",Noun,N5
+14,ぜひ,ぜひ,nhất định,"certainly, by all means",Adverb,N5
+15,乗る,のる,lên (xe),"to ride, get on",Verb,N5
+15,降りる,おりる,xuống (xe),to get off,Verb,N5
+15,乗り換える,のりかえる,"chuyển tàu, đổi xe",to transfer,Verb,N5
+15,浴びる,あびる,"tắm, tưới","to bathe, shower",Verb,N5
+15,入れる,いれる,cho vào,to put in,Verb,N5
+15,出す,だす,"lấy ra, gửi ra","to take out, submit",Verb,N5
+15,入る,はいる,vào,to enter,Verb,N5
+15,出る,でる,ra,"to leave, go out",Verb,N5
+15,押す,おす,"ấn, đẩy",to push,Verb,N5
+15,飲む,のむ,uống,to drink,Verb,N5
+15,始める,はじめる,bắt đầu,to begin,Verb,N5
+15,見せる,みせる,cho xem,to show,Verb,N5
+15,電話する,でんわする,gọi điện,to call,Verb,N5
+15,シャワー,シャワー,vòi sen,shower,Noun,N5
+15,緑茶,りょくちゃ,trà xanh,green tea,Noun,N5
+15,牛乳,ぎゅうにゅう,sữa bò,milk,Noun,N5
+15,お風呂,おふろ,"bồn tắm, phòng tắm",bath,Noun,N5
+15,建物,たてもの,tòa nhà,building,Noun,N5
+15,薬局,やっきょく,hiệu thuốc,pharmacy,Noun,N5
+15,市役所,しやくしょ,tòa thị chính,city hall,Noun,N5
+15,プール,プール,hồ bơi,swimming pool,Noun,N5
+15,大学,だいがく,trường đại học,university,Noun,N5
+15,郵便局,ゆうびんきょく,bưu điện,post office,Noun,N5
+15,銀行,ぎんこう,ngân hàng,bank,Noun,N5
+15,ATM,エーティーエム,máy ATM,ATM,Noun,N5
+15,図書館,としょかん,thư viện,library,Noun,N5
+15,コンビニ,コンビニ,cửa hàng tiện lợi,convenience store,Noun,N5
+15,喫茶店,きっさてん,quán cà phê,coffee shop,Noun,N5
+15,入り口,いりぐち,lối vào,entrance,Noun,N5
+15,出口,でぐち,lối ra,exit,Noun,N5
+15,お金,おかね,tiền,money,Noun,N5
+15,名前,なまえ,tên,name,Noun,N5
+15,国,くに,đất nước,country,Noun,N5
+15,外国,がいこく,nước ngoài,foreign country,Noun,N5
+15,問題,もんだい,vấn đề,problem,Noun,N5
+15,答え,こたえ,câu trả lời,answer,Noun,N5
+15,読み方,よみかた,cách đọc,reading method,Noun,N5
+15,～方,～かた,cách ~,way of ~,Suffix,N5
+15,ゆっくり,ゆっくり,chậm rãi,slowly,Adverb,N5
+15,すぐ,すぐ,ngay lập tức,immediately,Adverb,N5
+15,また,また,"lại, còn nữa","again, also",Adverb,N5
+15,後で,あとで,sau đó,later,Adverb,N5
+15,もう少し,もうすこし,thêm một chút nữa,a little more,Expression,N5
+16,覚える,おぼえる,nhớ,to memorize,Verb,N5
+16,忘れる,わすれる,quên,to forget,Verb,N5
+16,なくす,なくす,làm mất,to lose,Verb,N5
+16,払う,はらう,trả tiền,to pay,Verb,N5
+16,返す,かえす,trả lại,to return,Verb,N5
+16,出かける,でかける,đi ra ngoài,to go out,Verb,N5
+16,脱ぐ,ぬぐ,"cởi (quần áo, giày)",to take off,Verb,N5
+16,持って行く,もっていく,mang đi,to take along,Verb,N5
+16,持って来る,もってくる,mang đến,to bring,Verb,N5
+16,心配する,しんぱいする,lo lắng,to worry,Verb,N5
+16,残業する,ざんぎょうする,làm thêm giờ,to work overtime,Verb,N5
+16,出張する,しゅっちょうする,đi công tác,to go on business trip,Verb,N5
+16,薬を飲む,くすりをのむ,uống thuốc,to take medicine,Expression,N5
+16,お風呂に入る,おふろにはいる,tắm,to take a bath,Expression,N5
+16,大丈夫 [な],だいじょうぶ [な],"ổn, không sao","alright, okay",Na-adjective,N5
+16,危ない,あぶない,nguy hiểm,dangerous,I-adjective,N5
+16,大切 [な],たいせつ [な],quan trọng,important,Na-adjective,N5
+16,財布,さいふ,ví tiền,wallet,Noun,N5
+16,パスポート,パスポート,hộ chiếu,passport,Noun,N5
+16,名前,なまえ,tên,name,Noun,N5
+16,住所,じゅうしょ,địa chỉ,address,Noun,N5
+16,電話番号,でんわばんごう,số điện thoại,telephone number,Noun,N5
+16,メガネ,メガネ,kính mắt,glasses,Noun,N5
+16,保険証,ほけんしょう,thẻ bảo hiểm,insurance card,Noun,N5
+16,エアコン,エアコン,máy điều hòa,air conditioner,Noun,N5
+16,電気,でんき,"điện, đèn điện","electricity, light",Noun,N5
+16,窓,まど,cửa sổ,window,Noun,N5
+16,荷物,にもつ,hành lý,"baggage, luggage",Noun,N5
+16,会議,かいぎ,cuộc họp,meeting,Noun,N5
+16,禁煙,きんえん,cấm hút thuốc,no smoking,Noun,N5
+16,健康,けんこう,sức khỏe,health,Noun,N5
+16,熱,ねつ,sốt,fever,Noun,N5
+16,病気,びょうき,bệnh,illness,Noun,N5
+16,風邪,かぜ,cảm cúm,"cold, flu",Noun,N5
+17,要る,いる,cần,to need,Verb,N5
+17,調べる,しらべる,"tìm hiểu, kiểm tra",to investigate,Verb,N5
+17,修理する,しゅうりする,sửa chữa,to repair,Verb,N5
+17,電話をかける,でんわをかける,gọi điện thoại,to make a phone call,Expression,N5
+17,僕,ぼく,tôi (nam),"I, me",Pronoun,N5
+17,君,きみ,"cậu, bạn",you,Pronoun,N5
+17,～君,～くん,"bạn ~, em ~",Mr./boy ~,Suffix,N5
+17,うん,うん,ừ,yeah,Interjection,N5
+17,ううん,ううん,không,no,Interjection,N5
+17,サラリーマン,サラリーマン,nhân viên văn phòng,office worker,Noun,N5
+17,言葉,ことば,từ ngữ,"word, language",Noun,N5
+17,物価,ぶっか,vật giá,prices,Noun,N5
+17,着物,きもの,kimono,kimono,Noun,N5
+17,ビザ,ビザ,visa,visa,Noun,N5
+17,初め,はじめ,lúc đầu,beginning,Noun,N5
+17,終わり,おわり,kết thúc,end,Noun,N5
+17,こっち,こっち,phía này,this way,Pronoun,N5
+17,そっち,そっち,phía đó,that way,Pronoun,N5
+17,あっち,あっち,phía kia,over there,Pronoun,N5
+17,どっち,どっち,"phía nào, cái nào",which way,Pronoun,N5
+17,この辺,このへん,khu vực này,around here,Noun,N5
+17,その辺,そのへん,khu vực đó,around there,Noun,N5
+17,あの辺,あのへん,khu vực kia,around over there,Noun,N5
+17,どの辺,どのへん,khu vực nào,which area,Noun,N5
+17,近所,きんじょ,"hàng xóm, khu lân cận",neighborhood,Noun,N5
+17,お祭り,おまつり,lễ hội,festival,Noun,N5
+17,お見舞い,おみまい,thăm người bệnh,visiting a sick person,Noun,N5
+17,国際～,こくさい～,quốc tế ~,international ~,Prefix,N5
+17,宇宙,うちゅう,vũ trụ,"universe, space",Noun,N5
+17,怖い,こわい,đáng sợ,scary,I-adjective,N5
+18,洗濯する,せんたくする,giặt giũ,to do laundry,Verb,N5
+18,掃除する,そうじする,dọn dẹp,to clean,Verb,N5
+18,料理する,りょうりする,nấu ăn,to cook,Verb,N5
+18,買い物する,かいものする,mua sắm,to shop,Verb,N5
+18,散歩する,さんぽする,đi dạo,to take a walk,Verb,N5
+18,コピーする,コピーする,photocopy,to copy,Verb,N5
+18,結婚する,けっこんする,kết hôn,to marry,Verb,N5
+18,食事,しょくじ,bữa ăn,meal,Noun,N5
+18,洗濯,せんたく,giặt giũ,laundry,Noun,N5
+18,掃除,そうじ,dọn dẹp,cleaning,Noun,N5
+18,料理,りょうり,"nấu ăn, món ăn","cooking, cuisine",Noun,N5
+18,買い物,かいもの,mua sắm,shopping,Noun,N5
+18,散歩,さんぽ,đi dạo,"walk, stroll",Noun,N5
+18,ご飯,ごはん,"cơm, bữa ăn","rice, meal",Noun,N5
+18,朝ご飯,あさごはん,bữa sáng,breakfast,Noun,N5
+18,昼ご飯,ひるごはん,bữa trưa,lunch,Noun,N5
+18,晩ご飯,ばんごはん,bữa tối,dinner,Noun,N5
+18,家事,かじ,việc nhà,housework,Noun,N5
+18,毎週,まいしゅう,mỗi tuần,every week,Noun,N5
+18,毎月,まいつき,mỗi tháng,every month,Noun,N5
+18,毎年,まいとし / まいねん,mỗi năm,every year,Noun,N5
+18,週末,しゅうまつ,cuối tuần,weekend,Noun,N5
+18,平日,へいじつ,ngày thường,weekday,Noun,N5
+18,忙しい,いそがしい,bận rộn,busy,I-adjective,N5
+19,登る,のぼる,"leo, trèo",to climb,Verb,N5
+19,泊まる,とまる,ở trọ,to stay overnight,Verb,N5
+19,疲れる,つかれる,mệt,to get tired,Verb,N5
+19,結婚する,けっこんする,kết hôn,to marry,Verb,N5
+19,買い物する,かいものする,mua sắm,to shop,Verb,N5
+19,食事する,しょくじする,dùng bữa,to have a meal,Verb,N5
+19,観光する,かんこうする,tham quan,to sightsee,Verb,N5
+19,スキー,スキー,trượt tuyết,skiing,Noun,N5
+19,会議,かいぎ,cuộc họp,meeting,Noun,N5
+19,登山,とざん,leo núi,mountain climbing,Noun,N5
+19,ホテル,ホテル,khách sạn,hotel,Noun,N5
+19,温泉,おんせん,suối nước nóng,hot spring,Noun,N5
+19,海外,かいがい,nước ngoài,overseas,Noun,N5
+19,山,やま,núi,mountain,Noun,N5
+19,海,うみ,biển,sea,Noun,N5
+19,疲れた,つかれた,mệt rồi,tired,Expression,N5
+19,楽しかった,たのしかった,đã vui,was fun,Expression,N5
+20,要る,いる,cần,to need,Verb,N5
+20,調べる,しらべる,tìm hiểu,to investigate,Verb,N5
+20,修理する,しゅうりする,sửa chữa,to repair,Verb,N5
+20,電話する,でんわする,gọi điện,to call,Verb,N5
+20,サラリーマン,サラリーマン,nhân viên văn phòng,office worker,Noun,N5
+20,言葉,ことば,từ ngữ,"word, language",Noun,N5
+20,物価,ぶっか,vật giá,prices,Noun,N5
+20,着物,きもの,kimono,kimono,Noun,N5
+20,ビザ,ビザ,visa,visa,Noun,N5
+20,初め,はじめ,lúc đầu,beginning,Noun,N5
+20,終わり,おわり,kết thúc,end,Noun,N5
+20,近所,きんじょ,khu lân cận,neighborhood,Noun,N5
+20,お祭り,おまつり,lễ hội,festival,Noun,N5
+20,お見舞い,おみまい,thăm người bệnh,visiting a sick person,Noun,N5
+20,宇宙,うちゅう,vũ trụ,universe,Noun,N5
+20,怖い,こわい,đáng sợ,scary,I-adjective,N5
+20,特に,とくに,đặc biệt,especially,Adverb,N5
+20,ぜひ,ぜひ,nhất định,certainly,Adverb,N5
+20,今度,こんど,lần tới,next time,Noun,N5
+21,思う,おもう,nghĩ,to think,Verb,N5
+21,言う,いう,nói,to say,Verb,N5
+21,勝つ,かつ,thắng,to win,Verb,N5
+21,負ける,まける,thua,to lose,Verb,N5
+21,役に立つ,やくにたつ,có ích,to be useful,Expression,N5
+21,動く,うごく,chuyển động,to move,Verb,N5
+21,やめる,やめる,"bỏ, nghỉ",to quit,Verb,N5
+21,気をつける,きをつける,"chú ý, cẩn thận",to be careful,Expression,N5
+21,留学する,りゅうがくする,du học,to study abroad,Verb,N5
+21,無駄 [な],むだ [な],vô ích,useless,Na-adjective,N5
+21,不便 [な],ふべん [な],bất tiện,inconvenient,Na-adjective,N5
+21,すごい,すごい,tuyệt vời,amazing,I-adjective,N5
+21,本当,ほんとう,thật sự,"truth, really",Noun,N5
+21,嘘,うそ,lời nói dối,lie,Noun,N5
+21,自動車,じどうしゃ,ô tô,automobile,Noun,N5
+21,交通,こうつう,giao thông,"traffic, transportation",Noun,N5
+21,物価,ぶっか,vật giá,prices,Noun,N5
+21,放送,ほうそう,phát sóng,broadcast,Noun,N5
+22,着る,きる,mặc,to wear,Verb,N5
+22,はく,はく,mang (giày/quần),to wear,Verb,N5
+22,かぶる,かぶる,đội (mũ),to wear,Verb,N5
+22,する,する,đeo,to wear,Verb,N5
+22,生まれる,うまれる,được sinh ra,to be born,Verb,N5
+22,コート,コート,áo khoác,coat,Noun,N5
+22,スーツ,スーツ,bộ vest,suit,Noun,N5
+22,セーター,セーター,áo len,sweater,Noun,N5
+22,帽子,ぼうし,mũ,hat,Noun,N5
+22,メガネ,メガネ,kính,glasses,Noun,N5
+22,ケーキ,ケーキ,bánh ngọt,cake,Noun,N5
+22,ロボット,ロボット,robot,robot,Noun,N5
+22,ユーモア,ユーモア,hài hước,humor,Noun,N5
+22,都合,つごう,sự thuận tiện,convenience,Noun,N5
+22,よく,よく,"thường, rõ","well, often",Adverb,N5
+22,たいてい,たいてい,thường thường,usually,Adverb,N5
+22,それに,それに,hơn nữa,moreover,Conjunction,N5
+22,このごろ,このごろ,dạo gần đây,these days,Noun,N5
+22,やっと,やっと,cuối cùng,finally,Adverb,N5
+22,かなり,かなり,khá,fairly,Adverb,N5
+22,必ず,かならず,nhất định,certainly,Adverb,N5
+22,絶対に,ぜったいに,tuyệt đối,absolutely,Adverb,N5
+22,上着,うわぎ,áo khoác ngoài,jacket,Noun,N5
+22,ズボン,ズボン,quần,trousers,Noun,N5
+22,スカート,スカート,váy,skirt,Noun,N5
+22,靴,くつ,giày,shoes,Noun,N5
+22,靴下,くつした,tất,socks,Noun,N5
+22,ネクタイ,ネクタイ,cà vạt,necktie,Noun,N5
+22,指輪,ゆびわ,nhẫn,ring,Noun,N5
+22,時計,とけい,đồng hồ,watch,Noun,N5
+22,化粧,けしょう,trang điểm,makeup,Noun,N5
+23,聞こえる,きこえる,nghe thấy,to be heard,Verb,N5
+23,見える,みえる,nhìn thấy,to be visible,Verb,N5
+23,できる,できる,có thể,"can, be able to",Verb,N5
+23,開く,ひらく,mở,to open,Verb,N5
+23,閉まる,しまる,đóng,to close,Verb,N5
+23,点く,つく,bật lên,to be turned on,Verb,N5
+23,消える,きえる,"tắt, biến mất","to go out, disappear",Verb,N5
+23,壊れる,こわれる,hỏng,to break,Verb,N5
+23,割れる,われる,vỡ,"to break, crack",Verb,N5
+23,折れる,おれる,gãy,"to break, snap",Verb,N5
+23,汚れる,よごれる,bị bẩn,to get dirty,Verb,N5
+23,付く,つく,được gắn,to be attached,Verb,N5
+23,外れる,はずれる,"bị tuột, rời ra",to come off,Verb,N5
+23,止まる,とまる,dừng,to stop,Verb,N5
+23,間違える,まちがえる,làm sai,to make a mistake,Verb,N5
+23,落とす,おとす,làm rơi,to drop,Verb,N5
+23,掛かる,かかる,khóa,to be locked,Verb,N5
+23,汚い,きたない,bẩn,dirty,I-adjective,N5
+23,面白い,おもしろい,thú vị,interesting,I-adjective,N5
+23,つまらない,つまらない,chán,boring,I-adjective,N5
+23,変 [な],へん [な],kỳ lạ,strange,Na-adjective,N5
+23,幸せ [な],しあわせ [な],hạnh phúc,happy,Na-adjective,N5
+23,ああ,ああ,"à, ôi",ah,Interjection,N5
+24,くれる,くれる,cho (tôi),to give,Verb,N5
+24,連れて行く,つれていく,dẫn đi,to take along,Verb,N5
+24,連れて来る,つれてくる,dẫn đến,to bring along,Verb,N5
+24,送る,おくる,"tiễn, gửi",to send,Verb,N5
+24,紹介する,しょうかいする,giới thiệu,to introduce,Verb,N5
+24,案内する,あんないする,hướng dẫn,to guide,Verb,N5
+24,説明する,せつめいする,giải thích,to explain,Verb,N5
+24,おじいさん,おじいさん,ông,grandfather,Noun,N5
+24,おばあさん,おばあさん,bà,grandmother,Noun,N5
+24,準備,じゅんび,chuẩn bị,preparation,Noun,N5
+24,引っ越し,ひっこし,chuyển nhà,moving house,Noun,N5
+24,お菓子,おかし,bánh kẹo,sweets,Noun,N5
+24,全部,ぜんぶ,toàn bộ,all,Noun,N5
+24,自分で,じぶんで,tự mình,by oneself,Expression,N5
+24,他に,ほかに,ngoài ra,besides,Adverb,N5
+25,考える,かんがえる,suy nghĩ,to think,Verb,N5
+25,着く,つく,đến nơi,to arrive,Verb,N5
+25,留学する,りゅうがくする,du học,to study abroad,Verb,N5
+25,取る,とる,lấy,to take,Verb,N5
+25,田舎,いなか,quê,countryside,Noun,N5
+25,大使館,たいしかん,đại sứ quán,embassy,Noun,N5
+25,グループ,グループ,nhóm,group,Noun,N5
+25,チャンス,チャンス,cơ hội,chance,Noun,N5
+25,億,おく,một trăm triệu,one hundred million,Noun,N5
+25,もし,もし,nếu,if,Conjunction,N5
+25,転勤,てんきん,chuyển công tác,job transfer,Noun,N5
+25,こと,こと,việc,"thing, matter",Noun,N5
+25,一杯飲みましょう,いっぱいのみましょう,uống một ly nhé,let's have a drink,Expression,N5

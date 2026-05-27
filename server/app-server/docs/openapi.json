@@ -1,0 +1,111 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "NihongoCoach App Server API",
+    "version": "1.1.0",
+    "description": "REST API for student learning, admin content, and AI proxy. Interactive UI: GET /api-docs"
+  },
+  "servers": [{ "url": "http://localhost:4000/api", "description": "Local" }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": { "summary": "Health check", "tags": ["System"] }
+    },
+    "/auth/register": { "post": { "summary": "Register", "tags": ["Auth"] } },
+    "/auth/login": { "post": { "summary": "Login", "tags": ["Auth"] } },
+    "/auth/refresh": { "post": { "summary": "Refresh access token", "tags": ["Auth"] } },
+    "/auth/logout": { "post": { "summary": "Logout", "tags": ["Auth"] } },
+    "/auth/me": { "get": { "summary": "Current user", "tags": ["Auth"], "security": [{ "bearerAuth": [] }] } },
+    "/public/courses": { "get": { "summary": "List published courses", "tags": ["Public"] } },
+    "/public/placement-test/start": { "post": { "summary": "Start placement test", "tags": ["Public"] } },
+    "/public/placement-test/submit": { "post": { "summary": "Submit placement test", "tags": ["Public"] } },
+    "/student/dashboard": {
+      "get": {
+        "summary": "Dashboard with progress charts",
+        "tags": ["Student"],
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/student/courses/{courseId}/enroll": {
+      "post": { "summary": "Enroll course", "tags": ["Student"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/courses/{courseId}/lessons": {
+      "get": { "summary": "Lessons with progress", "tags": ["Student"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/courses/{courseId}/kanji": {
+      "get": { "summary": "Kanji from unlocked lessons in course", "tags": ["Student"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/kanji/handbook": {
+      "get": { "summary": "Personal handbook kanji", "tags": ["Student"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/lessons/{id}": {
+      "get": {
+        "summary": "Lesson content (vocab, grammar, kanji, dialogues)",
+        "tags": ["Student"],
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/student/lessons/{lessonId}/speaking/message": {
+      "post": {
+        "summary": "Lesson-scoped AI speaking (Gemini)",
+        "tags": ["Student", "AI"],
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/student/lessons/{lessonId}/minitest": {
+      "get": { "summary": "MiniTest questions", "tags": ["Student"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/review/generate": {
+      "post": {
+        "summary": "Generate review (type: kanji|vocabulary|grammar|mixed)",
+        "tags": ["Student"],
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/student/ai-speaking/message": {
+      "post": { "summary": "Free-form AI speaking", "tags": ["Student", "AI"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/speech/tts": {
+      "post": { "summary": "Text-to-speech (Edge TTS proxy)", "tags": ["Student", "Speech"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/speech/stt": {
+      "post": { "summary": "Speech-to-text", "tags": ["Student", "Speech"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/jlpt-sim/start": {
+      "post": { "summary": "Start JLPT mock exam", "tags": ["Student"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/ocr/analyze": {
+      "post": { "summary": "OCR homework analysis", "tags": ["Student", "AI"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/studysets/public": {
+      "get": { "summary": "Approved public study sets", "tags": ["Community"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/webrtc/match": {
+      "post": { "summary": "Random speaking partner match", "tags": ["Community"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/student/webrtc/evaluate": {
+      "post": {
+        "summary": "Post-call STT + Gemini evaluation",
+        "tags": ["Community", "AI"],
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/admin/conversations": {
+      "get": { "summary": "List dialogues", "tags": ["Admin"], "security": [{ "bearerAuth": [] }] },
+      "post": { "summary": "Create dialogue", "tags": ["Admin"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/admin/lessons/{id}/assign/conversations": {
+      "post": { "summary": "Assign dialogues to lesson", "tags": ["Admin"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/admin/studysets/pending": {
+      "get": { "summary": "Study sets awaiting moderation", "tags": ["Admin"], "security": [{ "bearerAuth": [] }] }
+    },
+    "/admin/studysets/{id}/moderate": {
+      "post": { "summary": "Approve/reject study set", "tags": ["Admin"], "security": [{ "bearerAuth": [] }] }
+    }
+  }
+}

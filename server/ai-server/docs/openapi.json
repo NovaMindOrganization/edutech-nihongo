@@ -1,0 +1,32 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "NihongoCoach AI Server API",
+    "version": "1.1.0",
+    "description": "OCR, Gemini speaking, Edge TTS, Whisper STT, community evaluation. Swagger UI: /docs"
+  },
+  "servers": [{ "url": "http://localhost:8000/api/v1", "description": "Local" }],
+  "paths": {
+    "/health": { "get": { "summary": "Health", "tags": ["System"] } },
+    "/speaking/message": {
+      "post": {
+        "summary": "Free-form speaking tutor (Gemini → OpenAI fallback)",
+        "tags": ["Speaking"]
+      }
+    },
+    "/speaking/lesson": {
+      "post": { "summary": "Lesson-scoped speaking tutor", "tags": ["Speaking"] }
+    },
+    "/speech/tts": {
+      "post": { "summary": "Japanese TTS via Microsoft Edge TTS", "tags": ["Speech"] }
+    },
+    "/speech/stt": {
+      "post": { "summary": "Japanese STT via faster-whisper", "tags": ["Speech"] }
+    },
+    "/ocr/analyze": { "post": { "summary": "PaddleOCR + RAG match", "tags": ["OCR"] } },
+    "/ocr/status": { "get": { "summary": "OCR engine status", "tags": ["OCR"] } },
+    "/community/evaluate": {
+      "post": { "summary": "Evaluate peer call transcripts with Gemini", "tags": ["Community"] }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Japanese OCR — use 2.x API (3.x pulls PaddleX + breaks classic PaddleOCR())
+paddleocr>=2.7.3,<3.0.0
+opencv-python-headless>=4.8.0,<4.11
+numpy>=1.26.0,<2.4
+Pillow>=10.0.0
