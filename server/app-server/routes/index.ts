@@ -121,6 +121,7 @@ contentRouter.put('/grammar/:id', validateBody(grammarSchema.partial()), admin.u
 contentRouter.delete('/grammar/:id', admin.deleteGrammar);
 
 contentRouter.get('/courses', admin.listCourses);
+contentRouter.get('/courses-with-lessons', admin.listCoursesWithLessons);
 contentRouter.get('/courses/:id', admin.getCourse);
 contentRouter.post('/courses', validateBody(courseSchema), admin.createCourse);
 contentRouter.put('/courses/:id', validateBody(courseSchema.partial()), admin.updateCourse);

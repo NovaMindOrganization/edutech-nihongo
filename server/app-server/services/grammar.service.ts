@@ -2,20 +2,22 @@ import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
 
 export type GrammarInput = {
+  title: string;
+  jlpt: string;
+  type?: string;
   pattern: string;
-  meaning: string;
-  meaningEn?: string;
-  structure?: string;
-  grammarType?: string;
-  usageNote?: string;
-  jlptLevel: string;
-  sourceLesson?: number;
-  exampleSentences?: unknown;
+  meaningVi: string;
+  usage?: string;
+  notes?: string;
+  lessonId?: string;
+  order?: number;
+  examples?: unknown;
+  quiz?: unknown;
 };
 
 export async function listGrammar(params: {
-  jlptLevel?: string;
-  lesson?: number;
+  jlpt?: string;
+  lessonId?: string;
   search?: string;
   page?: number;
   limit?: number;
@@ -26,21 +28,21 @@ export async function listGrammar(params: {
   const search = params.search?.trim();
 
   const where = {
-    ...(params.jlptLevel ? { jlptLevel: params.jlptLevel } : {}),
-    ...(params.lesson != null ? { sourceLesson: params.lesson } : {}),
+    ...(params.jlpt ? { jlpt: params.jlpt } : {}),
+    ...(params.lessonId ? { lessonId: params.lessonId } : {}),
     ...(search
       ? {
           OR: [
+            { title: { contains: search, mode: 'insensitive' as const } },
             { pattern: { contains: search, mode: 'insensitive' as const } },
-            { meaning: { contains: search, mode: 'insensitive' as const } },
-            { structure: { contains: search, mode: 'insensitive' as const } },
+            { meaningVi: { contains: search, mode: 'insensitive' as const } },
           ],
         }
       : {}),
   };
 
   const [items, total] = await Promise.all([
-    db.grammar.findMany({ where, orderBy: [{ sourceLesson: 'asc' }, { pattern: 'asc' }], skip, take: limit }),
+    db.grammar.findMany({ where, orderBy: [{ order: 'asc' }, { pattern: 'asc' }], skip, take: limit }),
     db.grammar.count({ where }),
   ]);
 

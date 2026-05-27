@@ -68,6 +68,11 @@ export const listCourses = asyncHandler(async (_req: Request, res: Response) => 
   res.json({ success: true, data });
 });
 
+export const listCoursesWithLessons = asyncHandler(async (_req: Request, res: Response) => {
+  const data = await courseService.listAllCoursesWithLessons();
+  res.json({ success: true, data });
+});
+
 export const getCourse = asyncHandler(async (req: Request, res: Response) => {
   const data = await courseService.getCourse(req.params.id);
   res.json({ success: true, data });

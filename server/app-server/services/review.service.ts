@@ -75,8 +75,7 @@ export async function generateReview(
         id: g.id,
         itemType: 'grammar' as const,
         front: g.pattern,
-        back: g.meaning,
-        structure: g.structure,
+        back: g.meaningVi,
       })),
       questions: [],
     };
