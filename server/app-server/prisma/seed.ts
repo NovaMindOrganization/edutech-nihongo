@@ -42,33 +42,6 @@ function loadCsv(path: string): Record<string, string>[] {
   });
 }
 
-function splitList(value: string | undefined): string[] {
-  return (value ?? "")
-    .split(/[\s,、]+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-}
-
-function parseExampleCell(value: string | undefined) {
-  const text = (value ?? "").trim();
-  if (!text) return null;
-
-  const match = text.match(/^(.*?)【([^】]+)】(.*)$/);
-  if (!match) {
-    return {
-      word: text,
-      reading: null,
-      meaning: "",
-    };
-  }
-
-  return {
-    word: match[1].trim(),
-    reading: match[2].trim() || null,
-    meaning: match[3].trim(),
-  };
-}
-
 async function main() {
   console.log("[seed] Starting...");
 
@@ -117,22 +90,16 @@ async function main() {
 
   const vocabPath = join(__dirname, "../data/vocabulary-n5.csv");
   const grammarPath = join(__dirname, "../data/grammar-n5.csv");
-  const kanjiPath = join(
-    __dirname,
-    "../data/Database Kanji and Example - N5.csv",
-  );
 
   const vocabRows = loadCsv(vocabPath);
   const grammarRows = loadCsv(grammarPath);
-  const kanjiRows = loadCsv(kanjiPath);
 
   console.log(
-    `[seed] Importing ${vocabRows.length} vocabulary, ${grammarRows.length} grammar, ${kanjiRows.length} kanji...`,
+    `[seed] Importing ${vocabRows.length} vocabulary, ${grammarRows.length} grammar...`,
   );
 
   await db.vocabulary.deleteMany({ where: { jlptLevel: "N5" } });
-  await db.grammar.deleteMany({ where: { jlptLevel: "N5" } });
-  await db.kanji.deleteMany({ where: { jlptLevel: "N5" } });
+  await db.grammar.deleteMany({ where: { jlpt: "N5" } });
 
   const vocabBatchSize = 100;
   for (let i = 0; i < vocabRows.length; i += vocabBatchSize) {
@@ -151,6 +118,11 @@ async function main() {
     });
   }
 
+  const pendingGrammarLinks: Array<{
+    grammarId: string;
+    sourceLessonNumber: number | null;
+  }> = [];
+
   for (const row of grammarRows) {
     const examples =
       row.example_japanese && row.example_vi
@@ -164,20 +136,24 @@ async function main() {
           ]
         : undefined;
 
-    await db.grammar.create({
+    const created = await db.grammar.create({
       data: {
+        title: row.grammar,
         pattern: row.grammar,
-        meaning: row.meaning_vi,
-        meaningEn: row.meaning_en || null,
-        structure: row.structure || null,
-        grammarType: row.grammar_type || null,
-        usageNote: row.usage_note || null,
-        jlptLevel: row.jlpt || "N5",
-        sourceLesson:
-          row.lesson && row.lesson !== "Extra" ? Number(row.lesson) : null,
-        exampleSentences: examples,
+        jlpt: row.jlpt || "N5",
+        type: row.grammar_type || null,
+        meaningVi: row.meaning_vi,
+        usage: row.usage_note || null,
+        notes: row.structure || null,
+        examples,
         createdById: admin.id,
       },
+    });
+
+    pendingGrammarLinks.push({
+      grammarId: created.id,
+      sourceLessonNumber:
+        row.lesson && row.lesson !== "Extra" ? Number(row.lesson) : null,
     });
   }
 
@@ -256,15 +232,14 @@ async function main() {
       });
     }
 
-    const grammarForLesson = await db.grammar.findMany({
-      where: { sourceLesson: num, jlptLevel: "N5" },
-      select: { id: true },
-    });
+    const grammarForLesson = pendingGrammarLinks.filter(
+      (entry) => entry.sourceLessonNumber === num,
+    );
     if (grammarForLesson.length > 0) {
       await db.lessonGrammar.createMany({
         data: grammarForLesson.map((g) => ({
           lessonId: lesson.id,
-          grammarId: g.id,
+          grammarId: g.grammarId,
         })),
         skipDuplicates: true,
       });
@@ -303,35 +278,33 @@ async function main() {
     }
   }
 
-  const kanjiSeedRows = kanjiRows.map((row) => {
-    const examples = [row["Word 1"], row["Word 2"], row["Word 3"]]
-      .map(parseExampleCell)
-      .filter(
-        (item): item is NonNullable<ReturnType<typeof parseExampleCell>> =>
-          item !== null,
-      )
-      .map((item) => ({
-        word: item.word,
-        reading: item.reading,
-        meaning: item.meaning,
-      }));
-
-    const strokeCountRaw = row.StrokeCount?.trim();
-    const strokeCount = strokeCountRaw ? Number(strokeCountRaw) : null;
-
-    return {
-      character: row.Kanji.trim(),
-      hanVietPronunciation: row["Han-Viet Pronunciation"]?.trim() || null,
-      readingsKun: splitList(row.Kun),
-      readingsOn: splitList(row.On),
-      meaning: row.Meaning.trim(),
-      memoryTip: row.MemoryTip?.trim() || null,
-      strokeCount: Number.isFinite(strokeCount ?? NaN) ? strokeCount : null,
-      jlptLevel: row.Level?.trim() || "N5",
-      radical: row["Bộ thủ chính"]?.trim() || null,
-      examples,
-    };
-  });
+  // Sample kanji
+  const kanjiSamples = [
+    {
+      character: "私",
+      readingsOn: ["シ"],
+      readingsKun: ["わたし"],
+      meaning: "tôi",
+      jlptLevel: "N5",
+      radical: "人",
+    },
+    {
+      character: "本",
+      readingsOn: ["ホン"],
+      readingsKun: ["もと"],
+      meaning: "sách",
+      jlptLevel: "N5",
+      radical: "木",
+    },
+    {
+      character: "日",
+      readingsOn: ["ニチ", "ジツ"],
+      readingsKun: ["ひ", "か"],
+      meaning: "ngày, mặt trời",
+      jlptLevel: "N5",
+      radical: "日",
+    },
+  ];
   const dialogue1 = await db.conversation.upsert({
     where: { id: "00000000-0000-4000-8000-000000000001" },
     create: {
@@ -384,25 +357,14 @@ async function main() {
     });
   }
 
-  for (const k of kanjiSeedRows) {
-    const { examples, ...kanjiData } = k;
+  for (const k of kanjiSamples) {
     const row = await db.kanji.upsert({
       where: { character: k.character },
-      create: { ...kanjiData, createdById: admin.id },
-      update: kanjiData,
-    });
-    await db.kanjiExample.deleteMany({ where: { kanjiId: row.id } });
-    await db.kanjiExample.createMany({
-      data: (examples ?? []).map((example, index) => ({
-        kanjiId: row.id,
-        orderIndex: index,
-        word: example.word,
-        reading: example.reading,
-        meaning: example.meaning,
-      })),
+      create: { ...k, createdById: admin.id },
+      update: k,
     });
     const lesson1 = lessons.find((l) => l.orderIndex === 1);
-    if (lesson1 && kanjiSeedRows.indexOf(k) < 3) {
+    if (lesson1) {
       await db.lessonKanji.upsert({
         where: { lessonId_kanjiId: { lessonId: lesson1.id, kanjiId: row.id } },
         create: { lessonId: lesson1.id, kanjiId: row.id },
