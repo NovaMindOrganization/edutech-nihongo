@@ -14,6 +14,7 @@ import {
   VocabularyAdminView,
 } from '@/features/admin';
 import { RedirectIfAuthenticated } from '@/features/auth/components/redirect-if-authenticated';
+import { RequireAuth } from '@/features/auth/components/require-auth';
 import { LoginView, RegisterView } from '@/features/auth';
 import {
   CourseDetailView,
@@ -63,36 +64,39 @@ export function AppRouter() {
         </Route>
 
         <Route element={<LearnLayout />}>
-          <Route path={paths.placementTest} element={<PlacementTestView />} />
-
-          <Route path={paths.student.dashboard} element={<DashboardView />} />
-          <Route path={paths.student.review} element={<ReviewHubView />} />
-          <Route path={paths.student.reviewKanji} element={<ReviewByTypeView type="kanji" />} />
-          <Route path={paths.student.reviewVocabulary} element={<ReviewByTypeView type="vocabulary" />} />
-          <Route path={paths.student.reviewGrammar} element={<ReviewByTypeView type="grammar" />} />
-          <Route path={paths.student.aiSpeaking} element={<AiSpeakingView />} />
-          <Route path={paths.student.practice} element={<PracticeHubView />} />
-          <Route path={paths.student.jlptSim} element={<JlptSimView />} />
-          <Route path={paths.student.ocr} element={<OcrView />} />
-          <Route path={paths.student.community} element={<CommunityHubView />} />
-          <Route path={paths.student.studySets} element={<StudySetsView />} />
-          <Route path={paths.student.communityCall} element={<CommunityCallView />} />
-          <Route path={paths.student.notebook} element={<Navigate to={paths.learn.kanjiHandbook} replace />} />
-
           <Route path={paths.learn.hub} element={<LearnHubView />} />
-          <Route path={paths.learn.kanjiHub} element={<KanjiHubView />} />
-          <Route path="/learn/kanji/course/:courseId" element={<KanjiCourseView />} />
-          <Route path={paths.learn.kanjiHandbook} element={<KanjiHandbookView />} />
-          <Route path="/learn/courses/:courseId" element={<CourseDetailView />} />
-          <Route path="/learn/lessons/:lessonId" element={<LessonShellView />}>
-            <Route index element={<Navigate to="grammar" replace />} />
-            <Route path="speaking" element={<LessonSpeakingView />} />
-            <Route path="vocabulary" element={<LessonVocabularyView />} />
-            <Route path="grammar" element={<LessonGrammarView />} />
-            <Route path="dialogue" element={<LessonDialogueView />} />
-            <Route path="kanji" element={<LessonKanjiView />} />
+
+          <Route element={<RequireAuth />}>
+            <Route path={paths.placementTest} element={<PlacementTestView />} />
+
+            <Route path={paths.student.dashboard} element={<DashboardView />} />
+            <Route path={paths.student.review} element={<ReviewHubView />} />
+            <Route path={paths.student.reviewKanji} element={<ReviewByTypeView type="kanji" />} />
+            <Route path={paths.student.reviewVocabulary} element={<ReviewByTypeView type="vocabulary" />} />
+            <Route path={paths.student.reviewGrammar} element={<ReviewByTypeView type="grammar" />} />
+            <Route path={paths.student.aiSpeaking} element={<AiSpeakingView />} />
+            <Route path={paths.student.practice} element={<PracticeHubView />} />
+            <Route path={paths.student.jlptSim} element={<JlptSimView />} />
+            <Route path={paths.student.ocr} element={<OcrView />} />
+            <Route path={paths.student.community} element={<CommunityHubView />} />
+            <Route path={paths.student.studySets} element={<StudySetsView />} />
+            <Route path={paths.student.communityCall} element={<CommunityCallView />} />
+            <Route path={paths.student.notebook} element={<Navigate to={paths.learn.kanjiHandbook} replace />} />
+
+            <Route path={paths.learn.kanjiHub} element={<KanjiHubView />} />
+            <Route path="/learn/kanji/course/:courseId" element={<KanjiCourseView />} />
+            <Route path={paths.learn.kanjiHandbook} element={<KanjiHandbookView />} />
+            <Route path="/learn/courses/:courseId" element={<CourseDetailView />} />
+            <Route path="/learn/lessons/:lessonId" element={<LessonShellView />}>
+              <Route index element={<Navigate to="grammar" replace />} />
+              <Route path="speaking" element={<LessonSpeakingView />} />
+              <Route path="vocabulary" element={<LessonVocabularyView />} />
+              <Route path="grammar" element={<LessonGrammarView />} />
+              <Route path="dialogue" element={<LessonDialogueView />} />
+              <Route path="kanji" element={<LessonKanjiView />} />
+            </Route>
+            <Route path="/learn/lessons/:lessonId/mini-test" element={<MiniTestView />} />
           </Route>
-          <Route path="/learn/lessons/:lessonId/mini-test" element={<MiniTestView />} />
         </Route>
 
         <Route path={paths.admin.dashboard} element={<AdminLayout />}>

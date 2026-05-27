@@ -14,3 +14,8 @@ __pycache__
 .venv
 *.pyc
 local.db
+
+# Docker Compose bind-mount data (local dev only)
+data/postgres/
+data/redis/
+data/minio/
