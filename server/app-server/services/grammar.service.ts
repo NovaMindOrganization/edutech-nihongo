@@ -78,3 +78,25 @@ export async function listGrammar(params: {
 
   return { items, total, page, limit };
 }
+
+export async function getGrammar(id: string) {
+  const item = await db.grammar.findUnique({ where: { id } });
+  if (!item) throw new AppError('Grammar not found', 404, 'NOT_FOUND');
+  return item;
+}
+
+export async function createGrammar(data: GrammarInput, createdById?: string) {
+  return db.grammar.create({
+    data: { ...data, createdById },
+  });
+}
+
+export async function updateGrammar(id: string, data: Partial<GrammarInput>) {
+  await getGrammar(id);
+  return db.grammar.update({ where: { id }, data });
+}
+
+export async function deleteGrammar(id: string) {
+  await getGrammar(id);
+  await db.grammar.delete({ where: { id } });
+}

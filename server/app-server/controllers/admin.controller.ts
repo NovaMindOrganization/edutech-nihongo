@@ -278,7 +278,7 @@ export const listRadicals = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const getRadical = asyncHandler(async (req: Request, res: Response) => {
-  const data = await radicalService.getRadical(req.params.id);
+  const data = await radicalService.getRadical(String(req.params.id));
   res.json({ success: true, data });
 });
 
@@ -288,11 +288,11 @@ export const createRadical = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const updateRadical = asyncHandler(async (req: Request, res: Response) => {
-  const data = await radicalService.updateRadical(req.params.id, req.body);
+  const data = await radicalService.updateRadical(String(req.params.id), req.body);
   res.json({ success: true, data });
 });
 
 export const deleteRadical = asyncHandler(async (req: Request, res: Response) => {
-  await radicalService.deleteRadical(req.params.id);
+  await radicalService.deleteRadical(String(req.params.id));
   res.json({ success: true, data: null });
 });

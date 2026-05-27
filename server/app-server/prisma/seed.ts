@@ -8,6 +8,136 @@ import { PrismaClient } from "@prisma/client";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const db = new PrismaClient();
 
+// --- Dán hàm này bên ngoài hàm main() của prisma/seed.ts ---
+async function seedRadicals(adminId: string) {
+  const filePath = join(__dirname, '../data/214 Bộ Thủ Hán Tự Đầy Đủ.csv');
+  const fileContent = readFileSync(filePath, 'utf8');
+  const lines = fileContent.split('\n').filter(line => line.trim() !== '');
+  const dataLines = lines.slice(1);
+
+  // Xóa dữ liệu cũ của bảng Radical trước khi nạp mới
+  await db.radical.deleteMany({});
+  console.log('[seed] Cleared existing radicals.');
+
+  const radicals = [];
+  for (const line of dataLines) {
+    const cols = parseCsvLine(line.trim()); // Dùng luôn hàm parseCsvLine đã có sẵn ở đầu file seed.ts của bạn
+    if (cols.length < 5) continue;
+
+    const radicalIdStr = cols[0];
+    const character = cols[1];
+    const sinoVietnamese = cols[2];
+    const meaning = cols[3];
+    const strokeCount = parseInt(cols[4], 10);
+
+    const radicalIndexMatch = radicalIdStr.match(/\d+/);
+    if (!radicalIndexMatch) continue;
+    
+    const radicalIndex = parseInt(radicalIndexMatch[0], 10);
+
+    radicals.push({
+      radicalIndex,
+      character,
+      sinoVietnamese,
+      meaning,
+      strokeCount
+    });
+  }
+
+  
+
+  // Khuyên dùng: Sử dụng createMany để đẩy data cực nhanh
+  await db.radical.createMany({
+    data: radicals
+  });
+
+  console.log(`[seed] Seeded ${radicals.length} radicals successfully.`);
+}
+
+// --- Dán hàm này phía trên hàm main() của prisma/seed.ts ---
+async function seedKanji(adminId: string, lessons: { id: string; orderIndex: number }[]) {
+  // 1. Đường dẫn tới file CSV Kanji mới của bạn
+  const kanjiPath = join(__dirname, "../data/Database Kanji and Example - N5.csv");
+  const kanjiRows = loadCsv(kanjiPath);
+
+  console.log(`[seed] Found ${kanjiRows.length} kanji rows in CSV. Processing...`);
+
+  // 2. Xóa dữ liệu cũ của cấp N5 trong bảng Kanji để tránh trùng lặp khi seed lại
+  await db.kanji.deleteMany({ where: { jlptLevel: "N5" } });
+
+  // 3. Chuẩn bị mảng để map dữ liệu
+  const kanjiDataList = [];
+
+  for (const row of kanjiRows) {
+    // CSV headers in this file are: Id,Kanji,Han-Viet Pronunciation,Kun,On,Meaning,Word 1,Word 2,Word 3,MemoryTip,StrokeCount,Level,Image,Bộ thủ chính
+    const character = (row.Kanji || row.Kanji || row.KANJI || row.kanji || '').trim();
+    const meaning = (row.Meaning || row.meaning || '').trim();
+
+    if (!character) continue;
+
+    const readingsOnRaw = (row.On || row.on || row.Onyomi || row.OnYomi || '').trim();
+    const readingsKunRaw = (row.Kun || row.kun || row.Kunyomi || row.KunYomi || '').trim();
+    const readingsOn = readingsOnRaw ? readingsOnRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    const readingsKun = readingsKunRaw ? readingsKunRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+
+    const radicalField = row['Bộ thủ chính'] || row.botruchinh || row.radical || '';
+    const strokeRaw = (row.StrokeCount || row.strokeCount || '').trim();
+    const strokeCountVal = strokeRaw ? Number(strokeRaw.replace(/[^0-9]/g, '')) : null;
+    const memoryTip = (row.MemoryTip || row.MemoryTip || row['MemoryTip'] || row.MemoryTip || '').trim() || null;
+    const imageUrl = (row.Image || row.image || '').trim() || null;
+    const level = (row.Level || row.level || '').trim() || 'N5';
+
+    kanjiDataList.push({
+      character,
+      meaning: meaning || '',
+      readingsOn,
+      readingsKun,
+      jlptLevel: level || 'N5',
+      radical: radicalField || null,
+      strokeCount: strokeCountVal,
+      memoryTip: memoryTip,
+      memoryImageUrl: imageUrl,
+      createdById: adminId,
+    });
+  }
+
+  // 4. Sử dụng createMany để tối ưu tốc độ insert vào DB
+  if (kanjiDataList.length > 0) {
+    await db.kanji.createMany({
+      data: kanjiDataList,
+    });
+    console.log(`[seed] Successfully inserted ${kanjiDataList.length} Kanji N5 items.`);
+  }
+
+  // 5. (Nâng cao) Liên kết Kanji vào các Bài học (Lessons) tự động nếu file CSV của bạn có cột 'lesson'
+  for (const row of kanjiRows) {
+    const lessonNum = Number(row.lesson || row.Lesson);
+    const character = row.character || row.Character || row.Kanji;
+    
+    if (!Number.isNaN(lessonNum) && character) {
+      const targetLesson = lessons.find((l) => l.orderIndex === lessonNum);
+      const targetKanji = await db.kanji.findFirst({ where: { character } });
+      
+      if (targetLesson && targetKanji) {
+        // Tạo liên kết trong bảng trung gian lessonKanji
+        await db.lessonKanji.upsert({
+          where: {
+            lessonId_kanjiId: {
+              lessonId: targetLesson.id,
+              kanjiId: targetKanji.id,
+            },
+          },
+          create: {
+            lessonId: targetLesson.id,
+            kanjiId: targetKanji.id,
+          },
+          update: {},
+        });
+      }
+    }
+  }
+}
+
 function parseCsvLine(line: string): string[] {
   const result: string[] = [];
   let current = "";
@@ -284,6 +414,9 @@ async function main() {
     }
   }
 
+  // Seed Kanji from CSV and link to lessons
+  await seedKanji(admin.id, lessons);
+
   console.log(
     `[seed] Created ${lessons.length} lessons for course ${course.title}`,
   );
@@ -472,6 +605,11 @@ async function main() {
     where: { isPublic: true },
     data: { moderationStatus: "approved", moderatedAt: new Date() },
   });
+
+  await seedRadicals(admin.id);
+
+  console.log("[seed] Admin: admin@nihongocoach.com / Admin@123");
+  console.log("[seed] Done.");
 
   console.log("[seed] Admin: admin@nihongocoach.com / Admin@123");
   console.log("[seed] Done.");
