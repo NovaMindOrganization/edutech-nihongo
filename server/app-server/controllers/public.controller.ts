@@ -1,7 +1,9 @@
 import type { Request, Response } from 'express';
+import { Readable } from 'node:stream';
 
 import { db } from '../config/db.js';
 import * as dictionaryService from '../services/dictionary.service.js';
+import * as kanjiMediaService from '../services/kanji-media.service.js';
 import * as placementService from '../services/placement.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
@@ -36,7 +38,7 @@ export const listCourses = asyncHandler(async (_req: Request, res: Response) => 
 
 export const getCourseOutline = asyncHandler(async (req: Request, res: Response) => {
   const course = await db.course.findUnique({
-    where: { id: req.params.id, isPublished: true },
+    where: { id: String(req.params.id), isPublished: true },
     include: {
       lessons: { orderBy: { orderIndex: 'asc' }, select: { id: true, title: true, orderIndex: true } },
     },
@@ -46,7 +48,7 @@ export const getCourseOutline = asyncHandler(async (req: Request, res: Response)
 
 export const getLessonPreview = asyncHandler(async (req: Request, res: Response) => {
   const lesson = await db.lesson.findFirst({
-    where: { id: req.params.id, orderIndex: 1 },
+    where: { id: String(req.params.id), orderIndex: 1 },
     include: {
       vocabulary: { take: 5, include: { vocabulary: { select: { word: true, reading: true, meaning: true } } } },
     },
@@ -69,4 +71,28 @@ export const dictionarySearch = asyncHandler(async (req: Request, res: Response)
   const ip = req.ip;
   const data = await dictionaryService.searchDictionary(q, { ip });
   res.json({ success: true, data });
+});
+
+export const getKanjiMemoryImage = asyncHandler(async (req: Request, res: Response) => {
+  const image = await kanjiMediaService.getKanjiMemoryImage(String(req.params.id));
+  res.setHeader('Content-Type', image.contentType);
+  res.setHeader('Cache-Control', image.cacheControl);
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  if (image.contentLength != null) {
+    res.setHeader('Content-Length', String(image.contentLength));
+  }
+
+  const body = image.body;
+  if (body instanceof Readable) {
+    body.pipe(res);
+    return;
+  }
+
+  if (typeof body.transformToByteArray === 'function') {
+    const bytes = await body.transformToByteArray();
+    res.end(Buffer.from(bytes));
+    return;
+  }
+
+  Readable.from(body as AsyncIterable<Uint8Array>).pipe(res);
 });

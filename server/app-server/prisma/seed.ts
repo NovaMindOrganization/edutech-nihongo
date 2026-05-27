@@ -1,16 +1,146 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-import bcrypt from 'bcrypt';
-import { PrismaClient } from '@prisma/client';
+import bcrypt from "bcrypt";
+import { PrismaClient } from "@prisma/client";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const db = new PrismaClient();
 
+// --- Dán hàm này bên ngoài hàm main() của prisma/seed.ts ---
+async function seedRadicals(adminId: string) {
+  const filePath = join(__dirname, '../data/214 Bộ Thủ Hán Tự Đầy Đủ.csv');
+  const fileContent = readFileSync(filePath, 'utf8');
+  const lines = fileContent.split('\n').filter(line => line.trim() !== '');
+  const dataLines = lines.slice(1);
+
+  // Xóa dữ liệu cũ của bảng Radical trước khi nạp mới
+  await db.radical.deleteMany({});
+  console.log('[seed] Cleared existing radicals.');
+
+  const radicals = [];
+  for (const line of dataLines) {
+    const cols = parseCsvLine(line.trim()); // Dùng luôn hàm parseCsvLine đã có sẵn ở đầu file seed.ts của bạn
+    if (cols.length < 5) continue;
+
+    const radicalIdStr = cols[0];
+    const character = cols[1];
+    const sinoVietnamese = cols[2];
+    const meaning = cols[3];
+    const strokeCount = parseInt(cols[4], 10);
+
+    const radicalIndexMatch = radicalIdStr.match(/\d+/);
+    if (!radicalIndexMatch) continue;
+    
+    const radicalIndex = parseInt(radicalIndexMatch[0], 10);
+
+    radicals.push({
+      radicalIndex,
+      character,
+      sinoVietnamese,
+      meaning,
+      strokeCount
+    });
+  }
+
+  
+
+  // Khuyên dùng: Sử dụng createMany để đẩy data cực nhanh
+  await db.radical.createMany({
+    data: radicals
+  });
+
+  console.log(`[seed] Seeded ${radicals.length} radicals successfully.`);
+}
+
+// --- Dán hàm này phía trên hàm main() của prisma/seed.ts ---
+async function seedKanji(adminId: string, lessons: { id: string; orderIndex: number }[]) {
+  // 1. Đường dẫn tới file CSV Kanji mới của bạn
+  const kanjiPath = join(__dirname, "../data/Database Kanji and Example - N5.csv");
+  const kanjiRows = loadCsv(kanjiPath);
+
+  console.log(`[seed] Found ${kanjiRows.length} kanji rows in CSV. Processing...`);
+
+  // 2. Xóa dữ liệu cũ của cấp N5 trong bảng Kanji để tránh trùng lặp khi seed lại
+  await db.kanji.deleteMany({ where: { jlptLevel: "N5" } });
+
+  // 3. Chuẩn bị mảng để map dữ liệu
+  const kanjiDataList = [];
+
+  for (const row of kanjiRows) {
+    // CSV headers in this file are: Id,Kanji,Han-Viet Pronunciation,Kun,On,Meaning,Word 1,Word 2,Word 3,MemoryTip,StrokeCount,Level,Image,Bộ thủ chính
+    const character = (row.Kanji || row.Kanji || row.KANJI || row.kanji || '').trim();
+    const meaning = (row.Meaning || row.meaning || '').trim();
+
+    if (!character) continue;
+
+    const readingsOnRaw = (row.On || row.on || row.Onyomi || row.OnYomi || '').trim();
+    const readingsKunRaw = (row.Kun || row.kun || row.Kunyomi || row.KunYomi || '').trim();
+    const readingsOn = readingsOnRaw ? readingsOnRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    const readingsKun = readingsKunRaw ? readingsKunRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+
+    const radicalField = row['Bộ thủ chính'] || row.botruchinh || row.radical || '';
+    const strokeRaw = (row.StrokeCount || row.strokeCount || '').trim();
+    const strokeCountVal = strokeRaw ? Number(strokeRaw.replace(/[^0-9]/g, '')) : null;
+    const memoryTip = (row.MemoryTip || row.MemoryTip || row['MemoryTip'] || row.MemoryTip || '').trim() || null;
+    const imageUrl = (row.Image || row.image || '').trim() || null;
+    const level = (row.Level || row.level || '').trim() || 'N5';
+
+    kanjiDataList.push({
+      character,
+      meaning: meaning || '',
+      readingsOn,
+      readingsKun,
+      jlptLevel: level || 'N5',
+      radical: radicalField || null,
+      strokeCount: strokeCountVal,
+      memoryTip: memoryTip,
+      memoryImageUrl: imageUrl,
+      createdById: adminId,
+    });
+  }
+
+  // 4. Sử dụng createMany để tối ưu tốc độ insert vào DB
+  if (kanjiDataList.length > 0) {
+    await db.kanji.createMany({
+      data: kanjiDataList,
+    });
+    console.log(`[seed] Successfully inserted ${kanjiDataList.length} Kanji N5 items.`);
+  }
+
+  // 5. (Nâng cao) Liên kết Kanji vào các Bài học (Lessons) tự động nếu file CSV của bạn có cột 'lesson'
+  for (const row of kanjiRows) {
+    const lessonNum = Number(row.lesson || row.Lesson);
+    const character = row.character || row.Character || row.Kanji;
+    
+    if (!Number.isNaN(lessonNum) && character) {
+      const targetLesson = lessons.find((l) => l.orderIndex === lessonNum);
+      const targetKanji = await db.kanji.findFirst({ where: { character } });
+      
+      if (targetLesson && targetKanji) {
+        // Tạo liên kết trong bảng trung gian lessonKanji
+        await db.lessonKanji.upsert({
+          where: {
+            lessonId_kanjiId: {
+              lessonId: targetLesson.id,
+              kanjiId: targetKanji.id,
+            },
+          },
+          create: {
+            lessonId: targetLesson.id,
+            kanjiId: targetKanji.id,
+          },
+          update: {},
+        });
+      }
+    }
+  }
+}
+
 function parseCsvLine(line: string): string[] {
   const result: string[] = [];
-  let current = '';
+  let current = "";
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
@@ -19,9 +149,9 @@ function parseCsvLine(line: string): string[] {
       inQuotes = !inQuotes;
       continue;
     }
-    if (ch === ',' && !inQuotes) {
+    if (ch === "," && !inQuotes) {
       result.push(current);
-      current = '';
+      current = "";
       continue;
     }
     current += ch;
@@ -31,23 +161,41 @@ function parseCsvLine(line: string): string[] {
 }
 
 function loadCsv(path: string): Record<string, string>[] {
-  const raw = readFileSync(path, 'utf-8').replace(/^\uFEFF/, '');
+  const raw = readFileSync(path, "utf-8").replace(/^\uFEFF/, "");
   const lines = raw.split(/\r?\n/).filter((l) => l.trim());
   const headers = parseCsvLine(lines[0]);
   return lines.slice(1).map((line) => {
     const cols = parseCsvLine(line);
-    return Object.fromEntries(headers.map((h, i) => [h.trim(), (cols[i] ?? '').trim()]));
+    return Object.fromEntries(
+      headers.map((h, i) => [h.trim(), (cols[i] ?? "").trim()]),
+    );
   });
 }
 
 async function main() {
-  console.log('[seed] Starting...');
+  console.log("[seed] Starting...");
 
   const configs = [
-    { key: 'default_pass_threshold', value: '70', description: 'Default MiniTest pass percentage' },
-    { key: 'guest_dict_rate_limit', value: '20', description: 'Dictionary searches per hour for guests' },
-    { key: 'ai_speaking_daily_limit', value: '50', description: 'Max AI speaking messages per day' },
-    { key: 'maintenance_mode', value: 'false', description: 'Toggle maintenance mode' },
+    {
+      key: "default_pass_threshold",
+      value: "70",
+      description: "Default MiniTest pass percentage",
+    },
+    {
+      key: "guest_dict_rate_limit",
+      value: "20",
+      description: "Dictionary searches per hour for guests",
+    },
+    {
+      key: "ai_speaking_daily_limit",
+      value: "50",
+      description: "Max AI speaking messages per day",
+    },
+    {
+      key: "maintenance_mode",
+      value: "false",
+      description: "Toggle maintenance mode",
+    },
   ];
 
   for (const c of configs) {
@@ -58,16 +206,16 @@ async function main() {
     });
   }
 
-  const adminHash = await bcrypt.hash('Admin@123', 12);
+  const adminHash = await bcrypt.hash("Admin@123", 12);
   const admin = await db.user.upsert({
-    where: { email: 'admin@nihongocoach.com' },
+    where: { email: "admin@nihongocoach.com" },
     create: {
-      email: 'admin@nihongocoach.com',
+      email: "admin@nihongocoach.com",
       passwordHash: adminHash,
-      role: 'admin',
-      displayName: 'Admin',
+      role: "admin",
+      displayName: "Admin",
     },
-    update: { passwordHash: adminHash, role: 'admin' },
+    update: { passwordHash: adminHash, role: "admin" },
   });
 
   const vocabPath = join(__dirname, '../data/vocabulary-n5.csv');
@@ -88,7 +236,7 @@ async function main() {
         reading: row.reading || null,
         meaning: row.meaning_vi,
         meaningEn: row.meaning_en || null,
-        jlptLevel: row.jlpt || 'N5',
+        jlptLevel: row.jlpt || "N5",
         partOfSpeech: row.type || null,
         topic: row.type || null,
         createdById: admin.id,
@@ -97,14 +245,15 @@ async function main() {
   }
 
   let course = await db.course.findFirst({
-    where: { jlptLevel: 'N5', title: 'Japanese N5 — Complete Course' },
+    where: { jlptLevel: "N5", title: "Japanese N5 — Complete Course" },
   });
   if (!course) {
     course = await db.course.create({
       data: {
-        title: 'Japanese N5 — Complete Course',
-        jlptLevel: 'N5',
-        description: 'Start your Japanese journey from absolute beginner to JLPT N5.',
+        title: "Japanese N5 — Complete Course",
+        jlptLevel: "N5",
+        description:
+          "Start your Japanese journey from absolute beginner to JLPT N5.",
         isPublished: true,
         createdById: admin.id,
       },
@@ -117,16 +266,18 @@ async function main() {
   }
 
   const lessonTitles: Record<number, string> = {
-    1: 'Bài 1: Chào hỏi cơ bản',
-    2: 'Bài 2: Đồ vật',
-    3: 'Bài 3: Địa điểm',
-    4: 'Bài 4: Tính từ',
-    5: 'Bài 5: Thời gian',
+    1: "Bài 1: Chào hỏi cơ bản",
+    2: "Bài 2: Đồ vật",
+    3: "Bài 3: Địa điểm",
+    4: "Bài 4: Tính từ",
+    5: "Bài 5: Thời gian",
   };
 
-  const lessonNumbers = [...new Set(vocabRows.map((r) => Number(r.lesson)).filter((n) => !Number.isNaN(n)))].sort(
-    (a, b) => a - b,
-  );
+  const lessonNumbers = [
+    ...new Set(
+      vocabRows.map((r) => Number(r.lesson)).filter((n) => !Number.isNaN(n)),
+    ),
+  ].sort((a, b) => a - b);
 
   await db.lesson.deleteMany({ where: { courseId: course.id } });
 
@@ -144,7 +295,7 @@ async function main() {
 
     await db.vocabulary.updateMany({
       where: {
-        jlptLevel: 'N5',
+        jlptLevel: "N5",
         word: {
           in: vocabRows
             .filter((r) => Number(r.lesson) === num)
@@ -263,27 +414,32 @@ async function main() {
     }
   }
 
-  console.log(`[seed] Created ${lessons.length} lessons for course ${course.title}`);
+  // Seed Kanji from CSV and link to lessons
+  await seedKanji(admin.id, lessons);
+
+  console.log(
+    `[seed] Created ${lessons.length} lessons for course ${course.title}`,
+  );
 
   // Mini-test questions from lesson vocabulary (3 MC per lesson)
   for (const lesson of lessons) {
     const vocab = await db.vocabulary.findMany({
-      where: { lessonId: lesson.id, jlptLevel: 'N5' },
+      where: { lessonId: lesson.id, jlptLevel: "N5" },
       take: 3,
     });
     for (const v of vocab) {
       const q = await db.question.create({
         data: {
           questionText: `「${v.word}」の意味は？`,
-          questionType: 'multiple_choice',
+          questionType: "multiple_choice",
           options: [
-            { label: 'A', text: v.meaning },
-            { label: 'B', text: ' sai' },
-            { label: 'C', text: 'わからない' },
+            { label: "A", text: v.meaning },
+            { label: "B", text: " sai" },
+            { label: "C", text: "わからない" },
           ],
           correctAnswer: v.meaning,
-          jlptLevel: 'N5',
-          questionCategory: '文字語彙',
+          jlptLevel: "N5",
+          questionCategory: "文字語彙",
           createdById: admin.id,
         },
       });
@@ -295,20 +451,56 @@ async function main() {
 
   // Sample kanji
   const kanjiSamples = [
-    { character: '私', readingsOn: ['シ'], readingsKun: ['わたし'], meaning: 'tôi', jlptLevel: 'N5', radical: '人' },
-    { character: '本', readingsOn: ['ホン'], readingsKun: ['もと'], meaning: 'sách', jlptLevel: 'N5', radical: '木' },
-    { character: '日', readingsOn: ['ニチ', 'ジツ'], readingsKun: ['ひ', 'か'], meaning: 'ngày, mặt trời', jlptLevel: 'N5', radical: '日' },
+    {
+      character: "私",
+      readingsOn: ["シ"],
+      readingsKun: ["わたし"],
+      meaning: "tôi",
+      jlptLevel: "N5",
+      radical: "人",
+    },
+    {
+      character: "本",
+      readingsOn: ["ホン"],
+      readingsKun: ["もと"],
+      meaning: "sách",
+      jlptLevel: "N5",
+      radical: "木",
+    },
+    {
+      character: "日",
+      readingsOn: ["ニチ", "ジツ"],
+      readingsKun: ["ひ", "か"],
+      meaning: "ngày, mặt trời",
+      jlptLevel: "N5",
+      radical: "日",
+    },
   ];
   const dialogue1 = await db.conversation.upsert({
-    where: { id: '00000000-0000-4000-8000-000000000001' },
+    where: { id: "00000000-0000-4000-8000-000000000001" },
     create: {
-      id: '00000000-0000-4000-8000-000000000001',
-      title: 'Chào hỏi — Bài 1',
-      jlptLevel: 'N5',
+      id: "00000000-0000-4000-8000-000000000001",
+      title: "Chào hỏi — Bài 1",
+      jlptLevel: "N5",
       dialogue: [
-        { speaker: 'A', text: 'こんにちは。', reading: 'konnichiwa', translation: 'Xin chào.' },
-        { speaker: 'B', text: 'こんにちは。はじめまして。', reading: 'konnichiwa. hajimemashite.', translation: 'Xin chào. Rất vui được gặp.' },
-        { speaker: 'A', text: 'わたしは田中です。', reading: 'watashi wa Tanaka desu.', translation: 'Tôi là Tanaka.' },
+        {
+          speaker: "A",
+          text: "こんにちは。",
+          reading: "konnichiwa",
+          translation: "Xin chào.",
+        },
+        {
+          speaker: "B",
+          text: "こんにちは。はじめまして。",
+          reading: "konnichiwa. hajimemashite.",
+          translation: "Xin chào. Rất vui được gặp.",
+        },
+        {
+          speaker: "A",
+          text: "わたしは田中です。",
+          reading: "watashi wa Tanaka desu.",
+          translation: "Tôi là Tanaka.",
+        },
       ],
       createdById: admin.id,
     },
@@ -321,12 +513,15 @@ async function main() {
       where: { id: lesson1.id },
       data: {
         speakingPrompt:
-          'Luyện chào hỏi và giới thiệu tên. Dùng です/ます. Gợi ý từ: こんにちは、はじめまして、わたしは〜です。',
+          "Luyện chào hỏi và giới thiệu tên. Dùng です/ます. Gợi ý từ: こんにちは、はじめまして、わたしは〜です。",
       },
     });
     await db.lessonConversation.upsert({
       where: {
-        lessonId_conversationId: { lessonId: lesson1.id, conversationId: dialogue1.id },
+        lessonId_conversationId: {
+          lessonId: lesson1.id,
+          conversationId: dialogue1.id,
+        },
       },
       create: { lessonId: lesson1.id, conversationId: dialogue1.id },
       update: {},
@@ -353,47 +548,71 @@ async function main() {
   await db.placementQuestion.deleteMany();
   const placementQs = await db.question.findMany({ take: 15 });
   for (let i = 0; i < placementQs.length; i++) {
-    await db.placementQuestion.create({ data: { questionId: placementQs[i].id, sortOrder: i } });
+    await db.placementQuestion.create({
+      data: { questionId: placementQs[i].id, sortOrder: i },
+    });
   }
 
-  let mockExam = await db.mockExam.findFirst({ where: { jlptLevel: 'N5', title: 'JLPT N5 Mock Exam' } });
+  let mockExam = await db.mockExam.findFirst({
+    where: { jlptLevel: "N5", title: "JLPT N5 Mock Exam" },
+  });
   if (!mockExam) {
     mockExam = await db.mockExam.create({
-      data: { title: 'JLPT N5 Mock Exam', jlptLevel: 'N5', durationMinutes: 90, createdById: admin.id },
+      data: {
+        title: "JLPT N5 Mock Exam",
+        jlptLevel: "N5",
+        durationMinutes: 90,
+        createdById: admin.id,
+      },
     });
   }
 
   const examId = mockExam.id;
-  const allQ = await db.question.findMany({ where: { jlptLevel: 'N5' }, take: 20 });
+  const allQ = await db.question.findMany({
+    where: { jlptLevel: "N5" },
+    take: 20,
+  });
   for (const q of allQ) {
     await db.mockExamQuestion.upsert({
-      where: { mockExamId_questionId: { mockExamId: examId, questionId: q.id } },
-      create: { mockExamId: examId, questionId: q.id, section: q.questionCategory ?? '文字語彙' },
+      where: {
+        mockExamId_questionId: { mockExamId: examId, questionId: q.id },
+      },
+      create: {
+        mockExamId: examId,
+        questionId: q.id,
+        section: q.questionCategory ?? "文字語彙",
+      },
       update: {},
     });
   }
 
   await db.systemConfig.upsert({
-    where: { key: 'llm_system_prompt' },
+    where: { key: "llm_system_prompt" },
     create: {
-      key: 'llm_system_prompt',
+      key: "llm_system_prompt",
       value:
         'You are a friendly Japanese language tutor. Respond in Japanese appropriate to student level. Return ONLY valid JSON: {"AI_Reply": "...", "Correction": "...or null"}',
     },
     update: {},
   });
 
-  const { enrollAndInitProgress } = await import('../services/lesson.service.js');
+  const { enrollAndInitProgress } =
+    await import("../services/lesson.service.js");
   await enrollAndInitProgress(admin.id, course.id);
-  console.log('[seed] Admin enrolled in N5 course (test student flows)');
+  console.log("[seed] Admin enrolled in N5 course (test student flows)");
 
   await db.studySet.updateMany({
     where: { isPublic: true },
-    data: { moderationStatus: 'approved', moderatedAt: new Date() },
+    data: { moderationStatus: "approved", moderatedAt: new Date() },
   });
 
-  console.log('[seed] Admin: admin@nihongocoach.com / Admin@123');
-  console.log('[seed] Done.');
+  await seedRadicals(admin.id);
+
+  console.log("[seed] Admin: admin@nihongocoach.com / Admin@123");
+  console.log("[seed] Done.");
+
+  console.log("[seed] Admin: admin@nihongocoach.com / Admin@123");
+  console.log("[seed] Done.");
 }
 
 main()

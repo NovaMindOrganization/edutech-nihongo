@@ -1,13 +1,13 @@
-import type { LessonProgressStatus, Vocabulary } from '@prisma/client';
+import type { LessonProgressStatus, Vocabulary } from "@prisma/client";
 
-import { db } from '../config/db.js';
-import { AppError } from '../utils/app-error.js';
+import { db } from "../config/db.js";
+import { AppError } from "../utils/app-error.js";
 
 /** Vocabulary by lesson_id FK; falls back to junction if legacy rows lack FK. */
 async function loadLessonVocabulary(lessonId: string): Promise<Vocabulary[]> {
   const direct = await db.vocabulary.findMany({
     where: { lessonId },
-    orderBy: { word: 'asc' },
+    orderBy: { word: "asc" },
   });
   if (direct.length > 0) return direct;
 
@@ -17,7 +17,7 @@ async function loadLessonVocabulary(lessonId: string): Promise<Vocabulary[]> {
   });
   return linked
     .map((row) => row.vocabulary)
-    .sort((a, b) => a.word.localeCompare(b.word, 'ja'));
+    .sort((a, b) => a.word.localeCompare(b.word, "ja"));
 }
 
 export async function createLesson(data: {
@@ -41,13 +41,13 @@ export async function updateLesson(
   }>,
 ) {
   const lesson = await db.lesson.findUnique({ where: { id } });
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  if (!lesson) throw new AppError("Lesson not found", 404, "NOT_FOUND");
   return db.lesson.update({ where: { id }, data });
 }
 
 export async function deleteLesson(id: string) {
   const lesson = await db.lesson.findUnique({ where: { id } });
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  if (!lesson) throw new AppError("Lesson not found", 404, "NOT_FOUND");
   await db.lesson.delete({ where: { id } });
 }
 
@@ -61,7 +61,7 @@ export async function getLessonForAdmin(id: string) {
       conversations: { include: { conversation: true } },
     },
   });
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  if (!lesson) throw new AppError("Lesson not found", 404, "NOT_FOUND");
 
   const vocabulary = await loadLessonVocabulary(id);
 
@@ -82,12 +82,15 @@ export async function getLessonForAdmin(id: string) {
   };
 }
 
-export async function assignVocabularyToLesson(lessonId: string, vocabularyIds: string[]) {
+export async function assignVocabularyToLesson(
+  lessonId: string,
+  vocabularyIds: string[],
+) {
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
     select: { id: true, courseId: true },
   });
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  if (!lesson) throw new AppError("Lesson not found", 404, "NOT_FOUND");
 
   await db.$transaction(async (tx) => {
     await tx.vocabulary.updateMany({
@@ -134,7 +137,10 @@ export async function assignGrammarToLesson(lessonId: string, grammarIds: string
   return { count: grammarIds.length };
 }
 
-export async function assignKanjiToLesson(lessonId: string, kanjiIds: string[]) {
+export async function assignKanjiToLesson(
+  lessonId: string,
+  kanjiIds: string[],
+) {
   await db.lessonKanji.deleteMany({ where: { lessonId } });
   if (kanjiIds.length === 0) return { count: 0 };
   await db.lessonKanji.createMany({
@@ -144,7 +150,10 @@ export async function assignKanjiToLesson(lessonId: string, kanjiIds: string[]) 
   return { count: kanjiIds.length };
 }
 
-export async function assignQuestionsToLesson(lessonId: string, questionIds: string[]) {
+export async function assignQuestionsToLesson(
+  lessonId: string,
+  questionIds: string[],
+) {
   await db.lessonQuestion.deleteMany({ where: { lessonId } });
   if (questionIds.length === 0) return { count: 0 };
   await db.lessonQuestion.createMany({
@@ -154,14 +163,17 @@ export async function assignQuestionsToLesson(lessonId: string, questionIds: str
   return { count: questionIds.length };
 }
 
-export async function getStudentLessonsWithProgress(userId: string, courseId: string) {
+export async function getStudentLessonsWithProgress(
+  userId: string,
+  courseId: string,
+) {
   const course = await db.course.findUnique({
     where: { id: courseId },
     include: {
-      lessons: { orderBy: { orderIndex: 'asc' } },
+      lessons: { orderBy: { orderIndex: "asc" } },
     },
   });
-  if (!course) throw new AppError('Course not found', 404, 'NOT_FOUND');
+  if (!course) throw new AppError("Course not found", 404, "NOT_FOUND");
 
   const progress = await db.userLessonProgress.findMany({
     where: { userId, lessonId: { in: course.lessons.map((l) => l.id) } },
@@ -170,30 +182,57 @@ export async function getStudentLessonsWithProgress(userId: string, courseId: st
 
   return course.lessons.map((lesson) => ({
     ...lesson,
-    progress: progressMap.get(lesson.id) ?? { status: 'locked' as LessonProgressStatus },
+    progress: progressMap.get(lesson.id) ?? {
+      status: "locked" as LessonProgressStatus,
+    },
   }));
 }
 
-export async function getLessonContentForStudent(userId: string, lessonId: string) {
+export async function getLessonContentForStudent(
+  userId: string,
+  lessonId: string,
+) {
   const progress = await db.userLessonProgress.findUnique({
     where: { userId_lessonId: { userId, lessonId } },
   });
 
-  if (!progress || progress.status === 'locked') {
-    throw new AppError('Lesson is locked', 403, 'LESSON_LOCKED');
+  if (!progress || progress.status === "locked") {
+    throw new AppError("Lesson is locked", 403, "LESSON_LOCKED");
   }
 
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
     include: {
       grammar: { include: { grammar: true } },
-      kanji: { include: { kanji: true } },
+      kanji: {
+        include: {
+          kanji: {
+            select: {
+              id: true,
+              character: true,
+              hanVietPronunciation: true,
+              meaning: true,
+              memoryTip: true,
+              memoryImageUrl: true,
+              readingsOn: true,
+              readingsKun: true,
+              strokeCount: true,
+              jlptLevel: true,
+              radical: true,
+              examples: {
+                orderBy: { orderIndex: "asc" },
+                select: { word: true, reading: true, meaning: true },
+              },
+            },
+          },
+        },
+      },
       conversations: { include: { conversation: true } },
       course: { select: { id: true, title: true, jlptLevel: true } },
     },
   });
 
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  if (!lesson) throw new AppError("Lesson not found", 404, "NOT_FOUND");
 
   const vocabulary = await loadLessonVocabulary(lessonId);
 
@@ -222,9 +261,11 @@ export async function getLessonContentForStudent(userId: string, lessonId: strin
 export async function enrollAndInitProgress(userId: string, courseId: string) {
   const course = await db.course.findUnique({
     where: { id: courseId },
-    include: { lessons: { where: { isBonus: false }, orderBy: { orderIndex: 'asc' } } },
+    include: {
+      lessons: { where: { isBonus: false }, orderBy: { orderIndex: "asc" } },
+    },
   });
-  if (!course) throw new AppError('Course not found', 404, 'NOT_FOUND');
+  if (!course) throw new AppError("Course not found", 404, "NOT_FOUND");
 
   await db.courseEnrollment.upsert({
     where: { userId_courseId: { userId, courseId } },
@@ -234,7 +275,7 @@ export async function enrollAndInitProgress(userId: string, courseId: string) {
 
   const mainLessons = course.lessons;
   for (let i = 0; i < mainLessons.length; i++) {
-    const status: LessonProgressStatus = i === 0 ? 'active' : 'locked';
+    const status: LessonProgressStatus = i === 0 ? "active" : "locked";
     await db.userLessonProgress.upsert({
       where: { userId_lessonId: { userId, lessonId: mainLessons[i].id } },
       create: { userId, lessonId: mainLessons[i].id, status },
