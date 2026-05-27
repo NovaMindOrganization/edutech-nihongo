@@ -18,6 +18,15 @@ export async function listAllCourses() {
   });
 }
 
+export async function listAllCoursesWithLessons() {
+  return db.course.findMany({
+    orderBy: { jlptLevel: 'asc' },
+    include: {
+      lessons: { orderBy: { orderIndex: 'asc' }, select: { id: true, title: true, orderIndex: true, isBonus: true } },
+    },
+  });
+}
+
 export async function getCourse(id: string) {
   const course = await db.course.findUnique({
     where: { id },

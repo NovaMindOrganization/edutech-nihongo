@@ -1,5 +1,6 @@
-import { db } from "../config/db.js";
-import { AppError } from "../utils/app-error.js";
+import { db } from '../config/db.js';
+import { AppError } from '../utils/app-error.js';
+import type { Prisma } from '@prisma/client';
 
 export type GrammarInput = {
   title: string;
@@ -11,8 +12,8 @@ export type GrammarInput = {
   notes?: string;
   lessonId?: string;
   order?: number;
-  examples?: unknown;
-  quiz?: unknown;
+  examples?: Prisma.InputJsonValue;
+  quiz?: Prisma.InputJsonValue;
 };
 
 export async function listGrammar(params: {
@@ -58,36 +59,20 @@ export async function listGrammar(params: {
   // No lessonId: query normally
   const where = {
     ...(params.jlpt ? { jlpt: params.jlpt } : {}),
+    ...(params.lessonId ? { lessonId: params.lessonId } : {}),
     ...(search
       ? {
           OR: [
-            {
-              title: { contains: params.search, mode: "insensitive" as const },
-            },
-            {
-              pattern: {
-                contains: params.search,
-                mode: "insensitive" as const,
-              },
-            },
-            {
-              meaningVi: {
-                contains: params.search,
-                mode: "insensitive" as const,
-              },
-            },
+            { title: { contains: search, mode: 'insensitive' as const } },
+            { pattern: { contains: search, mode: 'insensitive' as const } },
+            { meaningVi: { contains: search, mode: 'insensitive' as const } },
           ],
         }
       : {}),
   };
 
   const [items, total] = await Promise.all([
-    db.grammar.findMany({
-      where,
-      orderBy: [{ order: "asc" }, { pattern: "asc" }],
-      skip,
-      take: limit,
-    }),
+    db.grammar.findMany({ where, orderBy: [{ order: 'asc' }, { pattern: 'asc' }], skip, take: limit }),
     db.grammar.count({ where }),
   ]);
 

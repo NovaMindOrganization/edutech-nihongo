@@ -15,6 +15,7 @@ import {
   JlptLevelFilter,
   SourceLessonFilter,
 } from '../components/admin-list-filters';
+import { CourseLessonSelector } from '../components/course-lesson-selector';
 import { JLPT_ALL } from '../constants';
 import {
   createGrammar,
@@ -24,14 +25,21 @@ import {
   type GrammarItem,
 } from '../services/adminApi';
 
+type ExampleItem = { jp: string; vi: string; reading?: string; en?: string };
+type QuizItem = { question: string; choices: string[]; answer: number };
+
 const emptyForm = {
+  title: '',
+  jlpt: 'N5',
+  type: '',
   pattern: '',
-  meaning: '',
-  meaningEn: '',
-  structure: '',
-  grammarType: '',
-  jlptLevel: 'N5',
-  sourceLesson: '',
+  meaningVi: '',
+  usage: '',
+  notes: '',
+  lessonId: '',
+  order: '',
+  examplesItems: [] as ExampleItem[],
+  quizItems: [] as QuizItem[],
 };
 
 export function GrammarAdminView() {
@@ -43,23 +51,23 @@ export function GrammarAdminView() {
   const [form, setForm] = useState(emptyForm);
   const [jlptLevel, setJlptLevel] = useState(JLPT_ALL);
   const [search, setSearch] = useState('');
-  const [sourceLesson, setSourceLesson] = useState('');
+  const [lessonId, setLessonId] = useState('');
 
   const load = useCallback(async () => {
     try {
       const data = await listGrammar({
         page,
         limit: 30,
-        ...(jlptLevel ? { jlptLevel } : {}),
+        ...(jlptLevel ? { jlpt: jlptLevel } : {}),
         ...(search.trim() ? { search: search.trim() } : {}),
-        ...(sourceLesson ? { lesson: Number(sourceLesson) } : {}),
+        ...(lessonId.trim() ? { lessonId: lessonId.trim() } : {}),
       });
       setItems(data.items);
       setTotal(data.total);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Lỗi tải dữ liệu');
     }
-  }, [page, jlptLevel, search, sourceLesson]);
+  }, [page, jlptLevel, search, lessonId]);
 
   useEffect(() => {
     load();
@@ -68,11 +76,11 @@ export function GrammarAdminView() {
   function resetFilters() {
     setJlptLevel(JLPT_ALL);
     setSearch('');
-    setSourceLesson('');
+    setLessonId('');
     setPage(1);
   }
 
-  const hasFilters = Boolean(jlptLevel || search.trim() || sourceLesson);
+  const hasFilters = Boolean(jlptLevel || search.trim() || lessonId.trim());
 
   function openCreate() {
     setEditing(null);
@@ -82,27 +90,39 @@ export function GrammarAdminView() {
 
   function openEdit(item: GrammarItem) {
     setEditing(item);
+    const examples = item.examples ?? [];
+    const quiz = item.quiz ?? [];
     setForm({
+      title: item.title,
+      jlpt: item.jlpt,
+      type: item.type ?? '',
       pattern: item.pattern,
-      meaning: item.meaning,
-      meaningEn: item.meaningEn ?? '',
-      structure: item.structure ?? '',
-      grammarType: item.grammarType ?? '',
-      jlptLevel: item.jlptLevel,
-      sourceLesson: item.sourceLesson?.toString() ?? '',
+      meaningVi: item.meaningVi,
+      usage: item.usage ?? '',
+      notes: item.notes ?? '',
+      lessonId: item.lessonId ?? '',
+      order: item.order?.toString() ?? '',
+      examplesItems: examples,
+      quizItems: quiz,
     });
     setOpen(true);
   }
 
   async function handleSave() {
+    const examples = form.examplesItems;
+    const quiz = form.quizItems;
     const payload = {
+      title: form.title,
+      jlpt: form.jlpt,
+      type: form.type || undefined,
       pattern: form.pattern,
-      meaning: form.meaning,
-      meaningEn: form.meaningEn || undefined,
-      structure: form.structure || undefined,
-      grammarType: form.grammarType || undefined,
-      jlptLevel: form.jlptLevel,
-      sourceLesson: form.sourceLesson ? Number(form.sourceLesson) : undefined,
+      meaningVi: form.meaningVi,
+      usage: form.usage || undefined,
+      notes: form.notes || undefined,
+      lessonId: form.lessonId || undefined,
+      order: form.order ? Number(form.order) : undefined,
+      examples: examples.length > 0 ? examples : undefined,
+      quiz: quiz.length > 0 ? quiz : undefined,
     };
     try {
       if (editing) {
@@ -160,9 +180,9 @@ export function GrammarAdminView() {
           }}
         />
         <SourceLessonFilter
-          value={sourceLesson}
+          value={lessonId}
           onChange={(v) => {
-            setSourceLesson(v);
+            setLessonId(v);
             setPage(1);
           }}
         />
@@ -181,10 +201,13 @@ export function GrammarAdminView() {
                 transition={{ delay: i * 0.02 }}
                 className="flex flex-wrap items-start gap-3 px-5 py-4 hover:bg-muted/40"
               >
-                <div className="min-w-[140px] font-jp font-medium text-primary">{item.pattern}</div>
-                <div className="flex-1 text-sm">{item.meaning}</div>
-                <Badge variant="outline">{item.jlptLevel}</Badge>
-                {item.sourceLesson != null && <Badge variant="outline">Bài {item.sourceLesson}</Badge>}
+                <div className="min-w-[160px]">
+                  <p className="font-medium text-primary">{item.title}</p>
+                  <p className="font-jp text-sm text-muted-foreground">{item.pattern}</p>
+                </div>
+                <div className="flex-1 text-sm">{item.meaningVi}</div>
+                <Badge variant="outline">{item.jlpt}</Badge>
+                {item.type && <Badge variant="outline">{item.type}</Badge>}
                 <div className="flex gap-1">
                   <Button size="icon-sm" variant="ghost" onClick={() => openEdit(item)}>
                     <Pencil className="size-4" />
@@ -213,11 +236,162 @@ export function GrammarAdminView() {
 
       <Dialog open={open} onOpenChange={setOpen} title={editing ? 'Sửa ngữ pháp' : 'Thêm ngữ pháp'}>
         <div className="grid gap-3">
-          <Input placeholder="Mẫu (～は～です)" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })} />
-          <Input placeholder="Nghĩa VI" value={form.meaning} onChange={(e) => setForm({ ...form, meaning: e.target.value })} />
-          <Input placeholder="Cấu trúc" value={form.structure} onChange={(e) => setForm({ ...form, structure: e.target.value })} />
-          <Input placeholder="Loại" value={form.grammarType} onChange={(e) => setForm({ ...form, grammarType: e.target.value })} />
-          <Input placeholder="Bài" value={form.sourceLesson} onChange={(e) => setForm({ ...form, sourceLesson: e.target.value })} />
+          <Input placeholder="Tiêu đề" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <Input placeholder="JLPT (N5)" value={form.jlpt} onChange={(e) => setForm({ ...form, jlpt: e.target.value })} />
+          <Input placeholder="Loại" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} />
+          <Input placeholder="Mẫu (pattern)" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })} />
+          <Input placeholder="Nghĩa (VI)" value={form.meaningVi} onChange={(e) => setForm({ ...form, meaningVi: e.target.value })} />
+          <CourseLessonSelector
+            className="rounded-lg border bg-background px-3 py-2 text-sm"
+            value={form.lessonId}
+            onChange={(lessonIdValue) => setForm({ ...form, lessonId: lessonIdValue })}
+          />
+          <Input placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          <div className="rounded-md border border-border/60 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-sm font-medium">Examples</p>
+            </div>
+            <div className="space-y-2">
+              {form.examplesItems.map((ex, idx) => (
+                <div key={idx} className="grid gap-2 md:grid-cols-2">
+                  <Input
+                    placeholder="JP"
+                    value={ex.jp}
+                    onChange={(e) => {
+                      const next = [...form.examplesItems];
+                      next[idx] = { ...ex, jp: e.target.value };
+                      setForm({ ...form, examplesItems: next });
+                    }}
+                  />
+                  <Input
+                    placeholder="VI"
+                    value={ex.vi}
+                    onChange={(e) => {
+                      const next = [...form.examplesItems];
+                      next[idx] = { ...ex, vi: e.target.value };
+                      setForm({ ...form, examplesItems: next });
+                    }}
+                  />
+                  <Input
+                    placeholder="Reading (optional)"
+                    value={ex.reading ?? ''}
+                    onChange={(e) => {
+                      const next = [...form.examplesItems];
+                      next[idx] = { ...ex, reading: e.target.value || undefined };
+                      setForm({ ...form, examplesItems: next });
+                    }}
+                  />
+                  <Input
+                    placeholder="EN (optional)"
+                    value={ex.en ?? ''}
+                    onChange={(e) => {
+                      const next = [...form.examplesItems];
+                      next[idx] = { ...ex, en: e.target.value || undefined };
+                      setForm({ ...form, examplesItems: next });
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setForm({
+                        ...form,
+                        examplesItems: form.examplesItems.filter((_, i) => i !== idx),
+                      })
+                    }
+                  >
+                    Xóa ví dụ
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    examplesItems: [...form.examplesItems, { jp: '', vi: '' }],
+                  })
+                }
+              >
+                Thêm ví dụ
+              </Button>
+            </div>
+          </div>
+          <div className="rounded-md border border-border/60 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-sm font-medium">Quiz</p>
+            </div>
+            <div className="space-y-2">
+              {form.quizItems.map((q, idx) => (
+                <div key={idx} className="grid gap-2">
+                  <Input
+                    placeholder="Câu hỏi"
+                    value={q.question}
+                    onChange={(e) => {
+                      const next = [...form.quizItems];
+                      next[idx] = { ...q, question: e.target.value };
+                      setForm({ ...form, quizItems: next });
+                    }}
+                  />
+                  <Input
+                    placeholder="Choices (phân tách bằng dấu phẩy)"
+                    value={q.choices.join(', ')}
+                    onChange={(e) => {
+                      const next = [...form.quizItems];
+                      next[idx] = {
+                        ...q,
+                        choices: e.target.value
+                          .split(',')
+                          .map((c) => c.trim())
+                          .filter(Boolean),
+                      };
+                      setForm({ ...form, quizItems: next });
+                    }}
+                  />
+                  <Input
+                    placeholder="Đáp án (index)"
+                    value={Number.isFinite(q.answer) ? String(q.answer) : ''}
+                    onChange={(e) => {
+                      const next = [...form.quizItems];
+                      const value = Number(e.target.value);
+                      next[idx] = { ...q, answer: Number.isNaN(value) ? 0 : value };
+                      setForm({ ...form, quizItems: next });
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setForm({
+                        ...form,
+                        quizItems: form.quizItems.filter((_, i) => i !== idx),
+                      })
+                    }
+                  >
+                    Xóa quiz
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    quizItems: [...form.quizItems, { question: '', choices: [], answer: 0 }],
+                  })
+                }
+              >
+                Thêm quiz
+              </Button>
+            </div>
+          </div>
+          <Input placeholder="Order" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
           <Button onClick={handleSave}>Lưu</Button>
         </div>
       </Dialog>

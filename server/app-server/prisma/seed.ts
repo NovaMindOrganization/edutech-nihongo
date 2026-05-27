@@ -88,18 +88,14 @@ async function main() {
     update: { passwordHash: adminHash, role: "admin" },
   });
 
-  const vocabPath = join(__dirname, "../data/vocabulary-n5.csv");
-  const grammarPath = join(__dirname, "../data/grammar-n5.csv");
+  const vocabPath = join(__dirname, '../data/vocabulary-n5.csv');
 
   const vocabRows = loadCsv(vocabPath);
-  const grammarRows = loadCsv(grammarPath);
 
-  console.log(
-    `[seed] Importing ${vocabRows.length} vocabulary, ${grammarRows.length} grammar...`,
-  );
+  console.log(`[seed] Importing ${vocabRows.length} vocabulary, sample grammar...`);
 
-  await db.vocabulary.deleteMany({ where: { jlptLevel: "N5" } });
-  await db.grammar.deleteMany({ where: { jlpt: "N5" } });
+  await db.vocabulary.deleteMany({ where: { jlptLevel: 'N5' } });
+  await db.grammar.deleteMany({ where: { jlpt: 'N5' } });
 
   const vocabBatchSize = 100;
   for (let i = 0; i < vocabRows.length; i += vocabBatchSize) {
@@ -115,45 +111,6 @@ async function main() {
         topic: row.type || null,
         createdById: admin.id,
       })),
-    });
-  }
-
-  const pendingGrammarLinks: Array<{
-    grammarId: string;
-    sourceLessonNumber: number | null;
-  }> = [];
-
-  for (const row of grammarRows) {
-    const examples =
-      row.example_japanese && row.example_vi
-        ? [
-            {
-              jp: row.example_japanese,
-              reading: row.example_reading,
-              vi: row.example_vi,
-              en: row.example_en,
-            },
-          ]
-        : undefined;
-
-    const created = await db.grammar.create({
-      data: {
-        title: row.grammar,
-        pattern: row.grammar,
-        jlpt: row.jlpt || "N5",
-        type: row.grammar_type || null,
-        meaningVi: row.meaning_vi,
-        usage: row.usage_note || null,
-        notes: row.structure || null,
-        examples,
-        createdById: admin.id,
-      },
-    });
-
-    pendingGrammarLinks.push({
-      grammarId: created.id,
-      sourceLessonNumber:
-        row.lesson && row.lesson !== "Extra" ? Number(row.lesson) : null,
     });
   }
 
@@ -224,24 +181,105 @@ async function main() {
     });
     if (vocabForLesson.length > 0) {
       await db.lessonVocabulary.createMany({
-        data: vocabForLesson.map((v) => ({
-          lessonId: lesson.id,
-          vocabularyId: v.id,
-        })),
+        data: vocabForLesson.map((v: { id: string }) => ({ lessonId: lesson.id, vocabularyId: v.id })),
         skipDuplicates: true,
       });
     }
 
-    const grammarForLesson = pendingGrammarLinks.filter(
-      (entry) => entry.sourceLessonNumber === num,
-    );
-    if (grammarForLesson.length > 0) {
-      await db.lessonGrammar.createMany({
-        data: grammarForLesson.map((g) => ({
-          lessonId: lesson.id,
-          grammarId: g.grammarId,
-        })),
-        skipDuplicates: true,
+  }
+
+  const lessonIdByNumber = new Map(lessons.map((l) => [l.orderIndex, l.id]));
+  const grammarSamples = [
+    {
+      lessonNumber: 1,
+      order: 1,
+      title: 'Câu khẳng định danh từ',
+      jlpt: 'N5',
+      type: 'basic',
+      pattern: 'N1 は N2 です。',
+      meaningVi: 'N1 là N2',
+      usage: 'Dùng để giới thiệu hoặc khẳng định.',
+      notes: "は đọc là 'wa'.",
+      examples: [
+        { jp: 'わたしは学生です。', vi: 'Tôi là học sinh.' },
+        { jp: 'キムさんは先生です。', vi: 'Anh Kim là giáo viên.' },
+      ],
+      quiz: [
+        {
+          question: 'わたし ___ 学生です。',
+          choices: ['は', 'を', 'に'],
+          answer: 0,
+        },
+      ],
+    },
+    {
+      lessonNumber: 1,
+      order: 2,
+      title: 'Câu hỏi danh từ',
+      jlpt: 'N5',
+      type: 'basic',
+      pattern: 'N1 は N2 ですか。',
+      meaningVi: 'N1 có phải là N2 không?',
+      usage: 'Dùng để hỏi xác nhận thông tin.',
+      notes: "か dùng ở cuối câu hỏi.",
+      examples: [
+        { jp: 'あなたは学生ですか。', vi: 'Bạn là học sinh không?' },
+        { jp: 'ミラーさんは先生ですか。', vi: 'Anh Miller là giáo viên không?' },
+      ],
+      quiz: [
+        {
+          question: 'ミラーさん ___ 先生ですか。',
+          choices: ['は', 'を', 'に'],
+          answer: 0,
+        },
+      ],
+    },
+    {
+      lessonNumber: 2,
+      order: 1,
+      title: 'Câu phủ định danh từ',
+      jlpt: 'N5',
+      type: 'basic',
+      pattern: 'N1 は N2 じゃありません。',
+      meaningVi: 'N1 không phải là N2.',
+      usage: 'Dùng để phủ định danh từ.',
+      notes: "じゃありません là dạng phủ định lịch sự.",
+      examples: [
+        { jp: 'わたしは先生じゃありません。', vi: 'Tôi không phải giáo viên.' },
+        { jp: 'ここは図書館じゃありません。', vi: 'Đây không phải thư viện.' },
+      ],
+      quiz: [
+        {
+          question: 'わたしは先生 ___ 。',
+          choices: ['じゃありません', 'です', 'でした'],
+          answer: 0,
+        },
+      ],
+    },
+  ];
+
+  for (const sample of grammarSamples) {
+    const lessonId = lessonIdByNumber.get(sample.lessonNumber) ?? null;
+    const created = await db.grammar.create({
+      data: {
+        title: sample.title,
+        jlpt: sample.jlpt,
+        type: sample.type,
+        pattern: sample.pattern,
+        meaningVi: sample.meaningVi,
+        usage: sample.usage,
+        notes: sample.notes,
+        lessonId,
+        order: sample.order,
+        examples: sample.examples,
+        quiz: sample.quiz,
+        createdById: admin.id,
+      },
+    });
+
+    if (lessonId) {
+      await db.lessonGrammar.create({
+        data: { lessonId, grammarId: created.id },
       });
     }
   }

@@ -245,6 +245,15 @@ export async function analyzeOcr(imageBase64: string) {
       { image: imageBase64 },
       { timeout: 120_000 },
     );
+    if (data && Array.isArray(data.matched_grammar)) {
+      return {
+        ...data,
+        matched_grammar: data.matched_grammar.map((g: { meaningVi?: string; meaning?: string }) => ({
+          ...g,
+          meaningVi: g.meaningVi ?? g.meaning ?? '',
+        })),
+      };
+    }
     return data;
   } catch {
     return {
