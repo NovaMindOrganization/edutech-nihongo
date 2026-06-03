@@ -2,6 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.core.llm import explain_homework_japanese
+from app.core.llm_runtime import apply_llm_config
+from app.schemas.llm_config import LlmConfigPayload
 from app.ocr.service import extract_japanese_text, get_ocr_status
 
 router = APIRouter(prefix='/ocr', tags=['ocr'])
@@ -9,6 +11,7 @@ router = APIRouter(prefix='/ocr', tags=['ocr'])
 
 class OcrRequest(BaseModel):
     image: str
+    llm_config: LlmConfigPayload | None = None
 
 
 class OcrMetaResponse(BaseModel):
@@ -35,6 +38,7 @@ def ocr_status() -> dict:
 
 @router.post('/analyze', response_model=OcrResponse)
 def analyze_ocr(body: OcrRequest) -> OcrResponse:
+    apply_llm_config(body.llm_config)
     text, meta = extract_japanese_text(body.image)
     matches = _vector_search(text) if text else {'vocabulary': [], 'grammar': []}
     explanation = _grammar_hint(text, matches) if text else None

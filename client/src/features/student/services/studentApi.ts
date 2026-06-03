@@ -427,11 +427,26 @@ export function cloneStudySet(id: string) {
   return apiFetch(`/student/studysets/${id}/clone`, { method: "POST" });
 }
 
+export type WebRtcMatchResult = {
+  matched: boolean;
+  roomId: string | null;
+  peerId?: string;
+  isInitiator?: boolean;
+};
+
 export function webrtcMatch() {
-  return apiFetch<{ matched: boolean; roomId: string | null; peerId?: string }>(
-    "/student/webrtc/match",
-    { method: "POST" },
-  );
+  return apiFetch<WebRtcMatchResult>("/student/webrtc/match", { method: "POST" });
+}
+
+export function webrtcLeave() {
+  return apiFetch<{ left: boolean }>("/student/webrtc/leave", { method: "POST" });
+}
+
+export function postCommunityTranslate(text: string, targetLang = "vi") {
+  return apiFetch<{ translation: string; error?: string | null }>("/student/community/translate", {
+    method: "POST",
+    body: JSON.stringify({ text, targetLang }),
+  });
 }
 
 export function webrtcReport(body: {

@@ -9,5 +9,6 @@ export { OcrView } from './views/OcrView';
 export { StudySetsView } from './views/StudySetsView';
 export { CommunityHubView } from './views/CommunityHubView';
 export { CommunityCallView } from './views/CommunityCallView';
+export { useWebRtcCall } from './hooks/use-webrtc-call';
 export * from './services/studentApi';
 export * from './services/speechApi';

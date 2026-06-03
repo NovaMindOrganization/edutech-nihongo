@@ -91,6 +91,7 @@ export const speechStt = asyncHandler(async (req: Request, res: Response) => {
     req.body.audio,
     req.body.language ?? 'ja',
     req.body.mimeType ?? 'audio/webm',
+    req.body.allowGeminiFallback !== false,
   );
   res.json({ success: true, data });
 });
@@ -184,6 +185,18 @@ export const studySetClone = asyncHandler(async (req: Request, res: Response) =>
 
 export const webrtcMatch = asyncHandler(async (req: Request, res: Response) => {
   const data = await webrtcService.matchPeer(req.user!.id);
+  res.json({ success: true, data });
+});
+
+export const webrtcLeave = asyncHandler(async (req: Request, res: Response) => {
+  const data = await webrtcService.leaveMatch(req.user!.id);
+  res.json({ success: true, data });
+});
+
+export const communityTranslate = asyncHandler(async (req: Request, res: Response) => {
+  const text = String(req.body?.text ?? '');
+  const targetLang = String(req.body?.targetLang ?? 'vi');
+  const data = await aiClient.translateCommunityText(text, targetLang);
   res.json({ success: true, data });
 });
 

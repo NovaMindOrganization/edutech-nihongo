@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import * as adminUsers from '../services/admin-users.service.js';
 import * as configService from '../services/config.service.js';
+import * as llmConfigService from '../services/llm-config.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 import type { UserRole } from '@prisma/client';
 
@@ -45,6 +46,39 @@ export const getConfig = asyncHandler(async (_req: Request, res: Response) => {
 export const setConfig = asyncHandler(async (req: Request, res: Response) => {
   await configService.setConfig(req.params.key, req.body.value);
   res.json({ success: true, data: null });
+});
+
+export const getLlmConfig = asyncHandler(async (_req: Request, res: Response) => {
+  const data = await llmConfigService.getLlmAdminConfig();
+  res.json({ success: true, data });
+});
+
+export const saveLlmConfig = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.body as {
+    provider: 'gemini' | 'agent_router';
+    geminiModel: string;
+    geminiApiKey?: string;
+    openaiBaseUrl: string;
+    openaiModel: string;
+    openaiApiKey?: string;
+    temperature: string;
+  };
+  if (body.provider !== 'gemini' && body.provider !== 'agent_router') {
+    res.status(422).json({ success: false, error: { message: 'Invalid provider' } });
+    return;
+  }
+  await llmConfigService.saveLlmAdminConfig(body);
+  res.json({ success: true, data: null });
+});
+
+export const testLlmConfig = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.body as llmConfigService.LlmTestDraft;
+  if (body.testProvider !== 'gemini' && body.testProvider !== 'agent_router') {
+    res.status(422).json({ success: false, error: { message: 'Invalid testProvider' } });
+    return;
+  }
+  const data = await llmConfigService.testLlmDraft(body);
+  res.json({ success: true, data });
 });
 
 export const listReports = asyncHandler(async (_req: Request, res: Response) => {

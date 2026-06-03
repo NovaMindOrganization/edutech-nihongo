@@ -101,6 +101,8 @@ studentRouter.put('/studysets/:id', studentExt.studySetUpdate);
 studentRouter.delete('/studysets/:id', studentExt.studySetDelete);
 studentRouter.post('/studysets/:id/clone', studentExt.studySetClone);
 studentRouter.post('/webrtc/match', studentExt.webrtcMatch);
+studentRouter.post('/webrtc/leave', studentExt.webrtcLeave);
+studentRouter.post('/community/translate', studentExt.communityTranslate);
 studentRouter.post('/webrtc/evaluate', studentExt.webrtcEvaluate);
 studentRouter.post('/webrtc/report', studentExt.webrtcReport);
 
@@ -184,6 +186,9 @@ sysAdminRouter.put('/users/:id/role', systemAdmin.updateUserRole);
 sysAdminRouter.post('/users/:id/ban', systemAdmin.banUser);
 sysAdminRouter.post('/users/:id/suspend', systemAdmin.suspendUser);
 sysAdminRouter.post('/users/:id/reset-password', systemAdmin.resetPassword);
+sysAdminRouter.get('/config/llm', systemAdmin.getLlmConfig);
+sysAdminRouter.put('/config/llm', systemAdmin.saveLlmConfig);
+sysAdminRouter.post('/config/llm/test', systemAdmin.testLlmConfig);
 sysAdminRouter.get('/config', systemAdmin.getConfig);
 sysAdminRouter.put('/config/:key', systemAdmin.setConfig);
 sysAdminRouter.get('/reports', systemAdmin.listReports);

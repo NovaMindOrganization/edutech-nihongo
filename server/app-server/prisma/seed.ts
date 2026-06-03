@@ -242,6 +242,41 @@ async function main() {
       value: "false",
       description: "Toggle maintenance mode",
     },
+    {
+      key: "llm_provider",
+      value: "gemini",
+      description: "LLM provider: gemini | agent_router",
+    },
+    {
+      key: "llm_gemini_model",
+      value: "gemini-2.5-flash",
+      description: "Gemini model id",
+    },
+    {
+      key: "llm_gemini_api_key",
+      value: "",
+      description: "Google Gemini API key (set in admin)",
+    },
+    {
+      key: "llm_openai_base_url",
+      value: "https://agentrouter.org/v1",
+      description: "OpenAI-compatible API base URL (AgentRouter)",
+    },
+    {
+      key: "llm_openai_model",
+      value: "claude-opus-4-6",
+      description: "OpenAI-compatible model id (AgentRouter: claude-opus-4-6)",
+    },
+    {
+      key: "llm_openai_api_key",
+      value: "",
+      description: "AgentRouter / OpenAI-compatible API key (set in admin)",
+    },
+    {
+      key: "llm_temperature",
+      value: "0.4",
+      description: "LLM sampling temperature",
+    },
   ];
 
   for (const c of configs) {
