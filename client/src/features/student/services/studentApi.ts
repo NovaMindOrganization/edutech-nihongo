@@ -396,36 +396,19 @@ export function searchDictionary(q: string) {
   );
 }
 
-export type StudySetRow = {
-  id: string;
-  title: string;
-  description?: string | null;
-  isPublic?: boolean;
-};
-
-export function listPublicStudySets() {
-  return apiFetch<StudySetRow[]>("/student/studysets/public");
-}
-
-export function listMyStudySets() {
-  return apiFetch<StudySetRow[]>("/student/studysets/mine");
-}
-
-export function createStudySet(body: {
-  title: string;
-  description?: string;
-  isPublic?: boolean;
-  cards?: Array<{ front: string; back: string }>;
-}) {
-  return apiFetch("/student/studysets", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
-
-export function cloneStudySet(id: string) {
-  return apiFetch(`/student/studysets/${id}/clone`, { method: "POST" });
-}
+export type { StudySetListRow as StudySetRow } from '../types/study-set.types';
+export {
+  addStudySetItems,
+  cloneStudySet,
+  createStudySet,
+  deleteStudySet,
+  getStudySet,
+  listMyStudySets,
+  listPublicStudySets,
+  studySetAssetUrl,
+  updateStudySet,
+  uploadStudySetFile,
+} from './studySetApi';
 
 export type WebRtcMatchResult = {
   matched: boolean;

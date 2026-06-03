@@ -307,6 +307,50 @@ export async function analyzeOcr(imageBase64: string) {
   }
 }
 
+export type StudySetQuizQuestionDto = {
+  id: string;
+  prompt: string;
+  choices: string[];
+  answer: number;
+  explanation?: string | null;
+};
+
+export async function generateStudySetQuizViaAi(input: {
+  title: string;
+  description?: string | null;
+  questionCount: number;
+  items: Array<{ contentType: string; content: Record<string, unknown> }>;
+}) {
+  try {
+    const data = await aiPost(
+      '/api/v1/study-set/quiz/generate',
+      {
+        title: input.title,
+        description: input.description ?? '',
+        question_count: input.questionCount,
+        items: input.items.map((it) => ({
+          content_type: it.contentType,
+          content: it.content,
+        })),
+      },
+      120_000,
+    );
+    return data as {
+      questions?: StudySetQuizQuestionDto[];
+      error?: string | null;
+    };
+  } catch (err) {
+    const message =
+      axios.isAxiosError(err)
+        ? (err.response?.data as { error?: { message?: string } })?.error?.message ??
+          err.message
+        : err instanceof Error
+          ? err.message
+          : 'Quiz generation failed';
+    return { questions: [], error: message };
+  }
+}
+
 export async function getOcrStatus() {
   try {
     const { data } = await axios.get(`${env.aiServerUrl}/api/v1/ocr/status`, { timeout: 10_000 });

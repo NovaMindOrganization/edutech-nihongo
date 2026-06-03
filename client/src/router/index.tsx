@@ -10,6 +10,7 @@ import {
   LessonDetailAdminView,
   GrammarAdminView,
   QuestionsAdminView,
+  StudySetAdminDetailView,
   StudySetsAdminView,
   UsersAdminView,
   VocabularyAdminView,
@@ -43,6 +44,8 @@ import {
   PracticeHubView,
   ReviewByTypeView,
   ReviewHubView,
+  StudySetCreateView,
+  StudySetDetailView,
   StudySetsView,
 } from "@/features/student";
 import { AdminLayout } from "@/layouts/admin-layout";
@@ -101,6 +104,18 @@ export function AppRouter() {
             />
             <Route path={paths.student.studySets} element={<StudySetsView />} />
             <Route
+              path={paths.student.studySetCreate}
+              element={<StudySetCreateView />}
+            />
+            <Route
+              path="/community/study-sets/:id/edit"
+              element={<StudySetCreateView />}
+            />
+            <Route
+              path="/community/study-sets/:id"
+              element={<StudySetDetailView />}
+            />
+            <Route
               path={paths.student.communityCall}
               element={<CommunityCallView />}
             />
@@ -158,6 +173,7 @@ export function AppRouter() {
           <Route path="conversations" element={<ConversationsAdminView />} />
           <Route path="questions" element={<QuestionsAdminView />} />
           <Route path="study-sets" element={<StudySetsAdminView />} />
+          <Route path="study-sets/:id" element={<StudySetAdminDetailView />} />
           <Route path="users" element={<UsersAdminView />} />
           <Route path="config" element={<ConfigAdminView />} />
         </Route>

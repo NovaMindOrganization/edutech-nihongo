@@ -188,16 +188,38 @@ export const deleteConversation = asyncHandler(async (req: Request, res: Respons
   res.json({ success: true, data: null });
 });
 
-export const listPendingStudySets = asyncHandler(async (_req: Request, res: Response) => {
-  const data = await studySetService.listPendingStudySets();
+export const listPendingStudySets = asyncHandler(async (req: Request, res: Response) => {
+  const q = (req.validatedQuery ?? req.query) as {
+    status?: 'pending' | 'approved' | 'rejected' | 'all';
+    search?: string;
+  };
+  const data = await studySetService.listAdminStudySets(q);
+  res.json({ success: true, data });
+});
+
+export const getStudySetAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const data = await studySetService.getStudySetForAdmin(String(req.params.id));
   res.json({ success: true, data });
 });
 
 export const moderateStudySet = asyncHandler(async (req: Request, res: Response) => {
-  const status = req.body.status as 'approved' | 'rejected';
-  const id = String(req.params.id);
-  const data = await studySetService.moderateStudySet(id, status);
-  res.json({ success: true, data });
+  const body = req.validatedBody as {
+    status: 'approved' | 'rejected';
+    moderationNote?: string;
+    quizQuestionCount?: number;
+  };
+  const data = await studySetService.moderateStudySet(String(req.params.id), body.status, {
+    moderationNote: body.moderationNote,
+    quizQuestionCount: body.quizQuestionCount,
+  });
+  res.json({
+    success: true,
+    data,
+    message:
+      body.status === 'approved'
+        ? 'Đã duyệt. Quiz AI đã được tạo (hoặc đang xử lý).'
+        : undefined,
+  });
 });
 
 // Questions

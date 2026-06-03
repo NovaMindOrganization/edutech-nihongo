@@ -26,6 +26,14 @@ import {
   vocabSchema,
   radicalSchema,
 } from '../validators/common.js';
+import {
+  studySetAddItemsSchema,
+  studySetAdminListQuerySchema,
+  studySetCreateSchema,
+  studySetListQuerySchema,
+  studySetModerateSchema,
+  studySetUpdateSchema,
+} from '../validators/study-set.validator.js';
 
 const router = Router();
 
@@ -62,6 +70,7 @@ router.get('/public/courses/:id/outline', publicCtrl.getCourseOutline);
 router.get('/public/courses/:id/lessons', publicCtrl.getCourseOutline);
 router.get('/public/lessons/:id/preview', publicCtrl.getLessonPreview);
 router.get('/public/kanji/:id/memory-image', publicCtrl.getKanjiMemoryImage);
+router.get('/public/study-sets/asset', publicCtrl.getStudySetAsset);
 router.post('/public/placement-test/start', publicCtrl.placementStart);
 router.post('/public/placement-test/submit', optionalAuth, publicCtrl.placementSubmit);
 router.get('/public/dictionary/search', publicCtrl.dictionarySearch);
@@ -94,12 +103,35 @@ studentRouter.get('/jlpt-sim/history', studentExt.jlptHistory);
 studentRouter.get('/ocr/status', studentExt.ocrStatus);
 studentRouter.post('/ocr/analyze', studentExt.ocrAnalyze);
 studentRouter.get('/dictionary/search', studentExt.dictionarySearch);
-studentRouter.get('/studysets/public', studentExt.studySetsPublic);
+studentRouter.get(
+  '/studysets/public',
+  validateQuery(studySetListQuerySchema),
+  studentExt.studySetsPublic,
+);
 studentRouter.get('/studysets/mine', studentExt.studySetsMine);
-studentRouter.post('/studysets', studentExt.studySetCreate);
-studentRouter.put('/studysets/:id', studentExt.studySetUpdate);
+studentRouter.post(
+  '/studysets/upload',
+  express.raw({
+    type: ['image/*', 'audio/*', 'application/octet-stream'],
+    limit: '25mb',
+  }),
+  studentExt.studySetUpload,
+);
+studentRouter.get('/studysets/:id', studentExt.studySetGet);
+studentRouter.post('/studysets', validateBody(studySetCreateSchema), studentExt.studySetCreate);
+studentRouter.put(
+  '/studysets/:id',
+  validateBody(studySetUpdateSchema),
+  studentExt.studySetUpdate,
+);
 studentRouter.delete('/studysets/:id', studentExt.studySetDelete);
 studentRouter.post('/studysets/:id/clone', studentExt.studySetClone);
+studentRouter.post(
+  '/studysets/:id/items',
+  validateBody(studySetAddItemsSchema),
+  studentExt.studySetAddItems,
+);
+studentRouter.delete('/studysets/:id/items/:itemId', studentExt.studySetRemoveItem);
 studentRouter.post('/webrtc/match', studentExt.webrtcMatch);
 studentRouter.post('/webrtc/leave', studentExt.webrtcLeave);
 studentRouter.post('/community/translate', studentExt.communityTranslate);
@@ -195,8 +227,17 @@ sysAdminRouter.get('/reports', systemAdmin.listReports);
 sysAdminRouter.put('/reports/:id/resolve', systemAdmin.resolveReport);
 sysAdminRouter.get('/analytics/dau', systemAdmin.analytics);
 sysAdminRouter.get('/health', systemAdmin.adminHealth);
-sysAdminRouter.get('/studysets/pending', admin.listPendingStudySets);
-sysAdminRouter.post('/studysets/:id/moderate', admin.moderateStudySet);
+sysAdminRouter.get(
+  '/studysets/pending',
+  validateQuery(studySetAdminListQuerySchema),
+  admin.listPendingStudySets,
+);
+sysAdminRouter.get('/studysets/:id', admin.getStudySetAdmin);
+sysAdminRouter.post(
+  '/studysets/:id/moderate',
+  validateBody(studySetModerateSchema),
+  admin.moderateStudySet,
+);
 
 router.use('/admin', sysAdminRouter);
 

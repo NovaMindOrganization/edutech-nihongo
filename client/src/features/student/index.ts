@@ -7,6 +7,8 @@ export { PracticeHubView } from './views/PracticeHubView';
 export { JlptSimView } from './views/JlptSimView';
 export { OcrView } from './views/OcrView';
 export { StudySetsView } from './views/StudySetsView';
+export { StudySetDetailView } from './views/StudySetDetailView';
+export { StudySetCreateView } from './views/StudySetCreateView';
 export { CommunityHubView } from './views/CommunityHubView';
 export { CommunityCallView } from './views/CommunityCallView';
 export { useWebRtcCall } from './hooks/use-webrtc-call';

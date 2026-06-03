@@ -30,6 +30,14 @@ enum StudySetModerationStatus {
   rejected
 }
 
+enum StudySetContentType {
+  vocabulary
+  grammar
+  kanji
+  listening
+  speaking
+}
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
@@ -432,34 +440,43 @@ model UserErrorLog {
 }
 
 model StudySet {
-  id          String   @id @default(uuid())
-  ownerId     String   @map("owner_id")
-  title       String
-  description String?
-  isPublic    Boolean  @default(false) @map("is_public")
+  id               String                   @id @default(uuid())
+  ownerId          String                   @map("owner_id")
+  title            String
+  description      String?
+  coverImageUrl    String?                  @map("cover_image_url")
+  tags             Json                     @default("[]")
+  isPublic         Boolean                  @default(false) @map("is_public")
   moderationStatus StudySetModerationStatus @default(pending) @map("moderation_status")
-  moderatedAt DateTime? @map("moderated_at")
-  clonedFrom  String?  @map("cloned_from")
-  createdAt   DateTime @default(now()) @map("created_at")
+  moderationNote   String?                  @map("moderation_note")
+  moderatedAt      DateTime?                @map("moderated_at")
+  viewCount        Int                      @default(0) @map("view_count")
+  cloneCount       Int                      @default(0) @map("clone_count")
+  clonedFrom       String?                  @map("cloned_from")
+  quiz               Json?                    @map("quiz")
+  quizQuestionCount  Int?                     @map("quiz_question_count")
+  quizGeneratedAt    DateTime?                @map("quiz_generated_at")
+  createdAt        DateTime                 @default(now()) @map("created_at")
 
   owner  User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  cards  StudySetCard[]
+  items  StudySetItem[]
   source StudySet?      @relation("StudySetClone", fields: [clonedFrom], references: [id])
   clones StudySet[]     @relation("StudySetClone")
 
   @@map("study_sets")
 }
 
-model StudySetCard {
-  id         String @id @default(uuid())
-  studySetId String @map("study_set_id")
-  front      String
-  back       String
-  orderIndex Int    @default(0) @map("order_index")
+model StudySetItem {
+  id          String              @id @default(uuid())
+  studySetId  String              @map("study_set_id")
+  contentType StudySetContentType @map("content_type")
+  content     Json
+  orderIndex  Int                 @default(0) @map("order_index")
 
   studySet StudySet @relation(fields: [studySetId], references: [id], onDelete: Cascade)
 
-  @@map("study_set_cards")
+  @@index([studySetId, contentType])
+  @@map("study_set_items")
 }
 
 model AbuseReport {

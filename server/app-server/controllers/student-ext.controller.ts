@@ -8,6 +8,7 @@ import * as jlptService from '../services/jlpt.service.js';
 import * as minitestService from '../services/minitest.service.js';
 import * as notebookService from '../services/notebook.service.js';
 import * as reviewService from '../services/review.service.js';
+import * as studySetMediaService from '../services/study-set-media.service.js';
 import * as studySetService from '../services/study-set.service.js';
 import * as webrtcService from '../services/webrtc.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
@@ -153,9 +154,61 @@ export const dictionarySearch = asyncHandler(async (req: Request, res: Response)
   res.json({ success: true, data });
 });
 
-export const studySetsPublic = asyncHandler(async (_req: Request, res: Response) => {
-  const data = await studySetService.listPublicStudySets();
+export const studySetsPublic = asyncHandler(async (req: Request, res: Response) => {
+  const q = (req.validatedQuery ?? req.query) as {
+    page?: number;
+    limit?: number;
+    search?: string;
+    contentType?: 'vocabulary' | 'grammar' | 'kanji' | 'listening' | 'speaking';
+  };
+  const data = await studySetService.listPublicStudySets(q);
   res.json({ success: true, data });
+});
+
+export const studySetGet = asyncHandler(async (req: Request, res: Response) => {
+  const data = await studySetService.getStudySetById(
+    String(req.params.id),
+    req.user!.id,
+    { incrementView: true },
+  );
+  res.json({ success: true, data });
+});
+
+export const studySetAddItems = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.validatedBody as { items: Parameters<typeof studySetService.addStudySetItems>[2] };
+  const data = await studySetService.addStudySetItems(
+    req.user!.id,
+    String(req.params.id),
+    body.items,
+  );
+  res.json({ success: true, data });
+});
+
+export const studySetRemoveItem = asyncHandler(async (req: Request, res: Response) => {
+  await studySetService.removeStudySetItem(
+    req.user!.id,
+    String(req.params.id),
+    String(req.params.itemId),
+  );
+  res.json({ success: true, data: null });
+});
+
+export const studySetUpload = asyncHandler(async (req: Request, res: Response) => {
+  const contentType = String(req.headers['content-type'] ?? '');
+  const body = req.body;
+  if (!Buffer.isBuffer(body) || !body.length) {
+    res.status(422).json({
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: 'File body required' },
+    });
+    return;
+  }
+  const data = await studySetMediaService.uploadStudySetAsset({
+    userId: req.user!.id,
+    contentType,
+    body,
+  });
+  res.status(201).json({ success: true, data });
 });
 
 export const studySetsMine = asyncHandler(async (req: Request, res: Response) => {
@@ -164,12 +217,19 @@ export const studySetsMine = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const studySetCreate = asyncHandler(async (req: Request, res: Response) => {
-  const data = await studySetService.createStudySet(req.user!.id, req.body);
+  const data = await studySetService.createStudySet(
+    req.user!.id,
+    req.validatedBody as Parameters<typeof studySetService.createStudySet>[1],
+  );
   res.status(201).json({ success: true, data });
 });
 
 export const studySetUpdate = asyncHandler(async (req: Request, res: Response) => {
-  const data = await studySetService.updateStudySet(req.user!.id, req.params.id, req.body);
+  const data = await studySetService.updateStudySet(
+    req.user!.id,
+    String(req.params.id),
+    req.validatedBody as Parameters<typeof studySetService.updateStudySet>[2],
+  );
   res.json({ success: true, data });
 });
 
