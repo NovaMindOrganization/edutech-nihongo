@@ -17,13 +17,17 @@ export type VocabItem = {
 
 export type GrammarItem = {
   id: string;
+  lessonId: string | null;
+  order: number | null;
+  title: string;
+  jlpt: string;
+  type: string | null;
   pattern: string;
-  meaning: string;
-  meaningEn: string | null;
-  structure: string | null;
-  grammarType: string | null;
-  jlptLevel: string;
-  sourceLesson: number | null;
+  meaningVi: string;
+  usage: string | null;
+  notes: string | null;
+  examples: Array<{ jp: string; vi: string; reading?: string | null; en?: string | null }> | null;
+  quiz: Array<{ question: string; choices: string[]; answer: number }> | null;
 };
 
 export type Paginated<T> = {
@@ -167,6 +171,10 @@ export function assignLessonVocabulary(lessonId: string, ids: string[]) {
 
 export function listCourses() {
   return apiFetch<CourseItem[]>("/admin/courses");
+}
+
+export function listCoursesWithLessons() {
+  return apiFetch<CourseDetail[]>('/admin/courses-with-lessons');
 }
 
 export function getCourse(id: string) {

@@ -137,25 +137,25 @@ model Vocabulary {
 }
 
 model Grammar {
-  id               String   @id @default(uuid())
-  pattern          String
-  meaning          String
-  meaningEn        String?  @map("meaning_en")
-  structure        String?
-  grammarType      String?  @map("grammar_type")
-  usageNote        String?  @map("usage_note")
-  explanation      String?
-  jlptLevel        String   @map("jlpt_level")
-  topic            String?
-  exampleSentences Json?    @map("example_sentences")
-  sourceLesson     Int?     @map("source_lesson")
-  createdById      String?  @map("created_by")
-  createdAt        DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid())
+  lessonId   String?  @map("lesson_id")
+  order      Int?
+  title      String
+  jlpt       String
+  type       String?
+  pattern    String
+  meaningVi  String   @map("meaning_vi")
+  usage      String?
+  notes      String?
+  examples   Json?
+  quiz       Json?    @map("quiz")
+  createdById String? @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   createdBy User?           @relation("GrammarCreator", fields: [createdById], references: [id])
   lessons   LessonGrammar[]
 
-  @@index([jlptLevel])
+  @@index([jlpt])
   @@map("grammar")
 }
 

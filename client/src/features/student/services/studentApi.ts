@@ -85,17 +85,18 @@ export type LessonPayload = {
     speakingPrompt?: string | null;
     course: { id: string; title: string; jlptLevel: string };
   };
-  vocabulary: Array<{
-    id: string;
-    word: string;
-    reading: string | null;
-    meaning: string;
-  }>;
+  vocabulary: Array<{ id: string; word: string; reading: string | null; meaning: string }>;
   grammar: Array<{
     id: string;
+    title: string;
+    jlpt: string;
+    type: string | null;
     pattern: string;
-    meaning: string;
-    structure: string | null;
+    meaningVi: string;
+    usage: string | null;
+    notes: string | null;
+    examples: Array<{ jp: string; vi: string; reading?: string | null; en?: string | null }> | null;
+    quiz: Array<{ question: string; choices: string[]; answer: number }> | null;
   }>;
   kanji: Array<{
     id: string;
@@ -371,13 +372,8 @@ export type OcrMeta = {
 export function postOcr(image: string) {
   return apiFetch<{
     extracted_text: string;
-    matched_vocabulary: Array<{
-      id: string;
-      word: string;
-      reading: string | null;
-      meaning: string;
-    }>;
-    matched_grammar: Array<{ id: string; pattern: string; meaning: string }>;
+    matched_vocabulary: Array<{ id: string; word: string; reading: string | null; meaning: string }>;
+    matched_grammar: Array<{ id: string; pattern: string; meaningVi: string }>;
     grammar_explanation: string | null;
     meta?: OcrMeta | null;
   }>("/student/ocr/analyze", {

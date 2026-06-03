@@ -28,8 +28,9 @@ export async function searchDictionary(query: string, opts?: { userId?: string; 
     db.grammar.findMany({
       where: {
         OR: [
+          { title: { contains: q, mode: 'insensitive' } },
           { pattern: { contains: q, mode: 'insensitive' } },
-          { meaning: { contains: q, mode: 'insensitive' } },
+          { meaningVi: { contains: q, mode: 'insensitive' } },
         ],
       },
       take: 10,
