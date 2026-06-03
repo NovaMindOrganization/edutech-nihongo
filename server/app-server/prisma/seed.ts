@@ -10,14 +10,14 @@ const db = new PrismaClient();
 
 // --- Dán hàm này bên ngoài hàm main() của prisma/seed.ts ---
 async function seedRadicals(adminId: string) {
-  const filePath = join(__dirname, '../data/214 Bộ Thủ Hán Tự Đầy Đủ.csv');
-  const fileContent = readFileSync(filePath, 'utf8');
-  const lines = fileContent.split('\n').filter(line => line.trim() !== '');
+  const filePath = join(__dirname, "../data/214 Bộ Thủ Hán Tự Đầy Đủ.csv");
+  const fileContent = readFileSync(filePath, "utf8");
+  const lines = fileContent.split("\n").filter((line) => line.trim() !== "");
   const dataLines = lines.slice(1);
 
   // Xóa dữ liệu cũ của bảng Radical trước khi nạp mới
   await db.radical.deleteMany({});
-  console.log('[seed] Cleared existing radicals.');
+  console.log("[seed] Cleared existing radicals.");
 
   const radicals = [];
   for (const line of dataLines) {
@@ -32,7 +32,7 @@ async function seedRadicals(adminId: string) {
 
     const radicalIndexMatch = radicalIdStr.match(/\d+/);
     if (!radicalIndexMatch) continue;
-    
+
     const radicalIndex = parseInt(radicalIndexMatch[0], 10);
 
     radicals.push({
@@ -40,27 +40,33 @@ async function seedRadicals(adminId: string) {
       character,
       sinoVietnamese,
       meaning,
-      strokeCount
+      strokeCount,
     });
   }
 
-  
-
   // Khuyên dùng: Sử dụng createMany để đẩy data cực nhanh
   await db.radical.createMany({
-    data: radicals
+    data: radicals,
   });
 
   console.log(`[seed] Seeded ${radicals.length} radicals successfully.`);
 }
 
 // --- Dán hàm này phía trên hàm main() của prisma/seed.ts ---
-async function seedKanji(adminId: string, lessons: { id: string; orderIndex: number }[]) {
+async function seedKanji(
+  adminId: string,
+  lessons: { id: string; orderIndex: number }[],
+) {
   // 1. Đường dẫn tới file CSV Kanji mới của bạn
-  const kanjiPath = join(__dirname, "../data/Database Kanji and Example - N5.csv");
+  const kanjiPath = join(
+    __dirname,
+    "../data/Database Kanji and Example - N5.csv",
+  );
   const kanjiRows = loadCsv(kanjiPath);
 
-  console.log(`[seed] Found ${kanjiRows.length} kanji rows in CSV. Processing...`);
+  console.log(
+    `[seed] Found ${kanjiRows.length} kanji rows in CSV. Processing...`,
+  );
 
   // 2. Xóa dữ liệu cũ của cấp N5 trong bảng Kanji để tránh trùng lặp khi seed lại
   await db.kanji.deleteMany({ where: { jlptLevel: "N5" } });
@@ -70,29 +76,67 @@ async function seedKanji(adminId: string, lessons: { id: string; orderIndex: num
 
   for (const row of kanjiRows) {
     // CSV headers in this file are: Id,Kanji,Han-Viet Pronunciation,Kun,On,Meaning,Word 1,Word 2,Word 3,MemoryTip,StrokeCount,Level,Image,Bộ thủ chính
-    const character = (row.Kanji || row.Kanji || row.KANJI || row.kanji || '').trim();
-    const meaning = (row.Meaning || row.meaning || '').trim();
+    const character = (
+      row.Kanji ||
+      row.Kanji ||
+      row.KANJI ||
+      row.kanji ||
+      ""
+    ).trim();
+    const meaning = (row.Meaning || row.meaning || "").trim();
 
     if (!character) continue;
 
-    const readingsOnRaw = (row.On || row.on || row.Onyomi || row.OnYomi || '').trim();
-    const readingsKunRaw = (row.Kun || row.kun || row.Kunyomi || row.KunYomi || '').trim();
-    const readingsOn = readingsOnRaw ? readingsOnRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
-    const readingsKun = readingsKunRaw ? readingsKunRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    const readingsOnRaw = (
+      row.On ||
+      row.on ||
+      row.Onyomi ||
+      row.OnYomi ||
+      ""
+    ).trim();
+    const readingsKunRaw = (
+      row.Kun ||
+      row.kun ||
+      row.Kunyomi ||
+      row.KunYomi ||
+      ""
+    ).trim();
+    const readingsOn = readingsOnRaw
+      ? readingsOnRaw
+          .split(",")
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+      : [];
+    const readingsKun = readingsKunRaw
+      ? readingsKunRaw
+          .split(",")
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+      : [];
 
-    const radicalField = row['Bộ thủ chính'] || row.botruchinh || row.radical || '';
-    const strokeRaw = (row.StrokeCount || row.strokeCount || '').trim();
-    const strokeCountVal = strokeRaw ? Number(strokeRaw.replace(/[^0-9]/g, '')) : null;
-    const memoryTip = (row.MemoryTip || row.MemoryTip || row['MemoryTip'] || row.MemoryTip || '').trim() || null;
-    const imageUrl = (row.Image || row.image || '').trim() || null;
-    const level = (row.Level || row.level || '').trim() || 'N5';
+    const radicalField =
+      row["Bộ thủ chính"] || row.botruchinh || row.radical || "";
+    const strokeRaw = (row.StrokeCount || row.strokeCount || "").trim();
+    const strokeCountVal = strokeRaw
+      ? Number(strokeRaw.replace(/[^0-9]/g, ""))
+      : null;
+    const memoryTip =
+      (
+        row.MemoryTip ||
+        row.MemoryTip ||
+        row["MemoryTip"] ||
+        row.MemoryTip ||
+        ""
+      ).trim() || null;
+    const imageUrl = (row.Image || row.image || "").trim() || null;
+    const level = (row.Level || row.level || "").trim() || "N5";
 
     kanjiDataList.push({
       character,
-      meaning: meaning || '',
+      meaning: meaning || "",
       readingsOn,
       readingsKun,
-      jlptLevel: level || 'N5',
+      jlptLevel: level || "N5",
       radical: radicalField || null,
       strokeCount: strokeCountVal,
       memoryTip: memoryTip,
@@ -106,18 +150,20 @@ async function seedKanji(adminId: string, lessons: { id: string; orderIndex: num
     await db.kanji.createMany({
       data: kanjiDataList,
     });
-    console.log(`[seed] Successfully inserted ${kanjiDataList.length} Kanji N5 items.`);
+    console.log(
+      `[seed] Successfully inserted ${kanjiDataList.length} Kanji N5 items.`,
+    );
   }
 
   // 5. (Nâng cao) Liên kết Kanji vào các Bài học (Lessons) tự động nếu file CSV của bạn có cột 'lesson'
   for (const row of kanjiRows) {
     const lessonNum = Number(row.lesson || row.Lesson);
     const character = row.character || row.Character || row.Kanji;
-    
+
     if (!Number.isNaN(lessonNum) && character) {
       const targetLesson = lessons.find((l) => l.orderIndex === lessonNum);
       const targetKanji = await db.kanji.findFirst({ where: { character } });
-      
+
       if (targetLesson && targetKanji) {
         // Tạo liên kết trong bảng trung gian lessonKanji
         await db.lessonKanji.upsert({
@@ -218,14 +264,16 @@ async function main() {
     update: { passwordHash: adminHash, role: "admin" },
   });
 
-  const vocabPath = join(__dirname, '../data/vocabulary-n5.csv');
+  const vocabPath = join(__dirname, "../data/vocabulary-n5.csv");
 
   const vocabRows = loadCsv(vocabPath);
 
-  console.log(`[seed] Importing ${vocabRows.length} vocabulary, sample grammar...`);
+  console.log(
+    `[seed] Importing ${vocabRows.length} vocabulary, sample grammar...`,
+  );
 
-  await db.vocabulary.deleteMany({ where: { jlptLevel: 'N5' } });
-  await db.grammar.deleteMany({ where: { jlpt: 'N5' } });
+  await db.vocabulary.deleteMany({ where: { jlptLevel: "N5" } });
+  await db.grammar.deleteMany({ where: { jlpt: "N5" } });
 
   const vocabBatchSize = 100;
   for (let i = 0; i < vocabRows.length; i += vocabBatchSize) {
@@ -311,11 +359,13 @@ async function main() {
     });
     if (vocabForLesson.length > 0) {
       await db.lessonVocabulary.createMany({
-        data: vocabForLesson.map((v: { id: string }) => ({ lessonId: lesson.id, vocabularyId: v.id })),
+        data: vocabForLesson.map((v: { id: string }) => ({
+          lessonId: lesson.id,
+          vocabularyId: v.id,
+        })),
         skipDuplicates: true,
       });
     }
-
   }
 
   const lessonIdByNumber = new Map(lessons.map((l) => [l.orderIndex, l.id]));
@@ -323,21 +373,21 @@ async function main() {
     {
       lessonNumber: 1,
       order: 1,
-      title: 'Câu khẳng định danh từ',
-      jlpt: 'N5',
-      type: 'basic',
-      pattern: 'N1 は N2 です。',
-      meaningVi: 'N1 là N2',
-      usage: 'Dùng để giới thiệu hoặc khẳng định.',
+      title: "Câu khẳng định danh từ",
+      jlpt: "N5",
+      type: "basic",
+      pattern: "N1 は N2 です。",
+      meaningVi: "N1 là N2",
+      usage: "Dùng để giới thiệu hoặc khẳng định.",
       notes: "は đọc là 'wa'.",
       examples: [
-        { jp: 'わたしは学生です。', vi: 'Tôi là học sinh.' },
-        { jp: 'キムさんは先生です。', vi: 'Anh Kim là giáo viên.' },
+        { jp: "わたしは学生です。", vi: "Tôi là học sinh." },
+        { jp: "キムさんは先生です。", vi: "Anh Kim là giáo viên." },
       ],
       quiz: [
         {
-          question: 'わたし ___ 学生です。',
-          choices: ['は', 'を', 'に'],
+          question: "わたし ___ 学生です。",
+          choices: ["は", "を", "に"],
           answer: 0,
         },
       ],
@@ -345,21 +395,24 @@ async function main() {
     {
       lessonNumber: 1,
       order: 2,
-      title: 'Câu hỏi danh từ',
-      jlpt: 'N5',
-      type: 'basic',
-      pattern: 'N1 は N2 ですか。',
-      meaningVi: 'N1 có phải là N2 không?',
-      usage: 'Dùng để hỏi xác nhận thông tin.',
+      title: "Câu hỏi danh từ",
+      jlpt: "N5",
+      type: "basic",
+      pattern: "N1 は N2 ですか。",
+      meaningVi: "N1 có phải là N2 không?",
+      usage: "Dùng để hỏi xác nhận thông tin.",
       notes: "か dùng ở cuối câu hỏi.",
       examples: [
-        { jp: 'あなたは学生ですか。', vi: 'Bạn là học sinh không?' },
-        { jp: 'ミラーさんは先生ですか。', vi: 'Anh Miller là giáo viên không?' },
+        { jp: "あなたは学生ですか。", vi: "Bạn là học sinh không?" },
+        {
+          jp: "ミラーさんは先生ですか。",
+          vi: "Anh Miller là giáo viên không?",
+        },
       ],
       quiz: [
         {
-          question: 'ミラーさん ___ 先生ですか。',
-          choices: ['は', 'を', 'に'],
+          question: "ミラーさん ___ 先生ですか。",
+          choices: ["は", "を", "に"],
           answer: 0,
         },
       ],
@@ -367,21 +420,21 @@ async function main() {
     {
       lessonNumber: 2,
       order: 1,
-      title: 'Câu phủ định danh từ',
-      jlpt: 'N5',
-      type: 'basic',
-      pattern: 'N1 は N2 じゃありません。',
-      meaningVi: 'N1 không phải là N2.',
-      usage: 'Dùng để phủ định danh từ.',
+      title: "Câu phủ định danh từ",
+      jlpt: "N5",
+      type: "basic",
+      pattern: "N1 は N2 じゃありません。",
+      meaningVi: "N1 không phải là N2.",
+      usage: "Dùng để phủ định danh từ.",
       notes: "じゃありません là dạng phủ định lịch sự.",
       examples: [
-        { jp: 'わたしは先生じゃありません。', vi: 'Tôi không phải giáo viên.' },
-        { jp: 'ここは図書館じゃありません。', vi: 'Đây không phải thư viện.' },
+        { jp: "わたしは先生じゃありません。", vi: "Tôi không phải giáo viên." },
+        { jp: "ここは図書館じゃありません。", vi: "Đây không phải thư viện." },
       ],
       quiz: [
         {
-          question: 'わたしは先生 ___ 。',
-          choices: ['じゃありません', 'です', 'でした'],
+          question: "わたしは先生 ___ 。",
+          choices: ["じゃありません", "です", "でした"],
           answer: 0,
         },
       ],
