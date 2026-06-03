@@ -88,9 +88,7 @@ export function LessonKanjiView() {
                   <th className="px-3 py-2">On</th>
                   <th className="px-3 py-2">Meaning</th>
                   <th className="px-3 py-2">Bộ thủ chính</th>
-                  <th className="px-3 py-2">Word 1</th>
-                  <th className="px-3 py-2">Word 2</th>
-                  <th className="px-3 py-2">Word 3</th>
+                  <th className="px-3 py-2">Examples</th>
                   <th className="px-3 py-2">MemoryTip</th>
                   <th className="px-3 py-2">StrokeCount</th>
                   <th className="px-3 py-2">Level</th>
@@ -125,7 +123,9 @@ export function LessonKanjiView() {
                               >
                                 <Volume2 className="size-3" />
                               </Button>
-                              {i < k.readingsKun.length - 1 && <span className="text-muted-foreground">,</span>}
+                              {i < k.readingsKun.length - 1 && (
+                                <span className="text-muted-foreground">,</span>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -149,7 +149,9 @@ export function LessonKanjiView() {
                               >
                                 <Volume2 className="size-3" />
                               </Button>
-                              {i < k.readingsOn.length - 1 && <span className="text-muted-foreground">,</span>}
+                              {i < k.readingsOn.length - 1 && (
+                                <span className="text-muted-foreground">,</span>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -162,39 +164,17 @@ export function LessonKanjiView() {
                       {k.radical ?? "—"}
                     </td>
                     <td className="px-3 py-3 text-sm">
-                      {k.examples[0] ? (
-                        <div>
-                          <p className="font-medium">{k.examples[0].word}</p>
-                          <p className="text-muted-foreground">
-                            {k.examples[0].reading ?? "—"}
-                          </p>
-                          <p>{k.examples[0].meaning}</p>
-                        </div>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="px-3 py-3 text-sm">
-                      {k.examples[1] ? (
-                        <div>
-                          <p className="font-medium">{k.examples[1].word}</p>
-                          <p className="text-muted-foreground">
-                            {k.examples[1].reading ?? "—"}
-                          </p>
-                          <p>{k.examples[1].meaning}</p>
-                        </div>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="px-3 py-3 text-sm">
-                      {k.examples[2] ? (
-                        <div>
-                          <p className="font-medium">{k.examples[2].word}</p>
-                          <p className="text-muted-foreground">
-                            {k.examples[2].reading ?? "—"}
-                          </p>
-                          <p>{k.examples[2].meaning}</p>
+                      {k.examples.length > 0 ? (
+                        <div className="space-y-2">
+                          {k.examples.map((ex, idx) => (
+                            <div key={`${k.id}-ex-${idx}`}>
+                              <p className="font-medium">{ex.word}</p>
+                              <p className="text-muted-foreground">
+                                {ex.reading ?? "—"}
+                              </p>
+                              <p>{ex.meaning}</p>
+                            </div>
+                          ))}
                         </div>
                       ) : (
                         "—"
@@ -305,7 +285,9 @@ export function LessonKanjiView() {
                         >
                           <Volume2 className="size-3" />
                         </Button>
-                        {i < activeKanji.readingsKun.length - 1 && <span className="text-muted-foreground">,</span>}
+                        {i < activeKanji.readingsKun.length - 1 && (
+                          <span className="text-muted-foreground">,</span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -330,7 +312,9 @@ export function LessonKanjiView() {
                         >
                           <Volume2 className="size-3" />
                         </Button>
-                        {i < activeKanji.readingsOn.length - 1 && <span className="text-muted-foreground">,</span>}
+                        {i < activeKanji.readingsOn.length - 1 && (
+                          <span className="text-muted-foreground">,</span>
+                        )}
                       </div>
                     ))}
                   </div>

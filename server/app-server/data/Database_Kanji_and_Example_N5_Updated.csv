@@ -1,0 +1,119 @@
+Id,Kanji,Han-Viet Pronunciation,Kun,On,Meaning,Word 1,Word 2,Word 3,MemoryTip,StrokeCount,Level,Image,Bộ thủ chính
+,一,Nhất,"ひと, ひと.つ","イチ, イツ",Một,一つ【ひとつ】một cái,一人【ひとり】một người,一日【いちにち/ついたち】một ngày / ngày mùng 1,1 (一) bước sang ngang,1,N5,,一
+,二,Nhị,"ふた, ふた.つ",ニ,Hai,二つ【ふたつ】hai cái,二人【ふたり】hai người,二月【にがつ】tháng hai,2 (二) bước sang ngang,2,N5,,二
+,八,Bát,"やっ, やっ.つ, よう",ハチ,Tám,八つ【やっつ】tám cái,八日【ようか】ngày mùng 8,八百屋【やおや】hàng rau,Chân đi chữ bát (八),2,N5,,八
+,六,Lục,"む, むっ.つ, むい",ロク,Sáu,六つ【むっつ】sáu cái,六日【むいか】ngày mùng 6,六月【ろくがつ】tháng sáu,Đầu (亠) năm phát (八) Lộc (六),4,N5,,亠
+,日,Nhật,"ひ, -び, -か","ニチ, ジツ",Ngày (mặt trời),日曜日【にちようび】chủ nhật,毎日【まいにち】mỗi ngày,日本【にほん】nhật bản,"Mặt trời giống Hình Chữ Nhật (口), bị chia làm đôi (一), nửa trên là Ngày (日), nửa dưới là đêm",4,N5,,日
+,目,Mục,"め, -め, ま-","モク, ボク",Mắt,目【め】mắt,三日目【みっかめ】ngày thứ 3,目上【めうえ】cấp trên,Chớp mắt (目) hết một (一) ngày (日),5,N5,,目
+,三,Tam,"み, み.つ, みっ.つ",サン,Ba,三つ【みっつ】ba cái,三日【みっか】ngày mùng 3,三人【さんにん】ba người,3 (三) bước sang ngang,3,N5,,一
+,手,Thủ,"て, て-",シュ,Tay,手【て】tay,右手【みぎて】tay phải,"下手【へた】kém, dở",3 (三) thể hiện quyết (亅) tâm bằng tay (手),4,N5,,手
+,十,Thập,"とお, と","ジュウ, ジッ",Mười,十【とお】mười cái,十日【とおか】ngày mùng 10,十分【じゅうぶん】đầy đủ / 10 phút,Gạch ngang (一) gạch dọc (丨) ra số 10 (十),2,N5,,十
+,千,Thiên,ち,セン,Một nghìn,千【せん】một nghìn,三千【さんぜん】ba nghìn,千円【せんえん】một nghìn yên,Phẩy sang trái (丿) 1 nét trên đầu số 10 (十) mà nó đã thành 1000 (千),3,N5,,十
+,土,Thổ,つち,"ド, ト",Đất,土【つち】đất,土曜日【どようび】thứ bảy,お土産【おみやげ】quà đặc sản,Cầm cây thập (十) xuống 1 (一) mảnh đất (土),3,N5,,土
+,上,Thượng,"うえ, うわ-, かみ, あ.がる, のぼ.る","ジョウ, ショウ",Trên,上【うえ】bên trên,上手【じょうず】giỏi,上がる【あがる】đi lên,Bốc (一) 1 (丨) quẻ lên (一) xem vận mệnh,3,N5,,一
+,下,Hạ,"した, しも, もと, さ.がる, くだ.る","カ, ゲ",Dưới,下【した】bên dưới,"下手【へた】kém, dở",下がる【さがる】đi xuống,1 (一) lần coi bói (卜) là hạ (下) mình,3,N5,,一
+,万,Vạn,(không có),"マン, バン",Mười nghìn,一万【いちまん】mười nghìn,十万【じゅうまん】mười vạn (100 nghìn),万年筆【まんねんひつ】bút máy,1 (一) bao (勹) thóc giá 1 vạn (万),3,N5,,一
+,九,Cửu,"ここの, ここの.つ","キュウ, ク",Chín,九つ【ここのつ】chín cái,九日【ここのか】ngày mùng 9,九月【くがつ】tháng chín,"Bạn Cáo có chín đuôi (九), bạn Lực cụp đuôi (力)",2,N5,,人
+,口,Khẩu,くち,"コウ, ク",Cái miệng,口【くち】cái miệng,出口【でぐち】cửa ra,入口【いりぐち】cửa vào,Miệng (口) há ra nói lời cay độc,3,N5,,口
+,四,Tứ,"よ, よ.つ, よっ.つ, よん",シ,Bốn,四つ【よっつ】bốn cái,四日【よっか】ngày mùng 4,四月【しがつ】tháng bốn,Người vây quanh (囗) chân chạy (儿) bốn (四) phía,5,N5,,囗
+,西,Tây,にし,"セイ, サイ, ス",Phía Tây,西【にし】phía tây,西口【にしぐち】cửa tây,西洋【せいよう】phương tây,1 (一) cái miệng (口) đi chơi xa (儿) tận trời Tây (西) là hư hỏng,6,N5,,襾
+,七,Thất,"なな, なな.つ, なの",シチ,Bảy,七つ【ななつ】bảy cái,七日【なのか】ngày mùng 7,七月【しちがつ】tháng bảy,Giống số 7 ngược,2,N5,,一
+,北,Bắc,きた,ホク,Phía Bắc,北【きた】phía bắc,北口【きたぐち】cửa bắc,北海道【ほっかいどう】Hokkaido (địa danh),Dựa tường (丨) dùng thìa (匕) xúc cơm nhìn về Bắc (北) Hải Đạo,5,N5,,匕
+,円,Viên,まる.い,エン,Tiền Yên,円【えん】tiền Yên,万円【まんえん】vạn Yên,円い【まるい】tròn,Ở biên giới (冂) chỉ tiêu (卜) tiền Yên (円),4,N5,,囗
+,五,Ngũ,"いつ, いつ.つ",ゴ,Năm,五つ【いつつ】năm cái,五日【いつか】ngày mùng 5,五月【ごがつ】tháng năm,Leo từ tầng (丆) 1 (一) đến tầng 5 (五),4,N5,,二
+,竹,Trúc,たけ,チク,Tre trúc,竹【たけ】cây tre,竹の子【たけのこ】măng,竹林【ちくりん】rừng tre,Tiếng cười keke (ケケ) phát ra từ bụi trúc (竹),6,N5,,竹
+,気,Khí,(không có),"キ, ケ",Không khí,元気【げんき】khỏe mạnh,天気【てんき】thời tiết,電気【でんき】điện,Khi (气) mà mọi người đều mê (メ) là không khí (気),6,N5,,气
+,左,Tả,ひだり,サ,Trái,左【ひだり】bên trái,左手【ひだりて】tay trái,左右【さゆう】trái phải,1 (一) tài phiệt (𠂇) vận công (工) bằng tay trái (左),5,N5,,工
+,右,Hữu,みぎ,"ウ, ユウ",Phải,右【みぎ】bên phải,右手【みぎて】tay phải,左右【さゆう】trái phải,1 (一) tài phiệt (𠂇) miệng (口) nói toàn điều phải (右),5,N5,,口
+,石,Thạch,いし,"セキ, シャク",Đá,石【いし】hòn đá,宝石【ほうせき】đá quý,石川【いしかわ】Ishikawa,1 (一) tài phiệt (𠂇) phải có miệng (口) sắt đá (石),5,N5,,石
+,岩,Nham,いわ,ガン,Núi đá,岩【いわ】tảng đá,岩山【いわやま】núi đá,溶岩【ようがん】dung nham,Núi (山) đá (石) hình thành từ nham thạch (岩),8,N5,,山
+,年,Niên,とし,ネン,Năm,今年【ことし】năm nay,毎年【まいねん】mỗi năm,来年【らいねん】năm sau,Nằm (𠂉) suốt 14 (干) năm (年),6,N5,,干
+,人,Nhân,"ひと, -り, -と","ジン, ニン",Người,人【ひと】người,一人【ひとり】một người,日本人【にほんじん】người Nhật,Người (人) đang đội nón (大),2,N5,,人
+,入,Nhập,"はい.る, い.れる",ニュウ,Vào,入る【はいる】đi vào,入口【いりぐち】cửa vào,入れる【いれる】cho vào,Nhập (入) ngược với Nhân (人),2,N5,,入
+,大,Đại,"おお-, おお.きい","ダイ, タイ","To, lớn",大きい【おおきい】to lớn,大学【だいがく】đại học,大変【たいへん】vất vả,1 (一) người (人) to lớn (大),3,N5,,大
+,犬,Khuyển,いぬ,ケン,Con chó,犬【いぬ】con chó,子犬【こいぬ】chó con,番犬【ばんけん】chó giữ nhà,Chấm (丶) to (大) ở lưng là chó (犬) khôn,4,N5,,犬
+,子,Tử,"こ, -こ","シ, ス",Con,子ども【こども】trẻ con,男の子【おとこのこ】bé trai,女の子【おんなのこ】bé gái,Kết thúc (了) 1 (一) cuộc tình đẹp là có đứa con (子),3,N5,,子
+,字,Tự,(không có),ジ,Chữ,漢字【かんじ】chữ Hán,文字【もじ】chữ viết,名字【みょうじ】họ,"Dưới mái nhà (宀), trẻ con (子) đang tập viết chữ (字)",6,N5,,宀
+,学,Học,まな.ぶ,ガク,Học,学生【がくせい】học sinh,大学【だいがく】đại học,学校【がっこう】trường học,3 (ツ) đêm trùm khăn (冖) con (子) đều học tập (学) chăm chỉ,8,N5,,子
+,月,Nguyệt,つき,"ゲツ, ガツ",Mặt trăng,月曜日【げつようび】thứ hai,一月【いちがつ】tháng một,今月【こんげつ】tháng này,Hình Mặt Trăng,4,N5,,月
+,言,Ngôn,"い.う, こと","ゲン, ゴン",Nói,言う【いう】nói,言葉【ことば】từ vựng,伝言【でんごん】tin nhắn,Cái miệng (口) nói (亠) 3 lời ngắn 1 lời dài,7,N5,,言
+,牛,Ngưu,うし,ギュウ,Trâu bò,牛【うし】con bò,牛肉【ぎゅうにく】thịt bò,牛乳【ぎゅうにゅう】sữa bò,Con bò (牛) mọc sừng vào đúng giờ Ngọ (午),4,N5,,牛
+,花,Hoa,はな,カ,Hoa,花【はな】hoa,花見【はなみ】ngắm hoa,生け花【いけばな】cắm hoa,Cỏ (艹) hóa (化) hoa (花),7,N5,,艹
+,今,Kim,いま,"コン, キン",Hiện tại,今【いま】bây giờ,今日【きょう】hôm nay,今月【こんげつ】tháng này,Người (人) ra (マ) xem bây giờ (今) là mấy giờ?,4,N5,,人
+,米,Mễ,こめ,"ベイ, マイ",Gạo,米【こめ】gạo,米国【べいこく】nước Mỹ,白米【はくまい】gạo trắng,2 (丷) hạt phía trên cây (木) là hạt gạo (米),6,N5,,米
+,来,Lai,"く.る, き",ライ,Đến,来る【くる】đến,来年【らいねん】năm sau,来月【らいげつ】tháng sau,1 (一) loại gạo (米) mới sẽ ra đời trong tương lai (来),7,N5,,人
+,木,Mộc,き,"モク, ボク",Cây,木【き】cây,木曜日【もくようび】thứ năm,大木【たいぼく】cây lớn,Hình cái cây (木),4,N5,,木
+,林,Lâm,はやし,リン,Rừng thưa,林【はやし】rừng thưa,小林【こばやし】Kobayashi,山林【さんりん】sơn lâm,2 cây (木) là rừng thưa (林),8,N5,,木
+,森,Sâm,もり,シン,Rừng rậm,森【もり】rừng rậm,森田【もりた】Morita,青森【あおもり】Aomori,3 cây (木) là rừng rậm (森),12,N5,,木
+,休,Hưu,やす.む,キュウ,Nghỉ ngơi,休む【やすむ】nghỉ ngơi,休日【きゅうじつ】ngày nghỉ,夏休み【なつやすみ】nghỉ hè,Người đứng (亻) cạnh cây (木) để nghỉ ngơi (休),6,N5,,人
+,本,Bản,もと,ホン,"Gốc, sách",本【ほん】sách,日本【にほん】Nhật Bản,一本【いっぽん】một cái (vật dài),Mỗi cây (木) chỉ có 1 (一) gốc (本),5,N5,,木
+,体,Thể,からだ,タイ,Cơ thể,体【からだ】cơ thể,体重【たいじゅう】cân nặng,体操【たいそう】thể dục,Nhân (亻) bản (本) cơ thể (体),7,N5,,人
+,音,Âm,"おと, ね",オン,Âm thanh,音【おと】âm thanh,音楽【おんがく】âm nhạc,本音【ほんね】ý định thật sự,Đứng (立) ở Nhật (日) nhớ về âm thanh (音) quê hương,9,N5,,音
+,暗,Ám,くら.い,アン,Tối,暗い【くらい】tối tăm,暗記【あんき】học thuộc lòng,暗号【あんごう】mật mã,Ở Nhật (日) âm thanh (音) ồn ào từ sáng đến tối (暗),13,N5,,日
+,水,Thủy,みず,スイ,Nước,水【みず】nước,水曜日【すいようび】thứ tư,水泳【すいえい】bơi lội,Hình giọt nước bắn sang 2 bên (水),4,N5,,水
+,泳,Vịnh,およ.ぐ,エイ,Bơi,泳ぐ【およぐ】bơi,水泳【すいえい】bơi lội,平泳ぎ【ひらおよぎ】bơi ếch,Nước (氵) vĩnh cửu (永) dùng để bơi (泳),8,N5,,水
+,火,Hỏa,ひ,カ,Lửa,火【ひ】ngọn lửa,火曜日【かようび】thứ ba,火事【かじ】hỏa hoạn,2 (丷) tay người (人) vùng vẫy để thoát khỏi đám lửa (火),4,N5,,火
+,立,Lập,"た.つ, た.てる",リツ,Đứng,立つ【たつ】đứng,立てる【たてる】dựng lên,国立【こくりつ】quốc lập,"Đầu (亠) đội trời, chân đạp đất (丷 + 一), đứng dậy (立) lập nghiệp",5,N5,,立
+,話,Thoại,"はな.す, はなし",ワ,Đàm thoại,話す【はなす】nói chuyện,話【はなし】câu chuyện,電話【でんわ】điện thoại,Lời nói (言) qua cái lưỡi (舌) thành hội thoại (話),13,N5,,言
+,門,Môn,かど,モン,Cổng,門【もん】cổng,正門【せいもん】cổng chính,入門【にゅうもん】nhập môn,Hình 2 cánh cổng (門),8,N5,,門
+,聞,Văn,"き.く, き.こえる","ブン, モン",Nghe,聞く【きく】nghe,聞こえる【きこえる】nghe thấy,新聞【しんぶん】báo chí,Đứng dưới cổng (門) vểnh tai (耳) nghe (聞),14,N5,,門
+,間,Gian,"あいだ, ま","カン, ケン",Khoảng,間【あいだ】ở giữa,時間【じかん】thời gian,間に合う【まにあう】kịp giờ,Cổng (門) ở Nhật (日) là cánh cổng thời gian (間),12,N5,,門
+,金,Kim,"かね, かな-","キン, コン","Vàng, tiền",お金【おかね】tiền bạc,金曜日【きんようび】thứ sáu,金【きん】vàng,Người (人) làm vua (王) có 2 (丷) túi tiền vàng (金),8,N5,,金
+,貝,Bối,かい,(không có),Bảo bối,貝【かい】con sò,貝殻【かいがら】vỏ sò,赤貝【あかがい】sò huyết,Mắt (目) mở to khi nhìn thấy 8 (八) bảo bối (貝) quý hiếm,7,N5,,貝
+,買,Mại,か.う,バイ,Mua,買う【かう】mua,買い物【かいもの】mua sắm,売買【ばいばい】mua bán,Mua (買) võng (罒) cho bảo bối (貝) với giá khuyến mãi,12,N5,,貝
+,生,Sinh,"い.きる, う.まれる","セイ, ショウ",Học sinh,先生【せんせい】giáo viên,学生【がくせい】học sinh,生【なま】tươi sống,Học sinh (生) nằm (𠂉) ra đất (土) ngủ,5,N5,,生
+,寺,Tự,てら,ジ,Chùa,お寺【おてら】ngôi chùa,東大寺【とうだいじ】chùa Todaiji,寺院【じいん】tự viện,Đất (土) thốn (寸) không được xây chùa (寺),6,N5,,寸
+,時,Thời,とき,ジ,Thời gian,時間【じかん】thời gian,時計【とけい】đồng hồ,時々【ときどき】thỉnh thoảng,Dành thời gian (時) cả ngày (日) trên chùa (寺),10,N5,,日
+,魚,Ngư,"さかな, うお",ギョ,Con cá,魚【さかな】con cá,金魚【きんぎょ】cá vàng,人魚【にんぎょ】mỹ nhân ngư,Móc (勹) dưới ruộng (田) rồi đốt lửa (灬) nướng cá (魚),11,N5,,魚
+,雨,Vũ,"あめ, あま-",ウ,Mưa,雨【あめ】mưa,大雨【おおあめ】mưa lớn,雨天【うてん】trời mưa,"Một (一) tia (丨) giáng xuống biên giới (冂), hàng vạn hạt (灬) mưa (雨) đã rơi",8,N5,,雨
+,電,Điện,(không có),デン,Điện,電気【でんき】điện,電車【でんしゃ】tàu điện,電話【でんわ】điện thoại,Mưa (雨) ngày (日) càng Lớn (乚) làm đứt dây điện (電),13,N5,,雨
+,新,Tân,あたら.しい,シン,Mới,新しい【あたらしい】mới mẻ,新聞【しんぶん】báo chí,新幹線【しんかんせん】shinkansen,Đứng (立) trên cây (木) khoe cái rìu (斤) mới (新),13,N5,,斤
+,中,Trung,なか,チュウ,Giữa,中【なか】bên trong,一日中【いちにちじゅう】suốt cả ngày,中国【ちゅうごく】Trung Quốc,Miệng (口) nói thẳng (丨) vào trung tâm (中) của vấn đề,4,N5,,中
+,半,Bán,なか.ば,ハン,Một nửa,半分【はんぶん】một nửa,半日【はんにち】nửa ngày,半年【はんねん】nửa năm,2 (丷) chia (十) nửa bằng,5,N5,,十
+,母,Mẫu,"はは, かあ",ボ,Mẹ,母親【ははおや】mẹ,お母さん【おかあさん】mẹ (kính ngữ),母国【ぼこく】quê hương,Từ nhỏ đến lớn 2 đứa con được 1 mình mẹ chăm sóc,5,N5,,女
+,方,Phương,かた,ホウ,Phương hướng,あの方【あのかた】vị kia,見方【みかた】cách nhìn,夕方【ゆうがた】chiều tối,Dùng đầu (亠) đội bao (勹) đi bốn phương (方),4,N5,,方
+,友,Hữu,とも,ユウ,Bạn bè,友達【ともだち】bạn bè,友人【ゆうじん】bạn thân,親友【しんゆう】bạn tri kỷ,1 tài phiệt (𠂇) lại (又) có bạn (友) mới,4,N5,,人
+,分,Phân,"わ.かる, わ.ける","ブン, フン","Chia, phút",分かる【わかる】hiểu,半分【はんぶん】một nửa,五分【ごふん】5 phút,Có 8 (八) cây đao (刀) cần phân chia (分),4,N5,,刀
+,食,Thực,"く.う, た.べる",ショク,Ăn,食べる【たべる】ăn,食べ物【たべもの】thức ăn,食堂【しょくどう】nhà ăn,Người tốt nhất sẽ được ăn ngon,9,N5,,食
+,父,Phụ,"ちち, とう",フ,Bố,父親【ちちおや】bố thân sinh,お父さん【おとうさん】bố,祖父【そふ】ông,Thế hệ 8 (八) X (乂) là Bố (父),4,N5,,父
+,校,Hiệu,(không có),コウ,Trường học,学校【がっこう】trường học,校長【こうちょう】hiệu trưởng,高校【こうこう】trường cấp 3,Cây (木) được giao (交) cho thầy Hiệu trưởng,10,N5,,木
+,百,Bách,(không có),ヒャク,Một trăm,百【ひゃく】trăm,三百【さんびゃく】ba trăm,六百【ろっぴゃく】sáu trăm,Trắng (白) nhất (一) cuộc thi là người được 100 (百) điểm,6,N5,,百
+,読,Độc,よ.む,ドク,Đọc,読む【よむ】đọc,読み物【よみもの】sách báo đọc giải trí,読書【どくしょ】đọc sách,Lời nói (言) của người bán (売) được đọc (読) từ sách kinh doanh,14,N5,,言
+,車,Xa,くるま,シャ,Xe,車【くるま】xe ô tô,電車【でんしゃ】tàu điện,自転車【じてんしゃ】xe đạp,2 ngày làm xong 1 chiếc xe,7,N5,,車
+,明,Minh,あか.るい,"メイ, ミョウ",Sáng,明るい【あかるい】sáng sủa,明日【あした】ngày mai,説明【せつめい】giải thích,Mặt Trời (日) và Mặt Trăng (月) đều rất sáng (明),8,N5,,日
+,出,Xuất,"で.る, だ.す",シュツ,"Ra, xuất phát",出る【でる】đi ra,"出す【だす】nộp, đưa ra",出口【でぐち】cửa ra,Bị 2 ngọn núi (山) đè nên không thể xuất (出) ra được,5,N5,,出
+,書,Thư,か.く,ショ,"Viết, sách",書く【かく】viết,辞書【じしょ】từ điển,図書館【としょかん】thư viện,Bút (聿) Nhật (日) viết (書) rất đẹp,10,N5,,曰
+,元,Nguyên,もと,"ゲン, ガン",Nguồn gốc,元気【げんき】khỏe mạnh,元日【がんじつ】mùng 1 tết,地元【じもと】địa phương,2 (二) chân (儿) vẫn còn nguyên (元),4,N5,,元
+,古,Cổ,ふる.い,コ,"Cũ, cổ",古い【ふるい】cũ kỹ,中古【ちゅうこ】đồ cũ,古本【ふるほん】sách cũ,Câu chuyện qua 10 (十) cái miệng (口) trở thành truyện cổ (古),5,N5,,口
+,何,Hà,"なに, なん",カ,Cái gì,何【なに/なん】cái gì,何曜日【なんようび】thứ mấy,何人【なんにん】mấy người,Người (亻) có khả năng (可) làm cái gì (何)?,7,N5,,何
+,夕,Tịch,ゆう,セキ,Chiều tối,夕方【ゆうがた】chiều tối,夕日【ゆうひ】hoàng hôn,夕食【ゆうしょく】bữa tối,Chiều tối còn mình ta (タ - katakana),3,N5,,夕
+,外,Ngoại,"そと, ほか",ガイ,Bên ngoài,外【そと】phía ngoài,外国【がいこく】nước ngoài,外国人【がいこくじん】người nước ngoài,Tatoo (夕) bốc (卜) xuất phát từ ngoại quốc (外),5,N5,,外
+,多,Đa,おお.い,タ,Nhiều,多い【おおい】nhiều,多分【たぶん】có lẽ,多少【たしょう】ít nhiều,Hai ta (夕+夕) là số nhiều (多),6,N5,,夕
+,名,Danh,な,"メイ, ミョウ",Tên,名前【なまえ】tên gọi,有名【ゆうめい】nổi tiếng,名刺【めいし】danh thiếp,TA (夕) RO (口) là tên (名) rất thông dụng,6,N5,,名
+,小,Tiểu,ちい.さい,ショウ,Nhỏ,小さい【ちいさい】bé nhỏ,小川【おがわ】suối nhỏ,小学校【しょうがっこう】trường tiểu học,Quyết tâm cắt đôi số 8 để chia nhỏ,3,N5,,小
+,少,Thiểu,"すく.ない, すこ.し",ショウ,Ít,少ない【すくない】ít ỏi,少し【すこし】một chút,少年【しょうねん】thiếu niên,Đã nhỏ (小) bị lấy đi 1 (ノ) ít càng thiếu (少),4,N5,,少
+,帰,Quy,かえ.る,キ,Trở về,帰る【かえる】quay về,日帰り【ひがえり】đi về trong ngày,帰国【きこく】về nước,Cầm đao (刂) cầm chổi (帚) quay trở về (帰),10,N5,,彳
+,内,Nội,なか,ナイ,Bên trong,内【うち】bên trong,家内【かない】vợ mình,国内【こくない】trong nước,Bên trong biên giới mọi người thường sống hướng nội,4,N5,,内
+,肉,Nhục,(không có),ニク,Thịt,肉【にく】thịt,牛肉【ぎゅうにく】thịt bò,筋肉【きんにく】cơ bắp,Bên trong (内) con người (人) là thịt (肉),6,N5,,肉
+,見,Kiến,"み.る, み.える",ケン,Nhìn,"見る【みる】nhìn, xem",見せる【みせる】cho xem,花見【はなみ】ngắm hoa,Kiến nhìn (見) bằng mắt (目) chân chạy (儿) rất nhanh,7,N5,,見
+,女,Nữ,"おんな, め","ジョ, ニョ",Phụ nữ,女の子【おんなのこ】bé gái,女性【じょせい】phụ nữ,女の人【おんなのひと】người phụ nữ,Em nhỏ lớn lên thành phụ nữ,3,N5,,女
+,好,Hảo,"す.き, この.む",コウ,Thích,好き【すき】thích thú,大好き【だいすき】rất thích,好物【こうぶつ】món ăn yêu thích,Đàn ông thích (好) phụ nữ (女) và trẻ con (子),6,N5,,女
+,安,An,やす.い,アン,"Rẻ, an toàn",安い【やすい】giá rẻ,安心【あんしん】an tâm,安全【あんぜん】an toàn,Dưới mái nhà (宀) phụ nữ (女) sẽ được an toàn (安),6,N5,,宀
+,町,Đinh,まち,チョウ,Thị trấn,町【まち】thị trấn,町長【ちょうちょう】thị trưởng,下町【したまち】khu phố cổ,Ra ruộng (田) dẫm phải đinh (丁) lên thị trấn (町) chữa trị,7,N5,,町
+,東,Đông,ひがし,トウ,Phía Đông,東【ひがし】phía đông,東口【ひがしぐち】cửa đông,東京【とうきょう】Tokyo,Mặt trời (日) lấp ló sau cây (木) ở phía đông (東),8,N5,,木
+,高,Cao,たか.い,コウ,"Cao, đắt","高い【たかい】cao, đắt đỏ",高校【こうこう】trường cấp 3,最高【さいこう】tuyệt vời nhất,Lúc đầu to mồm nhưng bị bắn qua biên giới thì mồm không cao ngạo được nữa,10,N5,,高
+,山,Sơn,やま,サン,Núi,山【やま】núi,富士山【ふじさん】núi Phú Sĩ,山林【さんりん】sơn lâm,3 cây chụm lại nên hòn núi cao,3,N5,,山
+,足,Túc,"あし, た.る",ソク,"Chân, đủ","足【あし】bàn chân, chân",足りる【たりる】đầy đủ,遠足【えんそく】dã ngoại,Chân đá tung mồm hạ nhân,7,N5,,足
+,南,Nam,みなみ,ナン,Phía Nam,南【みなみ】phía nam,南口【みなみぐち】cửa nam,東南【とうなん】đông nam,Ở phía Nam có 10 người ra biên giới nhặt tiền Yên,9,N5,,十
+,飲,Ẩm,の.む,イン,Uống,飲む【のむ】uống,飲み物【のみもの】đồ uống,飲食店【いんしょくてん】nhà hàng ăn uống,Ăn thì không thể thiếu uống,12,N5,,食
+,田,Điền,た,デン,Ruộng,田んぼ【たんぼ】ruộng lúa,山田【やまだ】Yamada,水田【すいでん】ruộng nước,Hình ruộng lúa,5,N5,,田
+,畑,Vườn,"はた, はたけ",(không có),Ruộng hoa màu,畑【はたけ】ruộng hoa màu,田畑【たはた】ruộng nương,花畑【はなばたけ】cánh đồng hoa,Đốt (火) ruộng (田) làm vườn (畑),9,N5,,火
+,物,Vật,もの,"ブツ, モツ",Đồ vật,買い物【かいもの】mua sắm,食べ物【たべもの】thức ăn,荷物【にもつ】hành lý,Bò (牛) + vật (勿) = Động vật (物),8,N5,,物
+,茶,Trà,(không có),"チャ, サ",Trà,お茶【おちゃ】trà nước,紅茶【こうちゃ】hồng trà,喫茶店【きっさてん】quán cà phê,Cô giáo Thảo là người cười hô hô khi uống trà,9,N5,,艹
+,行,Hành,"い.く, おこな.う","コウ, ギョウ",Đi,行く【いく】đi,銀行【ぎんこう】ngân hàng,旅行【りょこう】du lịch,2 người bị dẫm vào 1 cái đinh khi đi bộ hành,6,N5,,行
+,川,Xuyên,かわ,セン,Sông,川【かわ】dòng sông,小川【おがわ】suối nhỏ,川上【かわかみ】thượng nguồn,Hình dòng sông,3,N5,,川
+,耳,Nhĩ,みみ,ジ,Cái tai,耳【みみ】cái tai,初耳【はつみみ】lần đầu nghe,耳鼻科【じびか】khoa tai mũi họng,Tai gắn giống mắt,6,N5,,耳
+,男,Nam,おとこ,ダン,Đàn ông,男【おとこ】đàn ông,男の子【おとこのこ】bé trai,男性【だんせい】nam giới,Làm ruộng phải có sức lực của đàn ông,7,N5,,田
+,先,Tiên,さき,セン,"Trước, tiên",先生【せんせい】thầy cô giáo,先月【せんげつ】tháng trước,先週【せんしゅう】tuần trước,Tài phiệt bán đất tháo chạy trước biến động thị trường,6,N5,,儿
+,長,Trường,なが.い,チョウ,Dài,長い【ながい】dài lâu,社長【しゃちょう】giám đốc,校長【こうちょう】hiệu trưởng,Em mặc y phục dài,8,N5,,長
+,鳥,Điểu,とり,チョウ,Con chim,鳥【とり】con chim,小鳥【ことり】chim nhỏ,白鳥【はくちょう】thiên nga,Ô con quạ đen biến thành con chim trắng,11,N5,,鳥

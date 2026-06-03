@@ -57,10 +57,9 @@ async function seedKanji(
   adminId: string,
   lessons: { id: string; orderIndex: number }[],
 ) {
-  // 1. Đường dẫn tới file CSV Kanji mới của bạn
   const kanjiPath = join(
     __dirname,
-    "../data/Database Kanji and Example - N5.csv",
+    "../data/Database_Kanji_and_Example_N5_Updated.csv",
   );
   const kanjiRows = loadCsv(kanjiPath);
 
@@ -68,120 +67,59 @@ async function seedKanji(
     `[seed] Found ${kanjiRows.length} kanji rows in CSV. Processing...`,
   );
 
-  // 2. Xóa dữ liệu cũ của cấp N5 trong bảng Kanji để tránh trùng lặp khi seed lại
-  await db.kanji.deleteMany({ where: { jlptLevel: "N5" } });
+  let updatedKanjiCount = 0;
 
-  // 3. Chuẩn bị mảng để map dữ liệu
-  const kanjiDataList = [];
+  function parseStrokeCount(value: string | undefined) {
+    const raw = (value ?? "").trim();
+    if (!raw) return null;
+
+    const parsed = Number.parseFloat(raw.replace(/,/g, ""));
+    if (!Number.isFinite(parsed)) return null;
+
+    const normalized = Math.round(parsed);
+    if (normalized < 1 || normalized > 80) return null;
+
+    return normalized;
+  }
 
   for (const row of kanjiRows) {
-    // CSV headers in this file are: Id,Kanji,Han-Viet Pronunciation,Kun,On,Meaning,Word 1,Word 2,Word 3,MemoryTip,StrokeCount,Level,Image,Bộ thủ chính
-    const character = (
-      row.Kanji ||
-      row.Kanji ||
-      row.KANJI ||
-      row.kanji ||
-      ""
-    ).trim();
-    const meaning = (row.Meaning || row.meaning || "").trim();
-
+    const character = (row.Kanji || row.kanji || row.Character || "").trim();
     if (!character) continue;
 
-    const readingsOnRaw = (
-      row.On ||
-      row.on ||
-      row.Onyomi ||
-      row.OnYomi ||
-      ""
-    ).trim();
-    const readingsKunRaw = (
-      row.Kun ||
-      row.kun ||
-      row.Kunyomi ||
-      row.KunYomi ||
-      ""
-    ).trim();
-    const readingsOn = readingsOnRaw
-      ? readingsOnRaw
-          .split(",")
-          .map((s: string) => s.trim())
-          .filter(Boolean)
-      : [];
-    const readingsKun = readingsKunRaw
-      ? readingsKunRaw
-          .split(",")
-          .map((s: string) => s.trim())
-          .filter(Boolean)
-      : [];
+    const targetKanji = await db.kanji.findFirst({ where: { character } });
+    if (!targetKanji) continue;
 
-    const radicalField =
-      row["Bộ thủ chính"] || row.botruchinh || row.radical || "";
-    const strokeRaw = (row.StrokeCount || row.strokeCount || "").trim();
-    const strokeCountVal = strokeRaw
-      ? Number(strokeRaw.replace(/[^0-9]/g, ""))
-      : null;
-    const memoryTip =
-      (
-        row.MemoryTip ||
-        row.MemoryTip ||
-        row["MemoryTip"] ||
-        row.MemoryTip ||
-        ""
-      ).trim() || null;
-    const imageUrl = (row.Image || row.image || "").trim() || null;
-    const level = (row.Level || row.level || "").trim() || "N5";
+    const updateData: {
+      hanVietPronunciation?: string | null;
+      strokeCount?: number | null;
+    } = {};
 
-    kanjiDataList.push({
-      character,
-      meaning: meaning || "",
-      readingsOn,
-      readingsKun,
-      jlptLevel: level || "N5",
-      radical: radicalField || null,
-      strokeCount: strokeCountVal,
-      memoryTip: memoryTip,
-      memoryImageUrl: imageUrl,
-      createdById: adminId,
-    });
-  }
+    const hanVietPronunciation = (row["Han-Viet Pronunciation"] || "").trim();
+    if (hanVietPronunciation && !targetKanji.hanVietPronunciation?.trim()) {
+      updateData.hanVietPronunciation = hanVietPronunciation;
+    }
 
-  // 4. Sử dụng createMany để tối ưu tốc độ insert vào DB
-  if (kanjiDataList.length > 0) {
-    await db.kanji.createMany({
-      data: kanjiDataList,
-    });
-    console.log(
-      `[seed] Successfully inserted ${kanjiDataList.length} Kanji N5 items.`,
-    );
-  }
+    const parsedStrokeCount = parseStrokeCount(row.StrokeCount);
+    if (
+      parsedStrokeCount !== null &&
+      Number.isFinite(parsedStrokeCount) &&
+      targetKanji.strokeCount !== parsedStrokeCount
+    ) {
+      updateData.strokeCount = parsedStrokeCount;
+    }
 
-  // 5. (Nâng cao) Liên kết Kanji vào các Bài học (Lessons) tự động nếu file CSV của bạn có cột 'lesson'
-  for (const row of kanjiRows) {
-    const lessonNum = Number(row.lesson || row.Lesson);
-    const character = row.character || row.Character || row.Kanji;
-
-    if (!Number.isNaN(lessonNum) && character) {
-      const targetLesson = lessons.find((l) => l.orderIndex === lessonNum);
-      const targetKanji = await db.kanji.findFirst({ where: { character } });
-
-      if (targetLesson && targetKanji) {
-        // Tạo liên kết trong bảng trung gian lessonKanji
-        await db.lessonKanji.upsert({
-          where: {
-            lessonId_kanjiId: {
-              lessonId: targetLesson.id,
-              kanjiId: targetKanji.id,
-            },
-          },
-          create: {
-            lessonId: targetLesson.id,
-            kanjiId: targetKanji.id,
-          },
-          update: {},
-        });
-      }
+    if (Object.keys(updateData).length > 0) {
+      await db.kanji.update({
+        where: { id: targetKanji.id },
+        data: updateData,
+      });
+      updatedKanjiCount += 1;
     }
   }
+
+  console.log(
+    `[seed] Updated ${updatedKanjiCount} kanji rows from Updated CSV.`,
+  );
 }
 
 function parseCsvLine(line: string): string[] {
@@ -502,33 +440,6 @@ async function main() {
     }
   }
 
-  // Sample kanji
-  const kanjiSamples = [
-    {
-      character: "私",
-      readingsOn: ["シ"],
-      readingsKun: ["わたし"],
-      meaning: "tôi",
-      jlptLevel: "N5",
-      radical: "人",
-    },
-    {
-      character: "本",
-      readingsOn: ["ホン"],
-      readingsKun: ["もと"],
-      meaning: "sách",
-      jlptLevel: "N5",
-      radical: "木",
-    },
-    {
-      character: "日",
-      readingsOn: ["ニチ", "ジツ"],
-      readingsKun: ["ひ", "か"],
-      meaning: "ngày, mặt trời",
-      jlptLevel: "N5",
-      radical: "日",
-    },
-  ];
   const dialogue1 = await db.conversation.upsert({
     where: { id: "00000000-0000-4000-8000-000000000001" },
     create: {
@@ -579,22 +490,6 @@ async function main() {
       create: { lessonId: lesson1.id, conversationId: dialogue1.id },
       update: {},
     });
-  }
-
-  for (const k of kanjiSamples) {
-    const row = await db.kanji.upsert({
-      where: { character: k.character },
-      create: { ...k, createdById: admin.id },
-      update: k,
-    });
-    const lesson1 = lessons.find((l) => l.orderIndex === 1);
-    if (lesson1) {
-      await db.lessonKanji.upsert({
-        where: { lessonId_kanjiId: { lessonId: lesson1.id, kanjiId: row.id } },
-        create: { lessonId: lesson1.id, kanjiId: row.id },
-        update: {},
-      });
-    }
   }
 
   // Placement + mock exam pool
@@ -660,9 +555,6 @@ async function main() {
   });
 
   await seedRadicals(admin.id);
-
-  console.log("[seed] Admin: admin@nihongocoach.com / Admin@123");
-  console.log("[seed] Done.");
 
   console.log("[seed] Admin: admin@nihongocoach.com / Admin@123");
   console.log("[seed] Done.");

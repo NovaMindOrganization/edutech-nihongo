@@ -176,6 +176,16 @@ export function LessonKanjiPanel({
                   {item.hanVietPronunciation ?? "—"}
                 </p>
                 <p className="text-muted-foreground">{item.meaning}</p>
+                {item.examples.length > 0 && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {item.examples
+                      .map(
+                        (example) =>
+                          `${example.word}${example.reading ? `【${example.reading}】` : ""}`,
+                      )
+                      .join(" • ")}
+                  </p>
+                )}
               </div>
               <div className="flex-1" />
               <Badge variant="outline">{item.jlptLevel}</Badge>
