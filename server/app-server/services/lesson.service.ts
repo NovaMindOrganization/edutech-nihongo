@@ -57,7 +57,17 @@ export async function getLessonForAdmin(id: string) {
     include: {
       course: { select: { id: true, title: true, jlptLevel: true } },
       grammar: { include: { grammar: true } },
-      kanji: { include: { kanji: true } },
+      kanji: {
+        include: {
+          kanji: {
+            include: {
+              examples: {
+                orderBy: { orderIndex: "asc" },
+              },
+            },
+          },
+        },
+      },
       conversations: { include: { conversation: true } },
     },
   });
@@ -114,10 +124,16 @@ export async function assignVocabularyToLesson(
   return { count: vocabularyIds.length };
 }
 
-export async function assignGrammarToLesson(lessonId: string, grammarIds: string[]) {
+export async function assignGrammarToLesson(
+  lessonId: string,
+  grammarIds: string[],
+) {
   await db.$transaction(async (tx) => {
     await tx.lessonGrammar.deleteMany({ where: { lessonId } });
-    await tx.grammar.updateMany({ where: { lessonId }, data: { lessonId: null, order: null } });
+    await tx.grammar.updateMany({
+      where: { lessonId },
+      data: { lessonId: null, order: null },
+    });
 
     if (grammarIds.length === 0) return;
 
