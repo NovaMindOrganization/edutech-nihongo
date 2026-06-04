@@ -42,7 +42,7 @@ export function PricingView() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <PricingSection onSelectPlan={handleSelect} />
+        <PricingSection onSelectPlan={handleSelect} showTitle />
       </main>
     </div>
   );

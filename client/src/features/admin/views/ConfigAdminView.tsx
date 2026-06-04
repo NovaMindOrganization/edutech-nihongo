@@ -6,13 +6,17 @@ import { Input } from '@/components/ui/input';
 
 import {
   getLlmConfig,
+  getSepayConfig,
   getSystemConfig,
   saveLlmConfig,
+  saveSepayConfig,
   setSystemConfig,
   testLlmConfig,
   type LlmProvider,
   type LlmTestResult,
   type SaveLlmAdminConfig,
+  type SaveSepayAdminConfig,
+  type SepayAuthMode,
 } from '../services/systemAdminApi';
 
 function LlmTestResultPanel({
@@ -74,9 +78,25 @@ export function ConfigAdminView() {
   const [agentTesting, setAgentTesting] = useState(false);
   const [agentTestResult, setAgentTestResult] = useState<LlmTestResult | null>(null);
 
+  const [sepayAuthMode, setSepayAuthMode] = useState<SepayAuthMode>('api_key');
+  const [sepayApiKey, setSepayApiKey] = useState('');
+  const [sepayApiKeyPreview, setSepayApiKeyPreview] = useState<string | null>(null);
+  const [sepayApiKeySet, setSepayApiKeySet] = useState(false);
+  const [sepayWebhookSecret, setSepayWebhookSecret] = useState('');
+  const [sepayWebhookSecretPreview, setSepayWebhookSecretPreview] = useState<string | null>(null);
+  const [sepayWebhookSecretSet, setSepayWebhookSecretSet] = useState(false);
+  const [sepayAccountNumber, setSepayAccountNumber] = useState('');
+  const [sepayAccountName, setSepayAccountName] = useState('');
+  const [sepayBankName, setSepayBankName] = useState('Vietcombank');
+  const [sepayBankBin, setSepayBankBin] = useState('970436');
+  const [sepayPaymentCodePrefix, setSepayPaymentCodePrefix] = useState('NIHONGO');
+  const [sepayOrderExpiryMinutes, setSepayOrderExpiryMinutes] = useState('30');
+  const [sepayWebhookUrl, setSepayWebhookUrl] = useState('');
+  const [sepaySaving, setSepaySaving] = useState(false);
+
   useEffect(() => {
-    Promise.all([getSystemConfig(), getLlmConfig()])
-      .then(([c, llm]) => {
+    Promise.all([getSystemConfig(), getLlmConfig(), getSepayConfig()])
+      .then(([c, llm, sepay]) => {
         setConfig(c);
         setThreshold(c.default_pass_threshold ?? '70');
         setLlmProvider(llm.provider);
@@ -88,6 +108,18 @@ export function ConfigAdminView() {
         setOpenaiApiKeyPreview(llm.openaiApiKeyPreview);
         setOpenaiApiKeySet(llm.openaiApiKeySet);
         setTemperature(llm.temperature);
+        setSepayAuthMode(sepay.authMode);
+        setSepayApiKeyPreview(sepay.apiKeyPreview);
+        setSepayApiKeySet(sepay.apiKeySet);
+        setSepayWebhookSecretPreview(sepay.webhookSecretPreview);
+        setSepayWebhookSecretSet(sepay.webhookSecretSet);
+        setSepayAccountNumber(sepay.accountNumber);
+        setSepayAccountName(sepay.accountName);
+        setSepayBankName(sepay.bankName);
+        setSepayBankBin(sepay.bankBin);
+        setSepayPaymentCodePrefix(sepay.paymentCodePrefix);
+        setSepayOrderExpiryMinutes(sepay.orderExpiryMinutes);
+        setSepayWebhookUrl(sepay.webhookUrl);
       })
       .catch((e) => toast.error(e instanceof Error ? e.message : 'Lỗi'));
   }, []);
@@ -142,6 +174,37 @@ export function ConfigAdminView() {
     }
   }
 
+  async function saveSepay() {
+    setSepaySaving(true);
+    const body: SaveSepayAdminConfig = {
+      authMode: sepayAuthMode,
+      accountNumber: sepayAccountNumber,
+      accountName: sepayAccountName,
+      bankName: sepayBankName,
+      bankBin: sepayBankBin,
+      paymentCodePrefix: sepayPaymentCodePrefix,
+      orderExpiryMinutes: sepayOrderExpiryMinutes,
+    };
+    if (sepayApiKey.trim()) body.apiKey = sepayApiKey.trim();
+    if (sepayWebhookSecret.trim()) body.webhookSecret = sepayWebhookSecret.trim();
+
+    try {
+      const refreshed = await saveSepayConfig(body);
+      setSepayApiKey('');
+      setSepayWebhookSecret('');
+      setSepayApiKeyPreview(refreshed.apiKeyPreview);
+      setSepayApiKeySet(refreshed.apiKeySet);
+      setSepayWebhookSecretPreview(refreshed.webhookSecretPreview);
+      setSepayWebhookSecretSet(refreshed.webhookSecretSet);
+      setSepayWebhookUrl(refreshed.webhookUrl);
+      toast.success('Đã lưu cấu hình SePAY');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Lỗi');
+    } finally {
+      setSepaySaving(false);
+    }
+  }
+
   async function saveLlm() {
     setLlmSaving(true);
     const body: SaveLlmAdminConfig = {
@@ -186,6 +249,113 @@ export function ConfigAdminView() {
         <label className="text-sm font-medium">Pass threshold (%)</label>
         <Input value={threshold} onChange={(e) => setThreshold(e.target.value)} />
         <Button onClick={saveThreshold}>Lưu</Button>
+      </section>
+
+      <section className="mt-10 max-w-xl space-y-4 rounded-xl border border-border p-6">
+        <h2 className="text-lg font-semibold">SePAY — Thanh toán chuyển khoản</h2>
+        <p className="text-sm text-muted-foreground">
+          Dùng API Key từ SePay (Webhook → Phương thức xác thực → API Key). Header gửi kèm:{' '}
+          <code className="rounded bg-muted px-1">Authorization: Apikey YOUR_KEY</code>
+        </p>
+
+        <label className="text-sm font-medium">Webhook URL (dán vào SePay)</label>
+        <Input readOnly value={sepayWebhookUrl} className="font-mono text-xs" />
+
+        <label className="text-sm font-medium">Phương thức xác thực webhook</label>
+        <select
+          className={selectClass}
+          value={sepayAuthMode}
+          onChange={(e) => setSepayAuthMode(e.target.value as SepayAuthMode)}
+        >
+          <option value="api_key">API Key (khuyến nghị)</option>
+          <option value="hmac">HMAC-SHA256</option>
+          <option value="none">Không xác thực (chỉ dev)</option>
+        </select>
+
+        {sepayAuthMode === 'api_key' && (
+          <>
+            <label className="text-sm font-medium">SePAY API Key</label>
+            {sepayApiKeySet && sepayApiKeyPreview ? (
+              <p className="text-xs text-muted-foreground">
+                Đã lưu: {sepayApiKeyPreview} — nhập key mới để thay thế
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Lấy khi tạo webhook trên SePay. Key phải khớp với cấu hình webhook.
+              </p>
+            )}
+            <Input
+              type="password"
+              autoComplete="off"
+              placeholder="Apikey từ SePay"
+              value={sepayApiKey}
+              onChange={(e) => setSepayApiKey(e.target.value)}
+            />
+          </>
+        )}
+
+        {sepayAuthMode === 'hmac' && (
+          <>
+            <label className="text-sm font-medium">Secret Key (HMAC)</label>
+            {sepayWebhookSecretSet && sepayWebhookSecretPreview ? (
+              <p className="text-xs text-muted-foreground">
+                Đã lưu: {sepayWebhookSecretPreview} — nhập secret mới để thay thế
+              </p>
+            ) : null}
+            <Input
+              type="password"
+              autoComplete="off"
+              value={sepayWebhookSecret}
+              onChange={(e) => setSepayWebhookSecret(e.target.value)}
+            />
+          </>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-sm font-medium">Số tài khoản</label>
+            <Input
+              value={sepayAccountNumber}
+              onChange={(e) => setSepayAccountNumber(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Chủ tài khoản</label>
+            <Input value={sepayAccountName} onChange={(e) => setSepayAccountName(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-sm font-medium">Tên ngân hàng</label>
+            <Input value={sepayBankName} onChange={(e) => setSepayBankName(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Mã BIN (VietQR)</label>
+            <Input value={sepayBankBin} onChange={(e) => setSepayBankBin(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-sm font-medium">Tiền tố mã CK</label>
+            <Input
+              value={sepayPaymentCodePrefix}
+              onChange={(e) => setSepayPaymentCodePrefix(e.target.value.toUpperCase())}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Hết hạn đơn (phút)</label>
+            <Input
+              value={sepayOrderExpiryMinutes}
+              onChange={(e) => setSepayOrderExpiryMinutes(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <Button onClick={saveSepay} disabled={sepaySaving}>
+          {sepaySaving ? 'Đang lưu…' : 'Lưu cấu hình SePAY'}
+        </Button>
       </section>
 
       <section className="mt-10 max-w-xl space-y-4 rounded-xl border border-border p-6">

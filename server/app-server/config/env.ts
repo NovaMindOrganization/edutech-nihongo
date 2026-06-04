@@ -16,6 +16,7 @@ export const env = {
   redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
   aiServerUrl: process.env.AI_SERVER_URL ?? 'http://localhost:8000',
   sepaySecret: process.env.SEPAY_SECRET ?? '',
+  appPublicUrl: process.env.APP_PUBLIC_URL ?? '',
   sepayAccountNumber: process.env.SEPAY_ACCOUNT_NUMBER ?? '',
   sepayAccountName: process.env.SEPAY_ACCOUNT_NAME ?? '',
   sepayBankName: process.env.SEPAY_BANK_NAME ?? 'Vietcombank',

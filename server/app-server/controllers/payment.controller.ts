@@ -48,9 +48,18 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
 export const sePayWebhook = asyncHandler(async (req: Request, res: Response) => {
   const rawBody = req.body as Buffer;
   const signature = req.headers['x-sepay-signature'] as string | undefined;
+  const authorization = req.headers.authorization as string | undefined;
 
-  if (!paymentService.verifySePaySignature(rawBody, signature)) {
-    res.status(401).json({ success: false, error: { code: 'INVALID_SIGNATURE', message: 'Invalid webhook signature' } });
+  const valid = await paymentService.verifySePayWebhookRequest({
+    rawBody,
+    authorization,
+    signature,
+  });
+  if (!valid) {
+    res.status(401).json({
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: 'Invalid SePAY webhook credentials' },
+    });
     return;
   }
 

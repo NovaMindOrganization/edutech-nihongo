@@ -39,6 +39,7 @@ import {
   createOrderSchema,
   pricingPlanSchema,
 } from '../validators/pricing-plan.validator.js';
+import { sepayConfigSchema } from '../validators/sepay-config.validator.js';
 
 const router = Router();
 
@@ -254,6 +255,8 @@ sysAdminRouter.post('/users/:id/reset-password', systemAdmin.resetPassword);
 sysAdminRouter.get('/config/llm', systemAdmin.getLlmConfig);
 sysAdminRouter.put('/config/llm', systemAdmin.saveLlmConfig);
 sysAdminRouter.post('/config/llm/test', systemAdmin.testLlmConfig);
+sysAdminRouter.get('/config/sepay', systemAdmin.getSepayConfig);
+sysAdminRouter.put('/config/sepay', validateBody(sepayConfigSchema), systemAdmin.saveSepayConfig);
 sysAdminRouter.get('/config', systemAdmin.getConfig);
 sysAdminRouter.put('/config/:key', systemAdmin.setConfig);
 sysAdminRouter.get('/reports', systemAdmin.listReports);

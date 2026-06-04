@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import * as adminUsers from '../services/admin-users.service.js';
 import * as configService from '../services/config.service.js';
 import * as llmConfigService from '../services/llm-config.service.js';
+import * as sepayConfigService from '../services/sepay-config.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 import type { UserRole } from '@prisma/client';
 
@@ -69,6 +70,17 @@ export const saveLlmConfig = asyncHandler(async (req: Request, res: Response) =>
   }
   await llmConfigService.saveLlmAdminConfig(body);
   res.json({ success: true, data: null });
+});
+
+export const getSepayConfig = asyncHandler(async (_req: Request, res: Response) => {
+  const data = await sepayConfigService.getSepayAdminConfig();
+  res.json({ success: true, data });
+});
+
+export const saveSepayConfig = asyncHandler(async (req: Request, res: Response) => {
+  await sepayConfigService.saveSepayAdminConfig(req.body);
+  const data = await sepayConfigService.getSepayAdminConfig();
+  res.json({ success: true, data });
 });
 
 export const testLlmConfig = asyncHandler(async (req: Request, res: Response) => {

@@ -160,7 +160,7 @@ export function AppRouter() {
           </Route>
         </Route>
 
-        <Route path={paths.admin.dashboard} element={<AdminLayout />}>
+        <Route path={`${paths.admin.dashboard}/*`} element={<AdminLayout />}>
           <Route index element={<AdminDashboardView />} />
           <Route path="kanji" element={<KanjiAdminView />} />
           <Route path="radicals" element={<RadicalsAdminView />} />

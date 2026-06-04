@@ -5,9 +5,12 @@ import type { OrderStatus } from '@prisma/client';
 import { env } from '../config/env.js';
 import { db } from '../config/db.js';
 import { enrollAndInitProgress } from './lesson.service.js';
+import {
+  getSepayRuntimeConfig,
+  verifySepayApiKey,
+  type SepayRuntimeConfig,
+} from './sepay-config.service.js';
 import { AppError } from '../utils/app-error.js';
-
-const ORDER_TTL_MS = env.orderExpiryMinutes * 60 * 1000;
 
 export type SePayWebhookPayload = {
   id: number;
@@ -24,27 +27,25 @@ export type SePayWebhookPayload = {
   referenceCode?: string;
 };
 
-function buildPaymentCode(orderId: string): string {
+function buildPaymentCode(orderId: string, prefix: string): string {
   const suffix = orderId.replace(/-/g, '').slice(0, 6).toUpperCase();
-  return `${env.paymentCodePrefix}${suffix}`;
+  return `${prefix}${suffix}`;
 }
 
-export function generatePaymentQrUrl(amount: number, addInfo: string): string {
-  const account = env.sepayAccountNumber;
-  const bin = env.sepayBankBin;
-  const accountName = encodeURIComponent(env.sepayAccountName);
+function generatePaymentQrUrl(cfg: SepayRuntimeConfig, amount: number, addInfo: string): string {
+  const accountName = encodeURIComponent(cfg.accountName);
   const info = encodeURIComponent(addInfo);
-  return `https://img.vietqr.io/image/${bin}-${account}-compact2.jpg?amount=${Math.round(amount)}&addInfo=${info}&accountName=${accountName}`;
+  return `https://img.vietqr.io/image/${cfg.bankBin}-${cfg.accountNumber}-compact2.jpg?amount=${Math.round(amount)}&addInfo=${info}&accountName=${accountName}`;
 }
 
-function bankTransferInfo(paymentCode: string, amount: number) {
+function bankTransferInfo(cfg: SepayRuntimeConfig, paymentCode: string, amount: number) {
   return {
-    bankName: env.sepayBankName,
-    bankAccount: env.sepayAccountNumber,
-    accountName: env.sepayAccountName,
+    bankName: cfg.bankName,
+    bankAccount: cfg.accountNumber,
+    accountName: cfg.accountName,
     amount: Math.round(amount),
     paymentCode,
-    qrUrl: generatePaymentQrUrl(amount, paymentCode),
+    qrUrl: generatePaymentQrUrl(cfg, amount, paymentCode),
   };
 }
 
@@ -59,6 +60,7 @@ async function expireOrderIfNeeded(order: { id: string; status: OrderStatus; exp
 }
 
 export async function createOrder(userId: string, planId: string) {
+  const cfg = await getSepayRuntimeConfig();
   const plan = await db.pricingPlan.findUnique({
     where: { id: planId, isActive: true },
     include: { courses: { select: { courseId: true } } },
@@ -68,6 +70,10 @@ export async function createOrder(userId: string, planId: string) {
   const amount = Number(plan.price);
   if (amount <= 0) {
     throw new AppError('This plan is free; enroll directly from the course', 400, 'FREE_PLAN');
+  }
+
+  if (!cfg.accountNumber) {
+    throw new AppError('Payment is not configured', 503, 'PAYMENT_NOT_CONFIGURED');
   }
 
   const existingPaid = await db.order.findFirst({
@@ -83,8 +89,8 @@ export async function createOrder(userId: string, planId: string) {
   });
 
   const orderId = crypto.randomUUID();
-  const paymentCode = buildPaymentCode(orderId);
-  const expiresAt = new Date(Date.now() + ORDER_TTL_MS);
+  const paymentCode = buildPaymentCode(orderId, cfg.paymentCodePrefix);
+  const expiresAt = new Date(Date.now() + cfg.orderExpiryMinutes * 60 * 1000);
 
   const order = await db.order.create({
     data: {
@@ -108,11 +114,12 @@ export async function createOrder(userId: string, planId: string) {
     amount,
     paymentCode: order.paymentCode,
     expiresAt: order.expiresAt.toISOString(),
-    ...bankTransferInfo(order.paymentCode, amount),
+    ...bankTransferInfo(cfg, order.paymentCode, amount),
   };
 }
 
 export async function getOrderForUser(orderId: string, userId: string) {
+  const cfg = await getSepayRuntimeConfig();
   const order = await db.order.findFirst({
     where: { id: orderId, userId },
     include: {
@@ -140,7 +147,7 @@ export async function getOrderForUser(orderId: string, userId: string) {
     paidAt: order.paidAt?.toISOString() ?? null,
     expiresAt: order.expiresAt.toISOString(),
     courseIds: order.plan.courses.map((c) => c.courseId),
-    ...bankTransferInfo(order.paymentCode, amount),
+    ...bankTransferInfo(cfg, order.paymentCode, amount),
   };
 }
 
@@ -167,19 +174,9 @@ async function fulfillPaidOrder(orderId: string, sepayTransactionId: number) {
   }
 }
 
-function extractPaymentCode(payload: SePayWebhookPayload): string | null {
-  if (payload.code && payload.code.trim()) return payload.code.trim().toUpperCase();
-  const prefix = env.paymentCodePrefix;
-  const match = payload.content.toUpperCase().match(new RegExp(`${prefix}[A-Z0-9]{6}`));
-  return match?.[0] ?? null;
-}
-
-export function verifySePaySignature(rawBody: Buffer, signatureHeader?: string): boolean {
-  if (!env.sepaySecret) {
-    return env.nodeEnv !== 'production';
-  }
-  if (!signatureHeader) return false;
-  const expected = createHmac('sha256', env.sepaySecret).update(rawBody).digest('hex');
+function verifyHmacSignature(rawBody: Buffer, signatureHeader: string | undefined, secret: string): boolean {
+  if (!secret || !signatureHeader) return false;
+  const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
   try {
     const a = Buffer.from(expected, 'utf8');
     const b = Buffer.from(signatureHeader, 'utf8');
@@ -190,7 +187,29 @@ export function verifySePaySignature(rawBody: Buffer, signatureHeader?: string):
   }
 }
 
+export async function verifySePayWebhookRequest(opts: {
+  rawBody: Buffer;
+  authorization?: string;
+  signature?: string;
+}): Promise<boolean> {
+  const cfg = await getSepayRuntimeConfig();
+
+  if (cfg.authMode === 'api_key') {
+    if (!cfg.apiKey) return env.nodeEnv !== 'production';
+    return verifySepayApiKey(opts.authorization, cfg.apiKey);
+  }
+
+  if (cfg.authMode === 'hmac') {
+    if (!cfg.webhookSecret) return env.nodeEnv !== 'production';
+    return verifyHmacSignature(opts.rawBody, opts.signature, cfg.webhookSecret);
+  }
+
+  return env.nodeEnv !== 'production';
+}
+
 export async function processSePayWebhook(payload: SePayWebhookPayload) {
+  const cfg = await getSepayRuntimeConfig();
+
   if (payload.transferType !== 'in') {
     return { processed: false, reason: 'not_incoming' };
   }
@@ -202,7 +221,15 @@ export async function processSePayWebhook(payload: SePayWebhookPayload) {
     return { processed: true, reason: 'duplicate' };
   }
 
-  const paymentCode = extractPaymentCode(payload);
+  const prefix = cfg.paymentCodePrefix;
+  let paymentCode: string | null = null;
+  if (payload.code?.trim()) {
+    paymentCode = payload.code.trim().toUpperCase();
+  } else {
+    const match = payload.content.toUpperCase().match(new RegExp(`${prefix}[A-Z0-9]{6}`));
+    paymentCode = match?.[0] ?? null;
+  }
+
   if (!paymentCode) {
     return { processed: false, reason: 'no_payment_code' };
   }
@@ -233,7 +260,7 @@ export async function processSePayWebhook(payload: SePayWebhookPayload) {
     return { processed: false, reason: 'amount_mismatch' };
   }
 
-  if (env.sepayAccountNumber && payload.accountNumber !== env.sepayAccountNumber) {
+  if (cfg.accountNumber && payload.accountNumber !== cfg.accountNumber) {
     return { processed: false, reason: 'account_mismatch' };
   }
 

@@ -43,8 +43,6 @@ export function PricingSection({ onSelectPlan, showTitle = true }: PricingSectio
     return <p className="text-center text-sm text-muted-foreground">Đang tải gói học…</p>;
   }
 
-  if (!plans.length) return null;
-
   return (
     <section className="mt-20">
       {showTitle && (
@@ -56,11 +54,20 @@ export function PricingSection({ onSelectPlan, showTitle = true }: PricingSectio
           </p>
         </div>
       )}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {plans.map((plan) => (
-          <PricingCard key={plan.id} plan={plan} onSelect={handleSelect} />
-        ))}
-      </div>
+      {!plans.length ? (
+        <div className="rounded-2xl border border-dashed border-border/80 bg-card/60 px-6 py-10 text-center">
+          <p className="text-muted-foreground">
+            Chưa có gói học nào được xuất bản. Quản trị viên có thể tạo gói tại{' '}
+            <strong>Gói &amp; giá</strong> trong khu vực quản trị.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <PricingCard key={plan.id} plan={plan} onSelect={handleSelect} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

@@ -658,6 +658,31 @@ async function main() {
     update: {},
   });
 
+  const existingPlan = await db.pricingPlan.findFirst({
+    where: { name: "Gói N5 — Trọn khóa" },
+  });
+  if (!existingPlan) {
+    await db.pricingPlan.create({
+      data: {
+        name: "Gói N5 — Trọn khóa",
+        description: "Toàn bộ khóa Japanese N5 — Complete Course",
+        price: 299000,
+        durationDays: null,
+        features: [
+          "25 bài học tuần tự",
+          "MiniTest mở khóa",
+          "AI Speaking & OCR",
+          "Truy cập trọn đời",
+        ],
+        isActive: true,
+        isPopular: true,
+        sortOrder: 0,
+        courses: { create: [{ courseId: course.id }] },
+      },
+    });
+    console.log("[seed] Created sample pricing plan (N5)");
+  }
+
   const { enrollAndInitProgress } =
     await import("../services/lesson.service.js");
   await enrollAndInitProgress(admin.id, course.id);

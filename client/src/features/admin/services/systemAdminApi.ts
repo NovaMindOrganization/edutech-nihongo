@@ -97,6 +97,48 @@ export function testLlmConfig(body: LlmTestDraft) {
   });
 }
 
+export type SepayAuthMode = 'api_key' | 'hmac' | 'none';
+
+export type SepayAdminConfig = {
+  authMode: SepayAuthMode;
+  apiKey: string;
+  apiKeySet: boolean;
+  apiKeyPreview: string | null;
+  webhookSecret: string;
+  webhookSecretSet: boolean;
+  webhookSecretPreview: string | null;
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+  bankBin: string;
+  paymentCodePrefix: string;
+  orderExpiryMinutes: string;
+  webhookUrl: string;
+};
+
+export type SaveSepayAdminConfig = {
+  authMode: SepayAuthMode;
+  apiKey?: string;
+  webhookSecret?: string;
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+  bankBin: string;
+  paymentCodePrefix: string;
+  orderExpiryMinutes: string;
+};
+
+export function getSepayConfig() {
+  return apiFetch<SepayAdminConfig>('/admin/config/sepay');
+}
+
+export function saveSepayConfig(body: SaveSepayAdminConfig) {
+  return apiFetch<SepayAdminConfig>('/admin/config/sepay', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
 export function getAnalytics() {
   return apiFetch('/admin/analytics/dau');
 }
