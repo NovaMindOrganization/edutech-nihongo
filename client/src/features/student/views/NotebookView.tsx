@@ -30,7 +30,7 @@ export function NotebookView() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="w-full">
       <h1 className="font-display text-2xl font-bold">Sổ tay từ vựng</h1>
       <Card className="mt-6">
         <CardContent className="divide-y p-0">

@@ -1,34 +1,41 @@
 import { Link } from 'react-router-dom';
 
+import { PageGrid, PageShell } from '@/components/usable/page-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { paths } from '@/router/paths';
 
+const items = [
+  {
+    to: paths.placementTest,
+    title: 'Kiểm tra trình độ',
+    desc: 'Placement test — xác định N5/N4/N3 phù hợp',
+  },
+  {
+    to: paths.student.jlptSim,
+    title: 'Đề JLPT',
+    desc: 'Thi thử JLPT có giới hạn thời gian',
+  },
+] as const;
+
 export function PracticeHubView() {
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="font-display text-2xl font-bold">Luyện đề</h1>
-      <div className="mt-8 grid gap-4">
-        <Link to={paths.placementTest}>
-          <Card className="hover:border-primary/40">
-            <CardHeader>
-              <CardTitle>Kiểm tra trình độ</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Placement test — xác định N5/N4/N3 phù hợp
-            </CardContent>
-          </Card>
-        </Link>
-        <Link to={paths.student.jlptSim}>
-          <Card className="hover:border-primary/40">
-            <CardHeader>
-              <CardTitle>Đề JLPT</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Thi thử JLPT có giới hạn thời gian
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
-    </div>
+    <PageShell
+      eyebrow="Luyện đề"
+      title="Luyện đề"
+      description="Kiểm tra trình độ và thi thử theo format JLPT."
+    >
+      <PageGrid cols="wide">
+        {items.map((item) => (
+          <Link key={item.to} to={item.to} className="block h-full">
+            <Card className="h-full transition-colors hover:border-primary/40">
+              <CardHeader>
+                <CardTitle>{item.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">{item.desc}</CardContent>
+            </Card>
+          </Link>
+        ))}
+      </PageGrid>
+    </PageShell>
   );
 }

@@ -63,7 +63,7 @@ export function StudySetDetailView() {
   const tabItems = activeTab ? grouped.get(activeTab) ?? [] : [];
 
   return (
-    <div className="mx-auto max-w-4xl pb-12">
+    <div className="w-full pb-12">
       <Link to={paths.student.studySets} className="text-sm text-primary hover:underline">
         ← Study sets
       </Link>

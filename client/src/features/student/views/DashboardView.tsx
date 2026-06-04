@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
 import { Flame, BookOpen, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { PageShell } from '@/components/usable/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,15 +58,12 @@ export function DashboardView() {
   const statusMax = Math.max(...(chart?.byStatus.map((s) => s.value) ?? [1]), 1);
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <p className="font-display text-sm tracking-widest text-primary uppercase">Dashboard</p>
-        <h1 className="font-display mt-2 text-3xl font-bold">
-          Xin chào{user?.displayName ? `, ${user.displayName}` : ''}
-        </h1>
-      </motion.div>
-
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <PageShell
+      eyebrow="Dashboard"
+      title={`Xin chào${user?.displayName ? `, ${user.displayName}` : ''}`}
+      description="Theo dõi tiến độ học, streak và bài cần ôn."
+    >
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
         <Card className="border-primary/20 bg-gradient-to-br from-primary/10 to-transparent">
           <CardContent className="flex items-center gap-4 pt-6">
             <Flame className="size-10 text-primary" />
@@ -195,6 +192,6 @@ export function DashboardView() {
           <Button variant="outline">Luyện đề</Button>
         </Link>
       </div>
-    </div>
+    </PageShell>
   );
 }

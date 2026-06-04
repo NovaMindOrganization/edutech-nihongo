@@ -70,7 +70,7 @@ export function PlacementTestView() {
   const opts = (current.options as Array<{ label: string; text: string }> | null) ?? [];
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="w-full">
       <p className="font-display text-sm tracking-widest text-primary uppercase">Placement Test</p>
       <h1 className="font-display mt-2 text-3xl font-bold">Xác định trình độ JLPT</h1>
       <p className="mt-2 text-muted-foreground">

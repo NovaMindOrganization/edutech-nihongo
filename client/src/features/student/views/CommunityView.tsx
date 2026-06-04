@@ -5,7 +5,7 @@ import { paths } from '@/router/paths';
 /** Legacy route — redirects users to the full call experience. */
 export function CommunityView() {
   return (
-    <div className="mx-auto max-w-lg text-center">
+    <div className="w-full text-center">
       <h1 className="font-display text-2xl font-bold">Cộng đồng</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Luyện nói ngẫu nhiên đã chuyển sang trang gọi video.

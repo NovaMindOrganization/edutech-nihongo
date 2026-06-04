@@ -1,6 +1,7 @@
 import {
   BookOpen,
   GraduationCap,
+  ClipboardList,
   HelpCircle,
   Languages,
   LayoutDashboard,
@@ -39,6 +40,7 @@ const mainNav: NavItem[] = [
   { to: paths.admin.courses, label: "Khóa học", icon: GraduationCap },
   { to: paths.admin.pricing, label: "Gói & giá", icon: CreditCard },
   { to: paths.admin.conversations, label: "Hội thoại", icon: MessageSquare },
+  { to: paths.admin.mockExams, label: "Đề thi JLPT", icon: ClipboardList },
   { to: paths.admin.questions, label: "Câu hỏi", icon: HelpCircle },
   { to: paths.admin.studySets, label: "Study sets", icon: Languages },
   { to: paths.admin.users, label: "Người dùng", icon: Users },
@@ -127,7 +129,7 @@ export function AdminLayout() {
         </div>
       </aside>
 
-      <main className="min-h-screen flex-1 overflow-auto p-6 md:p-8">
+      <main className="min-h-screen w-full min-w-0 flex-1 overflow-auto p-6 md:p-8 lg:p-10">
         <Outlet />
       </main>
     </div>

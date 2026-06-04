@@ -11,6 +11,8 @@ export const LLM_CONFIG_KEYS = {
   openaiModel: 'llm_openai_model',
   openaiApiKey: 'llm_openai_api_key',
   temperature: 'llm_temperature',
+  ocrAgentRouterVisionModel: 'ocr_agent_router_vision_model',
+  ocrGeminiFallbackModel: 'ocr_gemini_fallback_model',
 } as const;
 
 export type LlmProvider = 'gemini' | 'agent_router';
@@ -23,6 +25,8 @@ export type LlmRuntimePayload = {
   openai_base_url: string;
   openai_model: string;
   temperature: number;
+  ocr_agent_router_vision_model: string;
+  ocr_gemini_fallback_model: string;
 };
 
 export type LlmAdminConfigView = {
@@ -37,6 +41,8 @@ export type LlmAdminConfigView = {
   openaiApiKeySet: boolean;
   openaiApiKeyPreview: string | null;
   temperature: string;
+  ocrAgentRouterVisionModel: string;
+  ocrGeminiFallbackModel: string;
 };
 
 function normalizeApiKey(key: string | undefined): string | undefined {
@@ -87,6 +93,14 @@ export async function getLlmRuntimePayload(): Promise<LlmRuntimePayload> {
   const temperature = Number(
     await getConfigValue(LLM_CONFIG_KEYS.temperature, '0.4'),
   );
+  const ocrAgentRouterVisionModel = await getConfigValue(
+    LLM_CONFIG_KEYS.ocrAgentRouterVisionModel,
+    process.env.OCR_AGENTROUTER_VISION_MODEL ?? 'claude-opus-4-6',
+  );
+  const ocrGeminiFallbackModel = await getConfigValue(
+    LLM_CONFIG_KEYS.ocrGeminiFallbackModel,
+    process.env.OCR_GEMINI_FALLBACK_MODEL ?? 'gemini-2.5-flash-lite',
+  );
 
   return {
     provider,
@@ -96,6 +110,8 @@ export async function getLlmRuntimePayload(): Promise<LlmRuntimePayload> {
     openai_base_url: openaiBaseUrl.replace(/\/$/, ''),
     openai_model: openaiModel,
     temperature: Number.isFinite(temperature) ? temperature : 0.4,
+    ocr_agent_router_vision_model: ocrAgentRouterVisionModel.trim(),
+    ocr_gemini_fallback_model: ocrGeminiFallbackModel.trim(),
   };
 }
 
@@ -118,6 +134,10 @@ export async function getLlmAdminConfig(): Promise<LlmAdminConfigView> {
     openaiApiKeySet: Boolean(openaiApiKey.trim()),
     openaiApiKeyPreview: maskApiKey(openaiApiKey),
     temperature: configs[LLM_CONFIG_KEYS.temperature] ?? '0.4',
+    ocrAgentRouterVisionModel:
+      configs[LLM_CONFIG_KEYS.ocrAgentRouterVisionModel] ?? 'claude-opus-4-6',
+    ocrGeminiFallbackModel:
+      configs[LLM_CONFIG_KEYS.ocrGeminiFallbackModel] ?? 'gemini-2.5-flash-lite',
   };
 }
 
@@ -129,12 +149,19 @@ export async function saveLlmAdminConfig(input: {
   openaiModel: string;
   openaiApiKey?: string;
   temperature: string;
+  ocrAgentRouterVisionModel: string;
+  ocrGeminiFallbackModel: string;
 }) {
   await setConfig(LLM_CONFIG_KEYS.provider, input.provider);
   await setConfig(LLM_CONFIG_KEYS.geminiModel, input.geminiModel.trim());
   await setConfig(LLM_CONFIG_KEYS.openaiBaseUrl, input.openaiBaseUrl.trim());
   await setConfig(LLM_CONFIG_KEYS.openaiModel, input.openaiModel.trim());
   await setConfig(LLM_CONFIG_KEYS.temperature, input.temperature.trim());
+  await setConfig(
+    LLM_CONFIG_KEYS.ocrAgentRouterVisionModel,
+    input.ocrAgentRouterVisionModel.trim(),
+  );
+  await setConfig(LLM_CONFIG_KEYS.ocrGeminiFallbackModel, input.ocrGeminiFallbackModel.trim());
 
   const nextGeminiKey = input.geminiApiKey?.trim();
   if (nextGeminiKey) {
@@ -201,6 +228,8 @@ export async function testLlmDraft(input: LlmTestDraft): Promise<LlmTestResult> 
     openai_base_url: (input.openaiBaseUrl?.trim() || saved.openai_base_url).replace(/\/$/, ''),
     openai_model: input.openaiModel?.trim() || saved.openai_model,
     temperature: Number.isFinite(temperature) ? temperature : saved.temperature,
+    ocr_agent_router_vision_model: saved.ocr_agent_router_vision_model,
+    ocr_gemini_fallback_model: saved.ocr_gemini_fallback_model,
   };
 
   try {

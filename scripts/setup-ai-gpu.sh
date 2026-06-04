@@ -19,7 +19,7 @@ fi
 
 CUDA_GEN="${CUDA_GEN:-cu118}"
 echo ""
-echo "[1/4] PaddleOCR GPU (${CUDA_GEN})..."
+echo "[1/4] PP-OCRv5 GPU (${CUDA_GEN})..."
 python -m pip install -U pip
 python -m pip install paddlepaddle-gpu -i "https://www.paddlepaddle.org.cn/packages/stable/${CUDA_GEN}/"
 python -m pip install -r "$AI/requirements-ocr.txt"
@@ -38,13 +38,21 @@ python - <<'PY'
 import paddle
 from paddleocr import PaddleOCR
 
-print("--- Paddle ---")
+print("--- PP-OCRv5 ---")
 cuda_paddle = paddle.device.is_compiled_with_cuda()
 print("paddle", paddle.__version__, "cuda:", cuda_paddle)
-if cuda_paddle:
-    paddle.device.set_device("gpu")
-ocr = PaddleOCR(use_angle_cls=True, lang="japan", use_gpu=cuda_paddle, show_log=False)
-print("PaddleOCR japan OK")
+device = "gpu:0" if cuda_paddle else "cpu"
+ocr = PaddleOCR(
+    lang="japan",
+    ocr_version="PP-OCRv5",
+    text_detection_model_name="PP-OCRv5_server_det",
+    text_recognition_model_name="PP-OCRv5_server_rec",
+    use_doc_orientation_classify=False,
+    use_doc_unwarping=False,
+    use_textline_orientation=True,
+    device=device,
+)
+print("PP-OCRv5 japan OK, device=", device)
 
 print("--- faster-whisper ---")
 from faster_whisper import WhisperModel

@@ -5,6 +5,7 @@ import * as kanjiStudentService from '../services/kanji-student.service.js';
 import * as dashboardService from '../services/dashboard.service.js';
 import * as dictionaryService from '../services/dictionary.service.js';
 import * as jlptService from '../services/jlpt.service.js';
+import * as mockExamService from '../services/mock-exam.service.js';
 import * as minitestService from '../services/minitest.service.js';
 import * as notebookService from '../services/notebook.service.js';
 import * as ocrNotebookService from '../services/ocr-notebook.service.js';
@@ -114,6 +115,28 @@ export const reviewSubmit = asyncHandler(async (req: Request, res: Response) => 
 
 export const aiSpeakingMessage = asyncHandler(async (req: Request, res: Response) => {
   const data = await aiClient.sendSpeakingMessage(req.user!.id, req.body);
+  res.json({ success: true, data });
+});
+
+export const jlptListExams = asyncHandler(async (req: Request, res: Response) => {
+  const level = typeof req.query.level === 'string' ? req.query.level : undefined;
+  const data = await mockExamService.listExamsForStudent(level, req.user!.id);
+  res.json({ success: true, data });
+});
+
+export const jlptGetActiveSession = asyncHandler(async (req: Request, res: Response) => {
+  const mockExamId = typeof req.query.mockExamId === 'string' ? req.query.mockExamId : '';
+  if (!mockExamId) {
+    res.json({ success: true, data: null });
+    return;
+  }
+  const data = await jlptService.getActiveSession(req.user!.id, mockExamId);
+  res.json({ success: true, data });
+});
+
+export const jlptGetSession = asyncHandler(async (req: Request, res: Response) => {
+  const sessionId = String(req.params.sessionId);
+  const data = await jlptService.getSession(req.user!.id, sessionId);
   res.json({ success: true, data });
 });
 

@@ -294,6 +294,16 @@ async function main() {
       value: "0.4",
       description: "LLM sampling temperature",
     },
+    {
+      key: "ocr_agent_router_vision_model",
+      value: "claude-opus-4-6",
+      description: "Agent Router vision model for OCR (not chat model)",
+    },
+    {
+      key: "ocr_gemini_fallback_model",
+      value: "gemini-2.5-flash-lite",
+      description: "Gemini model for OCR vision when AR fails or provider=gemini",
+    },
   ];
 
   for (const c of configs) {
@@ -624,6 +634,7 @@ async function main() {
         title: "JLPT N5 Mock Exam",
         jlptLevel: "N5",
         durationMinutes: 90,
+        maxAttempts: 3,
         createdById: admin.id,
       },
     });

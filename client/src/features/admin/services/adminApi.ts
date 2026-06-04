@@ -434,6 +434,8 @@ export function createQuestion(body: {
   questionType: string;
   correctAnswer: string;
   jlptLevel?: string;
+  questionCategory?: string;
+  explanation?: string;
   options?: unknown;
 }) {
   return apiFetch<QuestionItem>("/admin/questions", {
@@ -444,6 +446,113 @@ export function createQuestion(body: {
 
 export function deleteQuestion(id: string) {
   return apiFetch<null>(`/admin/questions/${id}`, { method: "DELETE" });
+}
+
+export type MockExamListItem = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  durationMinutes: number;
+  maxAttempts: number;
+  createdAt: string;
+  questionCount: number;
+  totalSessions: number;
+};
+
+export type MockExamDetail = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  durationMinutes: number;
+  maxAttempts: number;
+  createdAt: string;
+  totalSessions: number;
+  questions: Array<{
+    order: number;
+    section: string | null;
+    question: {
+      id: string;
+      questionText: string;
+      questionType: string;
+      options: Array<{ label: string; text: string }> | null;
+      correctAnswer: string;
+      explanation: string | null;
+      jlptLevel: string | null;
+      questionCategory: string | null;
+      difficulty: number;
+      audioUrl: string | null;
+    };
+  }>;
+};
+
+export type ImportQuestionBody = {
+  questionText: string;
+  questionType?: string;
+  options: Array<{ label: string; text: string }>;
+  correctAnswer: string;
+  explanation?: string;
+  questionCategory?: string;
+  section?: string;
+  difficulty?: number;
+};
+
+export function listMockExams(params?: Record<string, string | number>) {
+  const q = new URLSearchParams(params as Record<string, string>).toString();
+  return apiFetch<Paginated<MockExamListItem>>(`/admin/mock-exams?${q}`);
+}
+
+export function getMockExam(id: string) {
+  return apiFetch<MockExamDetail>(`/admin/mock-exams/${id}`);
+}
+
+export function createMockExam(body: {
+  title: string;
+  jlptLevel: string;
+  durationMinutes: number;
+  maxAttempts?: number;
+}) {
+  return apiFetch<MockExamListItem>("/admin/mock-exams", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateMockExam(
+  id: string,
+  body: Partial<{
+    title: string;
+    jlptLevel: string;
+    durationMinutes: number;
+    maxAttempts: number;
+  }>,
+) {
+  return apiFetch<MockExamListItem>(`/admin/mock-exams/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteMockExam(id: string) {
+  return apiFetch<null>(`/admin/mock-exams/${id}`, { method: "DELETE" });
+}
+
+export function importMockExamQuestions(
+  examId: string,
+  questions: ImportQuestionBody[],
+) {
+  return apiFetch<{ imported: number; questionIds: string[] }>(
+    `/admin/mock-exams/${examId}/import`,
+    {
+      method: "POST",
+      body: JSON.stringify({ questions }),
+    },
+  );
+}
+
+export function removeMockExamQuestion(examId: string, questionId: string) {
+  return apiFetch<null>(`/admin/mock-exams/${examId}/questions/${questionId}`, {
+    method: "DELETE",
+  });
 }
 
 export type StudySetAdminDetail = StudySetDetail;

@@ -34,7 +34,7 @@ export function HomeView() {
       <div className="relative z-10">
         <AppHeader />
 
-        <section className="mx-auto max-w-6xl px-6 pb-24 pt-8 md:pt-12">
+        <section className="w-full px-4 pb-24 pt-8 md:px-8 md:pt-12 lg:px-10 xl:px-12 2xl:px-16">
           {user && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}

@@ -19,6 +19,7 @@ export const paths = {
     kanjiHub: "/learn/kanji",
     kanjiCourse: (courseId: string) => `/learn/kanji/course/${courseId}`,
     kanjiHandbook: "/learn/kanji/handbook",
+    kanaQuiz: "/learn/kana-quiz",
   },
   student: {
     dashboard: "/dashboard",
@@ -29,6 +30,7 @@ export const paths = {
     aiSpeaking: "/ai-speaking",
     practice: "/practice",
     jlptSim: "/practice/jlpt",
+    jlptExam: (examId: string) => `/practice/jlpt/${examId}`,
     ocr: "/ocr",
     community: "/community",
     studySets: "/community/study-sets",
@@ -50,6 +52,8 @@ export const paths = {
     lessonDetail: (courseId: string, lessonId: string) =>
       `/admin/courses/${courseId}/lessons/${lessonId}`,
     conversations: "/admin/conversations",
+    mockExams: "/admin/mock-exams",
+    mockExamDetail: (examId: string) => `/admin/mock-exams/${examId}`,
     questions: "/admin/questions",
     studySets: "/admin/study-sets",
     studySetDetail: (id: string) => `/admin/study-sets/${id}`,

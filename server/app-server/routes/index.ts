@@ -21,6 +21,9 @@ import {
   paginationQuery,
   usersListQuery,
   questionSchema,
+  mockExamSchema,
+  mockExamImportSchema,
+  mockExamListQuery,
   reviewGenerateSchema,
   validateBody,
   validateQuery,
@@ -106,9 +109,12 @@ studentRouter.post('/ai-speaking/message', studentExt.aiSpeakingMessage);
 studentRouter.get('/speech/stt/config', studentExt.speechSttConfig);
 studentRouter.post('/speech/tts', studentExt.speechTts);
 studentRouter.post('/speech/stt', studentExt.speechStt);
-studentRouter.post('/jlpt-sim/start', studentExt.jlptStart);
-studentRouter.post('/jlpt-sim/:sessionId/submit', studentExt.jlptSubmit);
+studentRouter.get('/jlpt-sim/exams', studentExt.jlptListExams);
+studentRouter.get('/jlpt-sim/active', studentExt.jlptGetActiveSession);
 studentRouter.get('/jlpt-sim/history', studentExt.jlptHistory);
+studentRouter.post('/jlpt-sim/start', studentExt.jlptStart);
+studentRouter.get('/jlpt-sim/:sessionId', studentExt.jlptGetSession);
+studentRouter.post('/jlpt-sim/:sessionId/submit', studentExt.jlptSubmit);
 studentRouter.get('/ocr/status', studentExt.ocrStatus);
 studentRouter.post('/ocr/analyze', studentExt.ocrAnalyze);
 studentRouter.post('/ocr/notebook/add', studentExt.ocrNotebookAdd);
@@ -204,6 +210,18 @@ contentRouter.get('/conversations/:id', admin.getConversation);
 contentRouter.post('/conversations', validateBody(conversationSchema), admin.createConversation);
 contentRouter.put('/conversations/:id', validateBody(conversationSchema.partial()), admin.updateConversation);
 contentRouter.delete('/conversations/:id', admin.deleteConversation);
+
+contentRouter.get('/mock-exams', validateQuery(mockExamListQuery), admin.listMockExams);
+contentRouter.post('/mock-exams', validateBody(mockExamSchema), admin.createMockExam);
+contentRouter.get('/mock-exams/:id', admin.getMockExam);
+contentRouter.put('/mock-exams/:id', validateBody(mockExamSchema.partial()), admin.updateMockExam);
+contentRouter.delete('/mock-exams/:id', admin.deleteMockExam);
+contentRouter.post(
+  '/mock-exams/:id/import',
+  validateBody(mockExamImportSchema),
+  admin.importMockExamQuestions,
+);
+contentRouter.delete('/mock-exams/:id/questions/:questionId', admin.removeMockExamQuestion);
 
 contentRouter.get('/questions', validateQuery(paginationQuery), admin.listQuestions);
 contentRouter.get('/questions/:id', admin.getQuestion);

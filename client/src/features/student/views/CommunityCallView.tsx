@@ -127,7 +127,7 @@ export function CommunityCallView() {
   if (phase === 'idle' || phase === 'ended') {
     const previewReady = Boolean(localStream);
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col px-4 py-8">
+      <div className="flex min-h-[70vh] w-full max-w-3xl flex-col py-8">
         <Link to={paths.student.community} className="text-sm text-primary hover:underline">
           ← Cộng đồng
         </Link>

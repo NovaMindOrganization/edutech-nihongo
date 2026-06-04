@@ -9,6 +9,7 @@ import * as kanjiMediaService from '../services/kanji-media.service.js';
 import * as radicalService from '../services/radical.service.js';
 import * as lessonService from '../services/lesson.service.js';
 import * as questionService from '../services/question.service.js';
+import * as mockExamService from '../services/mock-exam.service.js';
 import * as vocabService from '../services/vocabulary.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
@@ -248,6 +249,52 @@ export const updateQuestion = asyncHandler(async (req: Request, res: Response) =
 export const deleteQuestion = asyncHandler(async (req: Request, res: Response) => {
   const id = String(req.params.id);
   await questionService.deleteQuestion(id);
+  res.json({ success: true, data: null });
+});
+
+// Mock exams
+export const listMockExams = asyncHandler(async (req: Request, res: Response) => {
+  const data = await mockExamService.listMockExams((req.validatedQuery ?? req.query) as never);
+  res.json({ success: true, data });
+});
+
+export const getMockExam = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  const data = await mockExamService.getMockExam(id);
+  res.json({ success: true, data });
+});
+
+export const createMockExam = asyncHandler(async (req: Request, res: Response) => {
+  const data = await mockExamService.createMockExam(req.body, req.user?.id);
+  res.status(201).json({ success: true, data });
+});
+
+export const updateMockExam = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  const data = await mockExamService.updateMockExam(id, req.body);
+  res.json({ success: true, data });
+});
+
+export const deleteMockExam = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  await mockExamService.deleteMockExam(id);
+  res.json({ success: true, data: null });
+});
+
+export const importMockExamQuestions = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  const data = await mockExamService.addQuestionsToExam(
+    id,
+    req.body.questions,
+    req.user?.id,
+  );
+  res.status(201).json({ success: true, data });
+});
+
+export const removeMockExamQuestion = asyncHandler(async (req: Request, res: Response) => {
+  const mockExamId = String(req.params.id);
+  const questionId = String(req.params.questionId);
+  await mockExamService.removeQuestionFromExam(mockExamId, questionId);
   res.json({ success: true, data: null });
 });
 

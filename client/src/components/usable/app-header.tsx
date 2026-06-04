@@ -33,7 +33,7 @@ export function AppHeader({ showNav = false, nav }: AppHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:px-6">
+      <div className="flex w-full flex-col gap-3 px-4 py-3 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
         <div className="flex items-center justify-between gap-4">
           <Link
             to={paths.home}

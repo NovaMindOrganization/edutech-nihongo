@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 
+import { PageGrid, PageShell } from '@/components/usable/page-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { paths } from '@/router/paths';
 
@@ -11,13 +12,15 @@ const items = [
 
 export function ReviewHubView() {
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="font-display text-2xl font-bold">Ôn tập</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Chỉ nội dung từ các tiết đã hoàn thành</p>
-      <div className="mt-8 grid gap-4">
+    <PageShell
+      eyebrow="Ôn tập"
+      title="Ôn tập"
+      description="Chỉ nội dung từ các tiết bạn đã hoàn thành."
+    >
+      <PageGrid>
         {items.map((item) => (
-          <Link key={item.to} to={item.to}>
-            <Card className="hover:border-primary/40">
+          <Link key={item.to} to={item.to} className="block h-full">
+            <Card className="h-full transition-colors hover:border-primary/40">
               <CardHeader>
                 <CardTitle>{item.title}</CardTitle>
               </CardHeader>
@@ -25,7 +28,7 @@ export function ReviewHubView() {
             </Card>
           </Link>
         ))}
-      </div>
-    </div>
+      </PageGrid>
+    </PageShell>
   );
 }
