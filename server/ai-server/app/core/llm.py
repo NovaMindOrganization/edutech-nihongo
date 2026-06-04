@@ -7,6 +7,7 @@ import httpx
 from pydantic import BaseModel
 
 from app.core.agentrouter_client import build_openai_compat_headers, enrich_agentrouter_error
+from app.core.agentrouter_vision import agentrouter_vision_transcribe
 from app.core.config import settings
 from app.core.llm_runtime import get_llm_config
 from app.core.prompts import DEFAULT_JSON_TUTOR, load_prompt
@@ -162,17 +163,38 @@ def _gemini_models_to_try() -> list[str]:
     return ordered
 
 
-def _gemini_generate(parts: list[dict]) -> str | None:
+def _ocr_gemini_models_to_try() -> list[str]:
+    """Gemini models for OCR vision / fallback only (admin-configured)."""
     cfg = get_llm_config()
-    api_key = cfg.gemini_api_key
+    primary = (cfg.ocr_gemini_fallback_model or '').strip() or cfg.gemini_model
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for name in (primary, cfg.gemini_model, *GEMINI_FALLBACK_MODELS):
+        if name and name not in seen:
+            seen.add(name)
+            ordered.append(name)
+    return ordered
+
+
+def _gemini_generate(
+    parts: list[dict],
+    *,
+    temperature: float | None = None,
+    models: list[str] | None = None,
+) -> str | None:
+    cfg = get_llm_config()
+    api_key = cfg.gemini_api_key or settings.gemini_key
     if not api_key:
         return None
 
-    payload = {'contents': [{'parts': parts}]}
+    payload: dict = {'contents': [{'parts': parts}]}
+    if temperature is not None:
+        payload['generationConfig'] = {'temperature': temperature}
     last_err: Exception | None = None
+    model_list = models if models is not None else _gemini_models_to_try()
 
     with httpx.Client(timeout=90) as client:
-        for model in _gemini_models_to_try():
+        for model in model_list:
             url = (
                 f'https://generativelanguage.googleapis.com/v1beta/models/'
                 f'{model}:generateContent?key={api_key}'
@@ -250,16 +272,139 @@ def call_openai_compatible(
     return LlmReply(AI_Reply=result.content, Correction=None)
 
 
-def openai_raw_generate(system: str, user: str) -> str | None:
-    result = openai_compatible_chat(
-        [
-            {'role': 'system', 'content': system},
-            {'role': 'user', 'content': user},
-        ],
+def _gemini_api_key_for_fallback() -> str | None:
+    cfg = get_llm_config()
+    return cfg.gemini_api_key or settings.gemini_key
+
+
+def _agent_router_should_fallback(error: str | None) -> bool:
+    if not error:
+        return False
+    lowered = error.lower()
+    return (
+        'content-blocked' in lowered
+        or 'unauthorized' in lowered
+        or 'not support' in lowered
+        or 'vision' in lowered
     )
-    if result.error:
-        logger.warning('OpenAI-compatible raw generate error: %s', result.error)
-    return result.content
+
+
+def openai_raw_generate(system: str, user: str) -> str | None:
+    cfg = get_llm_config()
+    if cfg.provider == 'agent_router' and cfg.openai_api_key:
+        result = openai_compatible_chat(
+            [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user},
+            ],
+        )
+        if result.content:
+            return result.content
+        if _agent_router_should_fallback(result.error) and _gemini_api_key_for_fallback():
+            logger.info('Agent Router unavailable for text (%s) — using Gemini', result.error)
+            text = _gemini_generate(
+                [{'text': f'System: {system}'}, {'text': user}],
+                temperature=0,
+            )
+            return text
+        if result.error:
+            logger.warning('OpenAI-compatible raw generate error: %s', result.error)
+        return None
+
+    if cfg.gemini_api_key:
+        return _gemini_generate(
+            [{'text': f'System: {system}'}, {'text': user}],
+            temperature=0,
+        )
+    return None
+
+
+def vision_transcribe(
+    prompt: str,
+    *,
+    image_b64: str,
+    mime_type: str = 'image/jpeg',
+    temperature: float = 0,
+) -> tuple[str | None, str | None]:
+    """
+    Multimodal OCR/transcription using admin LLM provider (Gemini or Agent Router).
+    Returns (text, engine_label e.g. gemini:gemini-2.5-flash).
+    """
+    cfg = get_llm_config()
+
+    if cfg.provider == 'agent_router':
+        text, engine = agentrouter_vision_transcribe(
+            prompt,
+            image_b64=image_b64,
+            mime_type=mime_type,
+            temperature=temperature,
+        )
+        if text:
+            return text, engine
+        if not _gemini_api_key_for_fallback():
+            return None, None
+        logger.info('Vision OCR: Agent Router failed — using Gemini fallback')
+
+    gemini_key = cfg.gemini_api_key or settings.gemini_key
+    if not gemini_key:
+        return None, None
+    text = _gemini_generate(
+        [
+            {'text': prompt},
+            {'inline_data': {'mime_type': mime_type, 'data': image_b64}},
+        ],
+        temperature=temperature,
+        models=_ocr_gemini_models_to_try(),
+    )
+    if not text:
+        return None, None
+    ocr_model = (cfg.ocr_gemini_fallback_model or cfg.gemini_model).strip()
+    label = f'gemini:{ocr_model}'
+    if cfg.provider == 'agent_router':
+        label = f'{label} (fallback)'
+    return text, label
+
+
+def llm_text_generate(
+    system: str,
+    user: str,
+    *,
+    temperature: float | None = None,
+) -> tuple[str | None, str | None]:
+    """Text-only LLM using admin provider. Returns (text, engine_label)."""
+    cfg = get_llm_config()
+    use_temp = cfg.temperature if temperature is None else temperature
+
+    if cfg.provider == 'agent_router':
+        if cfg.openai_api_key:
+            result = openai_compatible_chat(
+                [
+                    {'role': 'system', 'content': system},
+                    {'role': 'user', 'content': user},
+                ],
+                temperature=use_temp,
+            )
+            if result.content:
+                return result.content, f'agent_router:{cfg.openai_model}'
+            if not _agent_router_should_fallback(result.error) or not _gemini_api_key_for_fallback():
+                if result.error:
+                    logger.warning('LLM text generate (agent_router) error: %s', result.error)
+                return None, None
+            logger.info('LLM text: Agent Router blocked (%s) — using Gemini', result.error)
+
+    gemini_key = cfg.gemini_api_key or settings.gemini_key
+    if not gemini_key:
+        return None, None
+    text = _gemini_generate(
+        [{'text': f'System: {system}'}, {'text': user}],
+        temperature=use_temp,
+    )
+    if not text:
+        return None, None
+    label = f'gemini:{cfg.gemini_model}'
+    if cfg.provider == 'agent_router':
+        label = f'{label} (fallback)'
+    return text, label
 
 
 def call_gemini(

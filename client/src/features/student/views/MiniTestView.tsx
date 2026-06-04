@@ -57,7 +57,7 @@ export function MiniTestView() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="w-full">
       <Link to={paths.learn.lesson(lessonId)} className="text-sm text-primary hover:underline">
         ← Bài học
       </Link>

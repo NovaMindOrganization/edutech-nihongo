@@ -61,7 +61,7 @@ export function ConversationsAdminView() {
         />
       </AdminListFilters>
 
-      <div className="mt-6 max-w-xl space-y-2 rounded-lg border p-4">
+      <div className="mt-6 w-full max-w-4xl space-y-2 rounded-lg border p-4">
         <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tiêu đề" />
         <select
           className="rounded-lg border bg-background px-3 py-2 text-sm"

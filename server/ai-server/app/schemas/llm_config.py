@@ -9,3 +9,5 @@ class LlmConfigPayload(BaseModel):
     openai_base_url: str = 'https://agentrouter.org/v1'
     openai_model: str = 'claude-opus-4-6'
     temperature: float = Field(default=0.4, ge=0, le=2)
+    ocr_agent_router_vision_model: str = 'claude-opus-4-6'
+    ocr_gemini_fallback_model: str = 'gemini-2.5-flash-lite'

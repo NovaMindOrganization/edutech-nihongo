@@ -60,7 +60,7 @@ export function StudySetsView() {
   const rows = tab === 'community' ? community : mine;
 
   return (
-    <div className="mx-auto max-w-6xl pb-12">
+    <div className="w-full pb-12">
       <Link to={paths.student.community} className="text-sm text-primary hover:underline">
         ← Cộng đồng
       </Link>

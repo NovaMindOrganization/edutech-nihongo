@@ -41,7 +41,7 @@ export function PricingView() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="w-full px-4 py-12 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
         <PricingSection onSelectPlan={handleSelect} showTitle />
       </main>
     </div>

@@ -63,6 +63,8 @@ export const saveLlmConfig = asyncHandler(async (req: Request, res: Response) =>
     openaiModel: string;
     openaiApiKey?: string;
     temperature: string;
+    ocrAgentRouterVisionModel: string;
+    ocrGeminiFallbackModel: string;
   };
   if (body.provider !== 'gemini' && body.provider !== 'agent_router') {
     res.status(422).json({ success: false, error: { message: 'Invalid provider' } });

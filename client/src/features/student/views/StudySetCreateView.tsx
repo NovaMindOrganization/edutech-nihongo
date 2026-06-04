@@ -103,7 +103,7 @@ export function StudySetCreateView() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl pb-12">
+    <div className="w-full pb-12">
       <Link to={paths.student.studySets} className="text-sm text-primary hover:underline">
         ← Study sets
       </Link>
