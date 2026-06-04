@@ -103,6 +103,7 @@ def transcribe_audio(
     *,
     language: str | None = None,
     mime_type: str = 'audio/webm',
+    allow_gemini_fallback: bool | None = None,
 ) -> tuple[str, float | None, str]:
     """
     Returns (text, confidence, engine).
@@ -123,8 +124,14 @@ def transcribe_audio(
     if text:
         return text, conf, 'whisper'
 
-    text, conf = _gemini_transcribe(wav_bytes, lang, mime_type)
-    if text:
-        return text, conf, 'gemini'
+    use_gemini = (
+        settings.stt_gemini_fallback
+        if allow_gemini_fallback is None
+        else allow_gemini_fallback
+    )
+    if use_gemini:
+        text, conf = _gemini_transcribe(wav_bytes, lang, mime_type)
+        if text:
+            return text, conf, 'gemini'
 
     return '', None, 'none'

@@ -9,5 +9,8 @@ export { UsersAdminView } from "./views/UsersAdminView";
 export { ConfigAdminView } from "./views/ConfigAdminView";
 export { QuestionsAdminView } from "./views/QuestionsAdminView";
 export { ConversationsAdminView } from "./views/ConversationsAdminView";
+export { StudySetApproveFields } from "./components/study-set-approve-fields";
 export { StudySetsAdminView } from "./views/StudySetsAdminView";
+export { StudySetAdminDetailView } from "./views/StudySetAdminDetailView";
 export { RadicalsAdminView } from "./views/RadicalsAdminView";
+export { PricingAdminView } from "./views/PricingAdminView";

@@ -16,7 +16,6 @@ function ProgressBars({
 }: {
   data: Array<{ label: string; title?: string; percent: number; completed: number; total: number }>;
 }) {
-  const max = Math.max(...data.map((d) => d.percent), 1);
   return (
     <div className="space-y-3">
       {data.map((row) => (
@@ -30,7 +29,7 @@ function ProgressBars({
           <div className="h-2 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${(row.percent / max) * 100}%` }}
+              style={{ width: `${Math.min(100, Math.max(0, row.percent))}%` }}
             />
           </div>
         </div>
@@ -67,13 +66,18 @@ export function DashboardView() {
         </h1>
       </motion.div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-primary/20 bg-gradient-to-br from-primary/10 to-transparent">
           <CardContent className="flex items-center gap-4 pt-6">
             <Flame className="size-10 text-primary" />
             <div>
               <p className="text-2xl font-bold">{data?.stats.currentStreak ?? 0}</p>
-              <p className="text-xs text-muted-foreground">Ngày streak</p>
+              <p className="text-xs text-muted-foreground">
+                Ngày học liên tiếp (hiện tại)
+              </p>
+              <p className="text-xs text-muted-foreground/80">
+                Kỷ lục {data?.stats.longestStreak ?? 0} ngày
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -82,7 +86,9 @@ export function DashboardView() {
             <RotateCcw className="size-10 text-accent" />
             <div>
               <p className="text-2xl font-bold">{data?.stats.lessonsCompleted ?? 0}</p>
-              <p className="text-xs text-muted-foreground">Tiết đã hoàn thành</p>
+              <p className="text-xs text-muted-foreground">
+                Tiết hoàn thành / {data?.stats.lessonsTotal ?? 0} tiết
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -90,8 +96,19 @@ export function DashboardView() {
           <CardContent className="flex items-center gap-4 pt-6">
             <BookOpen className="size-10 text-primary/70" />
             <div>
-              <p className="text-sm font-medium">{data?.stats.lessonsActive ?? '—'}</p>
-              <p className="text-xs text-muted-foreground">Tiết đang học</p>
+              <p className="text-2xl font-bold">{data?.stats.lessonsInProgress ?? 0}</p>
+              <p className="text-xs text-muted-foreground">Tiết đang mở (active)</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 pt-6">
+            <BookOpen className="size-10 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium" title={data?.stats.lessonsActive ?? undefined}>
+                {data?.stats.lessonsActive ?? 'Chưa có tiết active'}
+              </p>
+              <p className="text-xs text-muted-foreground">Bài học tiếp theo</p>
             </div>
           </CardContent>
         </Card>

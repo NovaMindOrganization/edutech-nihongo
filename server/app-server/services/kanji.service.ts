@@ -1,5 +1,6 @@
 import { db } from "../config/db.js";
 import { AppError } from "../utils/app-error.js";
+import { createKanjiSlug } from "../utils/kanji-slug.js";
 
 export type KanjiInput = {
   character: string;
@@ -25,7 +26,10 @@ function normalizeMemoryImageReference(value?: string) {
     const segments = url.pathname.split("/").filter(Boolean);
     const bucketIndex = segments.indexOf(KANJI_BUCKET);
     if (bucketIndex >= 0 && segments[bucketIndex + 1]) {
-      return [KANJI_BUCKET, ...segments.slice(bucketIndex + 1).map(decodeURIComponent)].join("/");
+      return [
+        KANJI_BUCKET,
+        ...segments.slice(bucketIndex + 1).map(decodeURIComponent),
+      ].join("/");
     }
   } catch {
     // Already a storage path such as kanji/memory/<id>.png.
@@ -43,9 +47,31 @@ function normalizeKanjiInput<T extends Partial<KanjiInput>>(data: T): T {
 }
 
 export async function ensureKanjiExists(id: string) {
-  const row = await db.kanji.findUnique({ where: { id }, select: { id: true } });
+  const row = await db.kanji.findUnique({
+    where: { id },
+    select: { id: true },
+  });
   if (!row) throw new AppError("Kanji not found", 404, "NOT_FOUND");
   return row;
+}
+
+export async function ensureKanjiStorageIdentity(id: string) {
+  const row = await db.kanji.findUnique({
+    where: { id },
+    select: { id: true, character: true, slug: true, jlptLevel: true },
+  });
+  if (!row) throw new AppError("Kanji not found", 404, "NOT_FOUND");
+
+  if (row.slug) {
+    return row;
+  }
+
+  const slug = createKanjiSlug(row.character);
+  return db.kanji.update({
+    where: { id },
+    data: { slug },
+    select: { id: true, character: true, slug: true, jlptLevel: true },
+  });
 }
 
 function kanjiInclude() {
@@ -149,6 +175,7 @@ export async function createKanji(data: KanjiInput, createdById?: string) {
     const item = await tx.kanji.create({
       data: {
         ...rest,
+        slug: createKanjiSlug(rest.character),
         ...(createdById ? { createdBy: { connect: { id: createdById } } } : {}),
       },
     });

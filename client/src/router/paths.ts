@@ -4,6 +4,8 @@ export const paths = {
   login: "/login",
   register: "/register",
   placementTest: "/placement-test",
+  pricing: "/pricing",
+  checkout: (orderId: string) => `/checkout/${orderId}`,
   learn: {
     hub: "/learn",
     course: (id: string) => `/learn/courses/${id}`,
@@ -30,6 +32,9 @@ export const paths = {
     ocr: "/ocr",
     community: "/community",
     studySets: "/community/study-sets",
+    studySetCreate: "/community/study-sets/create",
+    studySetDetail: (id: string) => `/community/study-sets/${id}`,
+    studySetEdit: (id: string) => `/community/study-sets/${id}/edit`,
     communityCall: "/community/call",
     /** @deprecated use learn.kanjiHandbook */
     notebook: "/learn/kanji/handbook",
@@ -47,7 +52,9 @@ export const paths = {
     conversations: "/admin/conversations",
     questions: "/admin/questions",
     studySets: "/admin/study-sets",
+    studySetDetail: (id: string) => `/admin/study-sets/${id}`,
     users: "/admin/users",
     config: "/admin/config",
+    pricing: "/admin/pricing",
   },
 } as const;

@@ -224,7 +224,9 @@ export function getDashboard() {
     stats: {
       lessonsCompleted: number;
       lessonsActive: string | null;
+      lessonsActiveCount?: number;
       lessonsLocked: number;
+      lessonsTotal?: number;
       lessonsInProgress: number;
       currentStreak: number;
       longestStreak: number;
@@ -369,16 +371,42 @@ export type OcrMeta = {
   processing_ms?: number;
 };
 
+export type OcrVocabSuggestion = {
+  id: string;
+  word: string;
+  reading: string | null;
+  meaning: string;
+  jlptLevel: string;
+};
+
+export type OcrKanjiSuggestion = {
+  id: string;
+  character: string;
+  meaning: string;
+  jlptLevel: string;
+  readingsOn: string[];
+  readingsKun: string[];
+};
+
 export function postOcr(image: string) {
   return apiFetch<{
     extracted_text: string;
-    matched_vocabulary: Array<{ id: string; word: string; reading: string | null; meaning: string }>;
-    matched_grammar: Array<{ id: string; pattern: string; meaningVi: string }>;
+    suggested_vocabulary: OcrVocabSuggestion[];
+    suggested_kanji: OcrKanjiSuggestion[];
     grammar_explanation: string | null;
     meta?: OcrMeta | null;
   }>("/student/ocr/analyze", {
     method: "POST",
     body: JSON.stringify({ image }),
+  });
+}
+
+export function postOcrNotebookAdd(
+  items: Array<{ itemId: string; itemType: "vocabulary" | "kanji" }>,
+) {
+  return apiFetch<{ added: number }>("/student/ocr/notebook/add", {
+    method: "POST",
+    body: JSON.stringify({ items }),
   });
 }
 
@@ -390,48 +418,87 @@ export function getOcrStatus() {
   }>("/student/ocr/status");
 }
 
+export type OcrQuizQuestion = {
+  id: string;
+  prompt: string;
+  choices: string[];
+  answer: number;
+  explanation?: string | null;
+};
+
+export function postOcrQuiz(image: string, questionCount: number) {
+  return apiFetch<{
+    extracted_text: string;
+    questions: OcrQuizQuestion[];
+    error?: string | null;
+    meta?: OcrMeta | null;
+  }>("/student/ocr/quiz/generate", {
+    method: "POST",
+    body: JSON.stringify({ image, questionCount }),
+  });
+}
+
+export type OcrGradingError = {
+  location: string;
+  student_answer: string;
+  correct_answer: string;
+  explanation: string;
+};
+
+export function postOcrGrade(image: string, context?: string) {
+  return apiFetch<{
+    extracted_text: string;
+    errors: OcrGradingError[];
+    overall_feedback: string;
+    score_estimate: string | null;
+    error?: string | null;
+    meta?: OcrMeta | null;
+  }>("/student/ocr/grade", {
+    method: "POST",
+    body: JSON.stringify({ image, context: context?.trim() || undefined }),
+  });
+}
+
 export function searchDictionary(q: string) {
   return apiFetch<{ vocabulary: unknown[]; grammar: unknown[] }>(
     `/student/dictionary/search?q=${encodeURIComponent(q)}`,
   );
 }
 
-export type StudySetRow = {
-  id: string;
-  title: string;
-  description?: string | null;
-  isPublic?: boolean;
+export type { StudySetListRow as StudySetRow } from '../types/study-set.types';
+export {
+  addStudySetItems,
+  cloneStudySet,
+  createStudySet,
+  deleteStudySet,
+  getStudySet,
+  listMyStudySets,
+  listPublicStudySets,
+  studySetAssetUrl,
+  updateStudySet,
+  uploadStudySetFile,
+} from './studySetApi';
+
+export type WebRtcMatchResult = {
+  matched: boolean;
+  roomId: string | null;
+  peerId?: string;
+  isInitiator?: boolean;
 };
 
-export function listPublicStudySets() {
-  return apiFetch<StudySetRow[]>("/student/studysets/public");
-}
-
-export function listMyStudySets() {
-  return apiFetch<StudySetRow[]>("/student/studysets/mine");
-}
-
-export function createStudySet(body: {
-  title: string;
-  description?: string;
-  isPublic?: boolean;
-  cards?: Array<{ front: string; back: string }>;
-}) {
-  return apiFetch("/student/studysets", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
-
-export function cloneStudySet(id: string) {
-  return apiFetch(`/student/studysets/${id}/clone`, { method: "POST" });
-}
-
 export function webrtcMatch() {
-  return apiFetch<{ matched: boolean; roomId: string | null; peerId?: string }>(
-    "/student/webrtc/match",
-    { method: "POST" },
-  );
+  return apiFetch<WebRtcMatchResult>("/student/webrtc/match", { method: "POST" });
+}
+
+export function webrtcLeave() {
+  return apiFetch<{ left: boolean }>("/student/webrtc/leave", { method: "POST" });
+}
+
+export function postCommunityTranslate(text: string, targetLang = "vi") {
+  return apiFetch<{ translation: string; error?: string | null }>("/student/community/translate", {
+    method: "POST",
+    body: JSON.stringify({ text, targetLang }),
+  });
 }
 
 export function webrtcReport(body: {
