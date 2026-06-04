@@ -134,6 +134,7 @@ export type LessonPayload = {
     meaning: string;
     memoryTip: string | null;
     memoryImageUrl: string | null;
+    slug: string;
     readingsOn: string[];
     readingsKun: string[];
     strokeCount: number | null;
@@ -182,6 +183,7 @@ export function getCourseKanji(courseId: string) {
       meaning: string;
       memoryTip: string | null;
       memoryImageUrl: string | null;
+      slug: string;
       readingsOn: string[];
       readingsKun: string[];
       strokeCount: number | null;
@@ -211,6 +213,7 @@ export function getHandbookKanji() {
         meaning: string;
         memoryTip: string | null;
         memoryImageUrl: string | null;
+        slug: string;
         readingsOn: string[];
         readingsKun: string[];
         strokeCount: number | null;

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { getCourseKanji } from '@/features/student/services/studentApi';
 import { paths } from '@/router/paths';
-import { kanjiMemoryImageAssetUrl } from '@/services/httpClient';
+import { kanjiHasMemoryImage, kanjiMemoryImageSrc } from '@/services/httpClient';
 
 export function KanjiCourseView() {
   const { courseId = '' } = useParams();
@@ -31,9 +31,9 @@ export function KanjiCourseView() {
             <CardContent className="pt-6 text-center">
               <p className="font-jp text-3xl font-bold">{k.character}</p>
               <p className="mt-1 text-sm">{k.meaning}</p>
-              {k.memoryImageUrl && (
+              {kanjiHasMemoryImage(k) && (
                 <img
-                  src={kanjiMemoryImageAssetUrl(k.id)}
+                  src={kanjiMemoryImageSrc(k)}
                   alt={`Memoric ${k.character}`}
                   className="mx-auto mt-2 h-20 w-40 rounded object-contain border border-border/60 bg-muted/20 p-1"
                 />
