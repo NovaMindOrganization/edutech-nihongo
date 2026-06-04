@@ -40,6 +40,24 @@ function broadcast(roomId: string, fromUserId: string, data: unknown) {
   }
 }
 
+function notifyPeerLeft(roomId: string, leftUserId: string) {
+  const peers = roomSockets.get(roomId);
+  if (!peers) return;
+  const payload = JSON.stringify({ type: 'peer-left', userId: leftUserId });
+  for (const [peerUserId, peerWs] of peers) {
+    if (peerUserId !== leftUserId && peerWs.readyState === peerWs.OPEN) {
+      peerWs.send(payload);
+    }
+  }
+}
+
+function removePeerFromRoom(roomId: string, userId: string) {
+  const peers = roomSockets.get(roomId);
+  if (!peers) return;
+  peers.delete(userId);
+  if (peers.size === 0) roomSockets.delete(roomId);
+}
+
 export function attachWebRtcSignaling(server: Server) {
   const wss = new WebSocketServer({ server, path: '/ws/webrtc/signal' });
 
@@ -68,8 +86,15 @@ export function attachWebRtcSignaling(server: Server) {
         }
         roomId = msg.roomId;
         if (!roomSockets.has(roomId)) roomSockets.set(roomId, new Map());
-        roomSockets.get(roomId)!.set(userId, ws);
-        ws.send(JSON.stringify({ type: 'joined', roomId }));
+        const peers = roomSockets.get(roomId)!;
+        peers.set(userId, ws);
+        const peerIds = [...peers.keys()];
+        ws.send(JSON.stringify({ type: 'joined', roomId, peerCount: peerIds.length }));
+        for (const [peerUserId, peerWs] of peers) {
+          if (peerUserId !== userId && peerWs.readyState === peerWs.OPEN) {
+            peerWs.send(JSON.stringify({ type: 'peer-joined', userId, peerCount: peerIds.length }));
+          }
+        }
         return;
       }
 
@@ -79,12 +104,18 @@ export function attachWebRtcSignaling(server: Server) {
       }
 
       if (msg.type === 'leave' && roomId) {
-        roomSockets.get(roomId)?.delete(userId);
+        notifyPeerLeft(roomId, userId);
+        removePeerFromRoom(roomId, userId);
+        void webrtcService.leaveMatch(userId);
+        roomId = null;
       }
     });
 
     ws.on('close', () => {
-      if (roomId) roomSockets.get(roomId)?.delete(userId);
+      if (!roomId) return;
+      notifyPeerLeft(roomId, userId);
+      removePeerFromRoom(roomId, userId);
+      void webrtcService.leaveMatch(userId);
     });
   });
 

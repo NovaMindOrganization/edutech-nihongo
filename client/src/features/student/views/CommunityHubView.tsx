@@ -24,7 +24,7 @@ export function CommunityHubView() {
               <CardTitle>Gọi luyện nói ngẫu nhiên</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Ghép cặp P2P + STT + đánh giá Gemini sau cuộc gọi
+              Video/voice WebRTC — ghép ngẫu nhiên như Google Meet
             </CardContent>
           </Card>
         </Link>

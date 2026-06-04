@@ -37,6 +37,66 @@ export function setSystemConfig(key: string, value: string) {
   return apiFetch(`/admin/config/${key}`, { method: 'PUT', body: JSON.stringify({ value }) });
 }
 
+export type LlmProvider = 'gemini' | 'agent_router';
+
+export type LlmAdminConfig = {
+  provider: LlmProvider;
+  geminiModel: string;
+  geminiApiKey: string;
+  geminiApiKeySet: boolean;
+  geminiApiKeyPreview: string | null;
+  openaiBaseUrl: string;
+  openaiModel: string;
+  openaiApiKey: string;
+  openaiApiKeySet: boolean;
+  openaiApiKeyPreview: string | null;
+  temperature: string;
+};
+
+export type SaveLlmAdminConfig = {
+  provider: LlmProvider;
+  geminiModel: string;
+  geminiApiKey?: string;
+  openaiBaseUrl: string;
+  openaiModel: string;
+  openaiApiKey?: string;
+  temperature: string;
+};
+
+export function getLlmConfig() {
+  return apiFetch<LlmAdminConfig>('/admin/config/llm');
+}
+
+export function saveLlmConfig(body: SaveLlmAdminConfig) {
+  return apiFetch('/admin/config/llm', { method: 'PUT', body: JSON.stringify(body) });
+}
+
+export type LlmTestDraft = {
+  testProvider: LlmProvider;
+  geminiModel?: string;
+  geminiApiKey?: string;
+  openaiBaseUrl?: string;
+  openaiModel?: string;
+  openaiApiKey?: string;
+  temperature?: string;
+};
+
+export type LlmTestResult = {
+  ok: boolean;
+  provider: string;
+  model: string;
+  latencyMs: number;
+  reply: string | null;
+  error: string | null;
+};
+
+export function testLlmConfig(body: LlmTestDraft) {
+  return apiFetch<LlmTestResult>('/admin/config/llm/test', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
 export function getAnalytics() {
   return apiFetch('/admin/analytics/dau');
 }
