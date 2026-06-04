@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const sepayConfigSchema = z.object({
-  authMode: z.enum(['api_key', 'hmac', 'none']),
+  authMode: z.enum(["api_key", "hmac", "none"]),
   apiKey: z.string().max(512).optional(),
   webhookSecret: z.string().max(512).optional(),
   accountNumber: z.string().min(1).max(32),
