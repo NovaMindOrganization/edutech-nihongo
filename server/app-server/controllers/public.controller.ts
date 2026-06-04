@@ -100,7 +100,7 @@ export const getStudySetAsset = asyncHandler(async (req: Request, res: Response)
 });
 
 export const getKanjiMemoryImage = asyncHandler(async (req: Request, res: Response) => {
-  const image = await kanjiMediaService.getKanjiMemoryImage(String(req.params.id));
+  const image = await kanjiMediaService.getKanjiMemoryImage(String(req.params.slug));
   res.setHeader('Content-Type', image.contentType);
   res.setHeader('Cache-Control', image.cacheControl);
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');

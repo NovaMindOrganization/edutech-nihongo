@@ -3,7 +3,12 @@ import type {
   StudySetListRow,
   StudySetModerationStatus,
 } from "@/features/student/types/study-set.types";
-import { ApiRequestError, apiAssetUrl, apiFetch, getAccessToken } from "@/services/httpClient";
+import {
+  ApiRequestError,
+  apiAssetUrl,
+  apiFetch,
+  getAccessToken,
+} from "@/services/httpClient";
 
 export type VocabItem = {
   id: string;
@@ -31,7 +36,12 @@ export type GrammarItem = {
   meaningVi: string;
   usage: string | null;
   notes: string | null;
-  examples: Array<{ jp: string; vi: string; reading?: string | null; en?: string | null }> | null;
+  examples: Array<{
+    jp: string;
+    vi: string;
+    reading?: string | null;
+    en?: string | null;
+  }> | null;
   quiz: Array<{ question: string; choices: string[]; answer: number }> | null;
 };
 
@@ -179,7 +189,7 @@ export function listCourses() {
 }
 
 export function listCoursesWithLessons() {
-  return apiFetch<CourseDetail[]>('/admin/courses-with-lessons');
+  return apiFetch<CourseDetail[]>("/admin/courses-with-lessons");
 }
 
 export function getCourse(id: string) {
@@ -290,15 +300,21 @@ export function updateKanji(id: string, body: Partial<KanjiUpsertBody>) {
 
 export async function uploadKanjiMemoryImage(id: string, file: File) {
   const token = getAccessToken();
-  const headers = new Headers({ "Content-Type": file.type || "image/png" });
+  const headers = new Headers();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(apiAssetUrl(`/api/admin/kanji/${encodeURIComponent(id)}/memory-image`), {
-    method: "POST",
-    credentials: "include",
-    headers,
-    body: file,
-  });
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch(
+    apiAssetUrl(`/api/admin/kanji/${encodeURIComponent(id)}/memory-image`),
+    {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: formData,
+    },
+  );
   const json = (await res.json()) as {
     success: boolean;
     data?: {
@@ -616,7 +632,7 @@ export type PricingPlanItem = {
 };
 
 export function listPricingPlans() {
-  return apiFetch<PricingPlanItem[]>('/admin/pricing-plans');
+  return apiFetch<PricingPlanItem[]>("/admin/pricing-plans");
 }
 
 export function getPricingPlan(id: string) {
@@ -634,8 +650,8 @@ export function createPricingPlan(body: {
   sortOrder?: number;
   courseIds: string[];
 }) {
-  return apiFetch<PricingPlanItem>('/admin/pricing-plans', {
-    method: 'POST',
+  return apiFetch<PricingPlanItem>("/admin/pricing-plans", {
+    method: "POST",
     body: JSON.stringify(body),
   });
 }
@@ -655,11 +671,11 @@ export function updatePricingPlan(
   }>,
 ) {
   return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deletePricingPlan(id: string) {
-  return apiFetch<null>(`/admin/pricing-plans/${id}`, { method: 'DELETE' });
+  return apiFetch<null>(`/admin/pricing-plans/${id}`, { method: "DELETE" });
 }
