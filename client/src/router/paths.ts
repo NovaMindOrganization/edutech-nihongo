@@ -4,6 +4,8 @@ export const paths = {
   login: "/login",
   register: "/register",
   placementTest: "/placement-test",
+  pricing: "/pricing",
+  checkout: (orderId: string) => `/checkout/${orderId}`,
   learn: {
     hub: "/learn",
     course: (id: string) => `/learn/courses/${id}`,
@@ -53,5 +55,6 @@ export const paths = {
     studySetDetail: (id: string) => `/admin/study-sets/${id}`,
     users: "/admin/users",
     config: "/admin/config",
+    pricing: "/admin/pricing",
   },
 } as const;

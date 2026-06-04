@@ -484,3 +484,73 @@ export function moderateStudySet(
     }),
   });
 }
+
+export type PricingPlanCourseRef = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  isPublished: boolean;
+};
+
+export type PricingPlanItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  durationDays: number | null;
+  features: string[];
+  isActive: boolean;
+  isPopular: boolean;
+  sortOrder: number;
+  createdAt: string;
+  courses: PricingPlanCourseRef[];
+};
+
+export function listPricingPlans() {
+  return apiFetch<PricingPlanItem[]>('/admin/pricing-plans');
+}
+
+export function getPricingPlan(id: string) {
+  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`);
+}
+
+export function createPricingPlan(body: {
+  name: string;
+  description?: string | null;
+  price: number;
+  durationDays?: number | null;
+  features: string[];
+  isActive?: boolean;
+  isPopular?: boolean;
+  sortOrder?: number;
+  courseIds: string[];
+}) {
+  return apiFetch<PricingPlanItem>('/admin/pricing-plans', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export function updatePricingPlan(
+  id: string,
+  body: Partial<{
+    name: string;
+    description: string | null;
+    price: number;
+    durationDays: number | null;
+    features: string[];
+    isActive: boolean;
+    isPopular: boolean;
+    sortOrder: number;
+    courseIds: string[];
+  }>,
+) {
+  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
+export function deletePricingPlan(id: string) {
+  return apiFetch<null>(`/admin/pricing-plans/${id}`, { method: 'DELETE' });
+}

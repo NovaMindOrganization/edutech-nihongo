@@ -13,3 +13,4 @@ export { StudySetApproveFields } from "./components/study-set-approve-fields";
 export { StudySetsAdminView } from "./views/StudySetsAdminView";
 export { StudySetAdminDetailView } from "./views/StudySetAdminDetailView";
 export { RadicalsAdminView } from "./views/RadicalsAdminView";
+export { PricingAdminView } from "./views/PricingAdminView";

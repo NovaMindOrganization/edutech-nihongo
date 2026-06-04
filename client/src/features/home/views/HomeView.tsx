@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/features/auth';
 import { defaultAppPath, isStaffRole } from '@/features/auth/utils/auth-routes';
+import { PricingSection } from '@/features/pricing';
 import { paths } from '@/router/paths';
 
 const features = [
@@ -137,6 +138,8 @@ export function HomeView() {
               </motion.div>
             ))}
           </div>
+
+          <PricingSection />
 
           <p className="font-jp mt-16 text-center text-2xl text-primary/30">がんばって</p>
         </section>

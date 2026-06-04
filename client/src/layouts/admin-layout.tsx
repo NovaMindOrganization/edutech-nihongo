@@ -9,6 +9,7 @@ import {
   ScrollText,
   Settings,
   Users,
+  CreditCard,
 } from "lucide-react";
 import { useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
@@ -36,6 +37,7 @@ const mainNav: NavItem[] = [
   { to: paths.admin.vocabulary, label: "Từ vựng", icon: Languages },
   { to: paths.admin.grammar, label: "Ngữ pháp", icon: BookOpen },
   { to: paths.admin.courses, label: "Khóa học", icon: GraduationCap },
+  { to: paths.admin.pricing, label: "Gói & giá", icon: CreditCard },
   { to: paths.admin.conversations, label: "Hội thoại", icon: MessageSquare },
   { to: paths.admin.questions, label: "Câu hỏi", icon: HelpCircle },
   { to: paths.admin.studySets, label: "Study sets", icon: Languages },

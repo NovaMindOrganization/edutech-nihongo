@@ -1,6 +1,7 @@
 import type { LessonProgressStatus, Vocabulary } from "@prisma/client";
 
 import { db } from "../config/db.js";
+import { assertCourseEnrollmentAllowed } from "./pricing-plan.service.js";
 import { AppError } from "../utils/app-error.js";
 
 /** Vocabulary by lesson_id FK; falls back to junction if legacy rows lack FK. */
@@ -282,6 +283,13 @@ export async function enrollAndInitProgress(userId: string, courseId: string) {
     },
   });
   if (!course) throw new AppError("Course not found", 404, "NOT_FOUND");
+
+  const existing = await db.courseEnrollment.findUnique({
+    where: { userId_courseId: { userId, courseId } },
+  });
+  if (!existing) {
+    await assertCourseEnrollmentAllowed(userId, courseId);
+  }
 
   await db.courseEnrollment.upsert({
     where: { userId_courseId: { userId, courseId } },

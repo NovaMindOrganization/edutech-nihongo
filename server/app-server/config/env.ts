@@ -15,4 +15,11 @@ export const env = {
   jwtRefreshExpires: process.env.JWT_REFRESH_EXPIRES ?? '7d',
   redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
   aiServerUrl: process.env.AI_SERVER_URL ?? 'http://localhost:8000',
+  sepaySecret: process.env.SEPAY_SECRET ?? '',
+  sepayAccountNumber: process.env.SEPAY_ACCOUNT_NUMBER ?? '',
+  sepayAccountName: process.env.SEPAY_ACCOUNT_NAME ?? '',
+  sepayBankName: process.env.SEPAY_BANK_NAME ?? 'Vietcombank',
+  sepayBankBin: process.env.SEPAY_BANK_BIN ?? '970436',
+  paymentCodePrefix: process.env.PAYMENT_CODE_PREFIX ?? 'NIHONGO',
+  orderExpiryMinutes: Number(process.env.ORDER_EXPIRY_MINUTES ?? 30),
 } as const;

@@ -7,6 +7,7 @@ import * as publicCtrl from '../controllers/public.controller.js';
 import * as student from '../controllers/student.controller.js';
 import * as studentExt from '../controllers/student-ext.controller.js';
 import * as systemAdmin from '../controllers/system-admin.controller.js';
+import * as payment from '../controllers/payment.controller.js';
 import { optionalAuth, requireAuth, requireRoles } from '../middlewares/auth.js';
 import {
   assignIdsSchema,
@@ -34,6 +35,10 @@ import {
   studySetModerateSchema,
   studySetUpdateSchema,
 } from '../validators/study-set.validator.js';
+import {
+  createOrderSchema,
+  pricingPlanSchema,
+} from '../validators/pricing-plan.validator.js';
 
 const router = Router();
 
@@ -74,12 +79,15 @@ router.get('/public/study-sets/asset', publicCtrl.getStudySetAsset);
 router.post('/public/placement-test/start', publicCtrl.placementStart);
 router.post('/public/placement-test/submit', optionalAuth, publicCtrl.placementSubmit);
 router.get('/public/dictionary/search', publicCtrl.dictionarySearch);
+router.get('/public/pricing-plans', payment.listPublicPricingPlans);
 
 // Student
 const studentRouter = Router();
 studentRouter.use(requireAuth, requireRoles('student', 'instructor', 'admin'));
 
 studentRouter.get('/dashboard', studentExt.dashboard);
+studentRouter.post('/orders', validateBody(createOrderSchema), payment.createOrder);
+studentRouter.get('/orders/:id', payment.getOrder);
 studentRouter.post('/courses/:courseId/enroll', student.enrollCourse);
 studentRouter.get('/courses/:courseId/lessons', student.getCourseLessons);
 studentRouter.get('/lessons/:id', student.getLesson);
@@ -165,6 +173,16 @@ contentRouter.get('/courses/:id', admin.getCourse);
 contentRouter.post('/courses', validateBody(courseSchema), admin.createCourse);
 contentRouter.put('/courses/:id', validateBody(courseSchema.partial()), admin.updateCourse);
 contentRouter.delete('/courses/:id', admin.deleteCourse);
+
+contentRouter.get('/pricing-plans', payment.listAdminPricingPlans);
+contentRouter.get('/pricing-plans/:id', payment.getAdminPricingPlan);
+contentRouter.post('/pricing-plans', validateBody(pricingPlanSchema), payment.createAdminPricingPlan);
+contentRouter.put(
+  '/pricing-plans/:id',
+  validateBody(pricingPlanSchema.partial()),
+  payment.updateAdminPricingPlan,
+);
+contentRouter.delete('/pricing-plans/:id', payment.deleteAdminPricingPlan);
 
 contentRouter.get('/lessons/:id', admin.getLesson);
 contentRouter.post('/lessons', validateBody(lessonSchema), admin.createLesson);
