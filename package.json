@@ -7,5 +7,12 @@
     "build:client": "pnpm --dir client build",
     "dev:app-server": "pnpm --dir server/app-server dev",
     "build:app-server": "pnpm --dir server/app-server build"
+  },
+  "dependencies": {
+    "multer": "^2.1.1",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/multer": "^2.1.0"
   }
 }
