@@ -10,6 +10,8 @@ import {
   LessonDetailAdminView,
   GrammarAdminView,
   QuestionsAdminView,
+  MockExamsAdminView,
+  MockExamDetailAdminView,
   StudySetAdminDetailView,
   StudySetsAdminView,
   UsersAdminView,
@@ -40,6 +42,7 @@ import {
   CommunityHubView,
   DashboardView,
   JlptSimView,
+  JlptExamView,
   MiniTestView,
   OcrView,
   PracticeHubView,
@@ -48,9 +51,11 @@ import {
   StudySetCreateView,
   StudySetDetailView,
   StudySetsView,
+  KanaQuizView,
 } from "@/features/student";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { AuthLayout } from "@/layouts/auth-layout";
+import { ExamLayout } from "@/layouts/exam-layout";
 import { LearnLayout } from "@/layouts/learn-layout";
 import { CheckoutPage } from "@/pages/CheckoutPage";
 import { HomePage } from "@/pages/HomePage";
@@ -69,6 +74,12 @@ export function AppRouter() {
           <Route element={<RedirectIfAuthenticated />}>
             <Route path={paths.login} element={<LoginView />} />
             <Route path={paths.register} element={<RegisterView />} />
+          </Route>
+        </Route>
+
+        <Route element={<RequireAuth />}>
+          <Route element={<ExamLayout />}>
+            <Route path="/practice/jlpt/:examId" element={<JlptExamView />} />
           </Route>
         </Route>
 
@@ -138,6 +149,7 @@ export function AppRouter() {
               path={paths.learn.kanjiHandbook}
               element={<KanjiHandbookView />}
             />
+            <Route path={paths.learn.kanaQuiz} element={<KanaQuizView />} />
             <Route
               path="/learn/courses/:courseId"
               element={<CourseDetailView />}
@@ -176,6 +188,8 @@ export function AppRouter() {
             element={<LessonDetailAdminView />}
           />
           <Route path="conversations" element={<ConversationsAdminView />} />
+          <Route path="mock-exams" element={<MockExamsAdminView />} />
+          <Route path="mock-exams/:examId" element={<MockExamDetailAdminView />} />
           <Route path="questions" element={<QuestionsAdminView />} />
           <Route path="study-sets" element={<StudySetsAdminView />} />
           <Route path="study-sets/:id" element={<StudySetAdminDetailView />} />

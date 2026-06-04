@@ -134,6 +134,33 @@ export const questionSchema = z.object({
   difficulty: z.number().int().min(1).max(5).optional(),
 });
 
+export const mockExamSchema = z.object({
+  title: z.string().min(1),
+  jlptLevel: z.enum(['N5', 'N4', 'N3', 'N2', 'N1']),
+  durationMinutes: z.number().int().min(10).max(300),
+  maxAttempts: z.number().int().min(1).max(99).optional(),
+});
+
+export const mockExamImportSchema = z.object({
+  questions: z.array(
+    z.object({
+      questionText: z.string().min(1),
+      questionType: z.string().min(1).max(50).optional(),
+      options: z.array(z.object({ label: z.string(), text: z.string() })).min(2),
+      correctAnswer: z.string().min(1),
+      explanation: z.string().optional(),
+      questionCategory: z.string().optional(),
+      section: z.string().optional(),
+      difficulty: z.number().int().min(1).max(5).optional(),
+      audioUrl: z.string().optional(),
+    }),
+  ).min(1),
+});
+
+export const mockExamListQuery = paginationQuery.extend({
+  jlptLevel: z.enum(['N5', 'N4', 'N3', 'N2', 'N1']).optional(),
+});
+
 export const kanjiSchema = z.object({
   character: z.string().min(1).max(10),
   hanVietPronunciation: z.string().max(100).optional(),

@@ -345,11 +345,14 @@ export function OcrView() {
   useEffect(() => {
     getOcrStatus()
       .then((s) => {
-        const paddle = s.paddle?.installed ? 'PaddleOCR' : 'chưa cài PaddleOCR';
+        const tier = s.paddle?.model_tier ?? 'server';
+        const paddle = s.paddle?.installed
+          ? `PP-OCRv5 (${tier})`
+          : 'chưa cài PP-OCRv5';
         const gpu = s.use_gpu && s.paddle?.cuda_compiled ? ' · GPU' : ' · CPU';
         setEngineInfo(`${paddle}${gpu}`);
       })
-      .catch(() => setEngineInfo('PaddleOCR (offline)'));
+      .catch(() => setEngineInfo('PP-OCRv5 (offline)'));
   }, []);
 
   useEffect(() => {
@@ -487,7 +490,7 @@ export function OcrView() {
     mode === 'lookup' ? 'Tra cứu' : mode === 'quiz' ? 'Tạo quiz' : 'Chấm bài';
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="w-full">
       <input
         ref={inputRef}
         type="file"

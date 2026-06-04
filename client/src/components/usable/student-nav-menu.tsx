@@ -27,6 +27,7 @@ export const studentNavTree: NavEntry[] = [
       { label: 'Khóa học', to: paths.learn.hub },
       { label: 'Kanji — khóa đang học', to: paths.learn.kanjiHub },
       { label: 'Sổ tay kanji', to: paths.learn.kanjiHandbook },
+      { label: 'Luyện kana', to: paths.learn.kanaQuiz },
     ],
   },
   {

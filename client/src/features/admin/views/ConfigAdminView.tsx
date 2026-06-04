@@ -72,6 +72,10 @@ export function ConfigAdminView() {
   const [openaiApiKeyPreview, setOpenaiApiKeyPreview] = useState<string | null>(null);
   const [openaiApiKeySet, setOpenaiApiKeySet] = useState(false);
   const [temperature, setTemperature] = useState('0.4');
+  const [ocrAgentRouterVisionModel, setOcrAgentRouterVisionModel] =
+    useState('claude-opus-4-6');
+  const [ocrGeminiFallbackModel, setOcrGeminiFallbackModel] =
+    useState('gemini-2.5-flash-lite');
   const [llmSaving, setLlmSaving] = useState(false);
   const [geminiTesting, setGeminiTesting] = useState(false);
   const [geminiTestResult, setGeminiTestResult] = useState<LlmTestResult | null>(null);
@@ -108,6 +112,8 @@ export function ConfigAdminView() {
         setOpenaiApiKeyPreview(llm.openaiApiKeyPreview);
         setOpenaiApiKeySet(llm.openaiApiKeySet);
         setTemperature(llm.temperature);
+        setOcrAgentRouterVisionModel(llm.ocrAgentRouterVisionModel);
+        setOcrGeminiFallbackModel(llm.ocrGeminiFallbackModel);
         setSepayAuthMode(sepay.authMode);
         setSepayApiKeyPreview(sepay.apiKeyPreview);
         setSepayApiKeySet(sepay.apiKeySet);
@@ -213,6 +219,8 @@ export function ConfigAdminView() {
       openaiBaseUrl,
       openaiModel,
       temperature,
+      ocrAgentRouterVisionModel,
+      ocrGeminiFallbackModel,
     };
     if (geminiApiKey.trim()) {
       body.geminiApiKey = geminiApiKey.trim();
@@ -244,14 +252,14 @@ export function ConfigAdminView() {
     <div>
       <h1 className="font-display text-2xl font-bold">Cấu hình hệ thống</h1>
 
-      <section className="mt-8 max-w-xl space-y-4">
+      <section className="mt-8 w-full xl:max-w-4xl space-y-4">
         <h2 className="text-lg font-semibold">MiniTest</h2>
         <label className="text-sm font-medium">Pass threshold (%)</label>
         <Input value={threshold} onChange={(e) => setThreshold(e.target.value)} />
         <Button onClick={saveThreshold}>Lưu</Button>
       </section>
 
-      <section className="mt-10 max-w-xl space-y-4 rounded-xl border border-border p-6">
+      <section className="mt-10 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
         <h2 className="text-lg font-semibold">SePAY — Thanh toán chuyển khoản</h2>
         <p className="text-sm text-muted-foreground">
           Dùng API Key từ SePay (Webhook → Phương thức xác thực → API Key). Header gửi kèm:{' '}
@@ -358,121 +366,188 @@ export function ConfigAdminView() {
         </Button>
       </section>
 
-      <section className="mt-10 max-w-xl space-y-4 rounded-xl border border-border p-6">
+      <section className="mt-10 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
         <h2 className="text-lg font-semibold">LLM (Gemini / Agent Router)</h2>
         <p className="text-sm text-muted-foreground">
-          API key lưu trên server, chỉ hiển thị 6 ký tự cuối sau khi lưu. Để trống ô key nếu không
-          đổi.
+          Chọn provider mặc định cho <strong>toàn bộ hệ thống</strong> (Speaking, OCR, Chat, Quiz,
+          Community…). Cấu hình cả hai bên dưới; chỉ provider được chọn mới được dùng khi chạy.
+          API key lưu trên server — chỉ hiển thị 6 ký tự cuối sau khi lưu.
         </p>
 
-        <label className="text-sm font-medium">Nhà cung cấp</label>
-        <select
-          className={selectClass}
-          value={llmProvider}
-          onChange={(e) => setLlmProvider(e.target.value as LlmProvider)}
-        >
-          <option value="gemini">Google Gemini</option>
-          <option value="agent_router">Agent Router (OpenAI-compatible)</option>
-        </select>
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">Provider hệ thống</legend>
+          <label
+            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
+              llmProvider === 'gemini' ? 'border-primary bg-primary/5' : 'border-border'
+            }`}
+          >
+            <input
+              type="radio"
+              name="llm-system-provider"
+              className="mt-1"
+              checked={llmProvider === 'gemini'}
+              onChange={() => setLlmProvider('gemini')}
+            />
+            <span>
+              <span className="font-medium">Google Gemini</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Dùng cho OCR viết tay, Speaking, giải thích bài…
+              </span>
+            </span>
+          </label>
+          <label
+            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
+              llmProvider === 'agent_router' ? 'border-primary bg-primary/5' : 'border-border'
+            }`}
+          >
+            <input
+              type="radio"
+              name="llm-system-provider"
+              className="mt-1"
+              checked={llmProvider === 'agent_router'}
+              onChange={() => setLlmProvider('agent_router')}
+            />
+            <span>
+              <span className="font-medium">Agent Router (OpenAI-compatible)</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Claude / GLM / DeepSeek qua AgentRouter — hỗ trợ vision OCR
+              </span>
+            </span>
+          </label>
+        </fieldset>
 
-        {llmProvider === 'gemini' ? (
-          <>
-            <label className="text-sm font-medium">Gemini model</label>
-            <Input
-              value={geminiModel}
-              onChange={(e) => setGeminiModel(e.target.value)}
-              placeholder="gemini-2.5-flash"
-              list="gemini-models"
-            />
-            <datalist id="gemini-models">
-              <option value="gemini-2.5-flash" />
-              <option value="gemini-2.5-flash-lite" />
-              <option value="gemini-flash-latest" />
-              <option value="gemini-2.0-flash" />
-            </datalist>
-            <label className="text-sm font-medium">Gemini API key</label>
-            {geminiApiKeySet && geminiApiKeyPreview ? (
-              <p className="text-xs text-muted-foreground">
-                Đã lưu: {geminiApiKeyPreview} — nhập key mới để thay thế
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                Lấy tại Google AI Studio. Nếu trống, dùng GEMINI_API_KEY trong .env ai-server.
-              </p>
-            )}
-            <Input
-              type="password"
-              autoComplete="off"
-              placeholder="AIza..."
-              value={geminiApiKey}
-              onChange={(e) => setGeminiApiKey(e.target.value)}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={runGeminiTest}
-              disabled={geminiTesting}
-            >
-              {geminiTesting ? 'Đang kiểm tra…' : 'Kiểm tra Gemini'}
-            </Button>
-            <LlmTestResultPanel result={geminiTestResult} loading={geminiTesting} />
-          </>
-        ) : (
-          <>
-            <label className="text-sm font-medium">Base URL</label>
-            <Input value={openaiBaseUrl} onChange={(e) => setOpenaiBaseUrl(e.target.value)} />
-            <label className="text-sm font-medium">Model</label>
-            <Input
-              value={openaiModel}
-              onChange={(e) => setOpenaiModel(e.target.value)}
-              placeholder="claude-opus-4-6"
-              list="agentrouter-models"
-            />
-            <datalist id="agentrouter-models">
-              <option value="claude-opus-4-6" />
-              <option value="claude-haiku-4-5-20251001" />
-              <option value="glm-4.6" />
-              <option value="deepseek-v3.1" />
-            </datalist>
+        <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
+          <h3 className="text-sm font-semibold">Google Gemini</h3>
+          <label className="text-sm font-medium">Gemini model</label>
+          <Input
+            value={geminiModel}
+            onChange={(e) => setGeminiModel(e.target.value)}
+            placeholder="gemini-2.5-flash"
+            list="gemini-models"
+          />
+          <datalist id="gemini-models">
+            <option value="gemini-2.5-flash" />
+            <option value="gemini-2.5-flash-lite" />
+            <option value="gemini-flash-latest" />
+            <option value="gemini-2.0-flash" />
+          </datalist>
+          <label className="text-sm font-medium">Gemini API key</label>
+          {geminiApiKeySet && geminiApiKeyPreview ? (
             <p className="text-xs text-muted-foreground">
-              AgentRouter chặn client lạ — server tự gửi header Claude Code. Key lấy tại{' '}
-              <a
-                href="https://agentrouter.org/console/token"
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                console/token
-              </a>
-              . Nếu vẫn &quot;unauthorized client&quot;, dùng Gemini hoặc API DeepSeek/OpenAI
-              trực tiếp.
+              Đã lưu: {geminiApiKeyPreview} — nhập key mới để thay thế
             </p>
-            <label className="text-sm font-medium">API key</label>
-            {openaiApiKeySet && openaiApiKeyPreview ? (
-              <p className="text-xs text-muted-foreground">
-                Đã lưu: {openaiApiKeyPreview} — nhập key mới để thay thế
-              </p>
-            ) : null}
-            <Input
-              type="password"
-              autoComplete="off"
-              placeholder="sk-..."
-              value={openaiApiKey}
-              onChange={(e) => setOpenaiApiKey(e.target.value)}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={runAgentTest}
-              disabled={agentTesting}
-            >
-              {agentTesting ? 'Đang kiểm tra…' : 'Kiểm tra Agent Router'}
-            </Button>
-            <LlmTestResultPanel result={agentTestResult} loading={agentTesting} />
-          </>
-        )}
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Lấy tại Google AI Studio. Nếu trống, dùng GEMINI_API_KEY trong .env ai-server.
+            </p>
+          )}
+          <Input
+            type="password"
+            autoComplete="off"
+            placeholder="AIza..."
+            value={geminiApiKey}
+            onChange={(e) => setGeminiApiKey(e.target.value)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={runGeminiTest}
+            disabled={geminiTesting}
+          >
+            {geminiTesting ? 'Đang kiểm tra…' : 'Kiểm tra Gemini'}
+          </Button>
+          <LlmTestResultPanel result={geminiTestResult} loading={geminiTesting} />
+        </div>
 
-        <label className="text-sm font-medium">Temperature</label>
+        <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
+          <h3 className="text-sm font-semibold">Agent Router</h3>
+          <label className="text-sm font-medium">Base URL</label>
+          <Input value={openaiBaseUrl} onChange={(e) => setOpenaiBaseUrl(e.target.value)} />
+          <label className="text-sm font-medium">Model</label>
+          <Input
+            value={openaiModel}
+            onChange={(e) => setOpenaiModel(e.target.value)}
+            placeholder="claude-opus-4-6"
+            list="agentrouter-models"
+          />
+          <datalist id="agentrouter-models">
+            <option value="claude-opus-4-6" />
+            <option value="claude-haiku-4-5-20251001" />
+            <option value="glm-4.6" />
+            <option value="deepseek-v3.1" />
+          </datalist>
+          <p className="text-xs text-muted-foreground">
+            AgentRouter chặn client lạ — server tự gửi header Claude Code. Key lấy tại{' '}
+            <a
+              href="https://agentrouter.org/console/token"
+              target="_blank"
+              rel="noreferrer"
+              className="underline"
+            >
+              console/token
+            </a>
+            .
+          </p>
+          <label className="text-sm font-medium">API key</label>
+          {openaiApiKeySet && openaiApiKeyPreview ? (
+            <p className="text-xs text-muted-foreground">
+              Đã lưu: {openaiApiKeyPreview} — nhập key mới để thay thế
+            </p>
+          ) : null}
+          <Input
+            type="password"
+            autoComplete="off"
+            placeholder="sk-..."
+            value={openaiApiKey}
+            onChange={(e) => setOpenaiApiKey(e.target.value)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={runAgentTest}
+            disabled={agentTesting}
+          >
+            {agentTesting ? 'Đang kiểm tra…' : 'Kiểm tra Agent Router'}
+          </Button>
+          <LlmTestResultPanel result={agentTestResult} loading={agentTesting} />
+        </div>
+
+        <div className="space-y-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+          <h3 className="text-sm font-semibold">OCR — Model riêng</h3>
+          <p className="text-xs text-muted-foreground">
+            Bước vision OCR không dùng model chat (vd. deepseek-v4-pro là text-only).
+            Khi Agent Router bị <code className="rounded bg-muted px-1">content-blocked</code>,
+            fallback Gemini dùng model bên dưới — tránh gọi gemini-3.5-flash hết quota.
+          </p>
+          <label className="text-sm font-medium">Agent Router — vision OCR</label>
+          <Input
+            value={ocrAgentRouterVisionModel}
+            onChange={(e) => setOcrAgentRouterVisionModel(e.target.value)}
+            placeholder="claude-opus-4-6"
+            list="ocr-ar-vision-models"
+          />
+          <datalist id="ocr-ar-vision-models">
+            <option value="claude-opus-4-6" />
+            <option value="claude-sonnet-4-5-20250929" />
+            <option value="claude-haiku-4-5-20251001" />
+            <option value="gpt-4o" />
+            <option value="gpt-4o-mini" />
+          </datalist>
+          <label className="text-sm font-medium">Gemini — OCR / fallback vision</label>
+          <Input
+            value={ocrGeminiFallbackModel}
+            onChange={(e) => setOcrGeminiFallbackModel(e.target.value)}
+            placeholder="gemini-2.5-flash-lite"
+            list="ocr-gemini-models"
+          />
+          <datalist id="ocr-gemini-models">
+            <option value="gemini-2.5-flash-lite" />
+            <option value="gemini-2.5-flash" />
+            <option value="gemini-flash-latest" />
+          </datalist>
+        </div>
+
+        <label className="text-sm font-medium">Temperature (toàn hệ thống)</label>
         <Input value={temperature} onChange={(e) => setTemperature(e.target.value)} />
 
         <Button onClick={saveLlm} disabled={llmSaving}>
@@ -480,7 +555,7 @@ export function ConfigAdminView() {
         </Button>
       </section>
 
-      <details className="mt-10 max-w-xl">
+      <details className="mt-10 w-full xl:max-w-4xl">
         <summary className="cursor-pointer text-sm text-muted-foreground">Raw system config</summary>
         <pre className="mt-2 overflow-auto rounded-lg bg-muted p-4 text-xs">
           {JSON.stringify(config, null, 2)}

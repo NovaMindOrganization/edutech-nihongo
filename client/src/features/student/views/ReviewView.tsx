@@ -42,7 +42,7 @@ export function ReviewView() {
   }
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="w-full">
       <h1 className="font-display text-2xl font-bold">Ôn tập</h1>
       <div className="mt-4 flex gap-2">
         <Button variant="outline" disabled={loading} onClick={() => load('random')}>

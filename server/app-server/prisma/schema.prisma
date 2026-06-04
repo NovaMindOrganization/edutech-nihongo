@@ -380,6 +380,7 @@ model MockExam {
   title           String
   jlptLevel       String   @map("jlpt_level")
   durationMinutes Int      @map("duration_minutes")
+  maxAttempts     Int      @default(3) @map("max_attempts")
   createdById     String?  @map("created_by")
   createdAt       DateTime @default(now()) @map("created_at")
 

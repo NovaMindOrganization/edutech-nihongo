@@ -101,7 +101,7 @@ export function CheckoutView() {
 
   if (!order) {
     return (
-      <div className="mx-auto max-w-lg px-6 py-16 text-center">
+      <div className="w-full px-4 py-16 text-center md:px-8">
         <p>Không tìm thấy đơn hàng.</p>
         <Link to={paths.pricing}>
           <Button className="mt-4">Quay lại bảng giá</Button>
@@ -114,7 +114,7 @@ export function CheckoutView() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="mx-auto flex max-w-lg flex-col items-center px-6 py-20 text-center">
+        <main className="flex w-full flex-col items-center px-4 py-20 text-center md:px-8">
           <CheckCircle2 className="size-16 text-primary" />
           <h1 className="font-display mt-4 text-2xl font-bold">Thanh toán thành công</h1>
           <p className="mt-2 text-muted-foreground">
@@ -132,7 +132,7 @@ export function CheckoutView() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="mx-auto max-w-lg px-6 py-16 text-center">
+        <main className="w-full px-4 py-16 text-center md:px-8">
           <h1 className="font-display text-2xl font-bold">Đơn hàng đã hết hạn</h1>
           <p className="mt-2 text-muted-foreground">
             Vui lòng tạo đơn mới để tiếp tục thanh toán.
@@ -148,7 +148,7 @@ export function CheckoutView() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="mx-auto max-w-2xl px-6 py-10">
+      <main className="w-full px-4 py-10 md:px-8 lg:max-w-3xl">
         <Card>
           <CardHeader>
             <CardTitle className="font-display">Thanh toán — {order.planName}</CardTitle>

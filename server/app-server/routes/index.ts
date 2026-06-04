@@ -25,6 +25,9 @@ import {
   paginationQuery,
   usersListQuery,
   questionSchema,
+  mockExamSchema,
+  mockExamImportSchema,
+  mockExamListQuery,
   reviewGenerateSchema,
   validateBody,
   validateQuery,
@@ -83,10 +86,44 @@ router.get("/public/dictionary/search", publicCtrl.dictionarySearch);
 const studentRouter = Router();
 studentRouter.use(requireAuth, requireRoles("student", "instructor", "admin"));
 
-studentRouter.get("/dashboard", studentExt.dashboard);
-studentRouter.post("/courses/:courseId/enroll", student.enrollCourse);
-studentRouter.get("/courses/:courseId/lessons", student.getCourseLessons);
-studentRouter.get("/lessons/:id", student.getLesson);
+studentRouter.get('/dashboard', studentExt.dashboard);
+studentRouter.post('/orders', validateBody(createOrderSchema), payment.createOrder);
+studentRouter.get('/orders/:id', payment.getOrder);
+studentRouter.post('/courses/:courseId/enroll', student.enrollCourse);
+studentRouter.get('/courses/:courseId/lessons', student.getCourseLessons);
+studentRouter.get('/lessons/:id', student.getLesson);
+studentRouter.post('/lessons/:lessonId/speaking/message', studentExt.lessonSpeakingMessage);
+studentRouter.get('/courses/:courseId/kanji', studentExt.courseKanji);
+studentRouter.get('/kanji/handbook', studentExt.handbookKanji);
+studentRouter.get('/lessons/:lessonId/minitest', studentExt.getMiniTest);
+studentRouter.post('/lessons/:lessonId/minitest/submit', studentExt.submitMiniTest);
+studentRouter.get('/notebook/vocabulary', studentExt.notebookVocabulary);
+studentRouter.post('/mastery', studentExt.upsertMastery);
+studentRouter.post('/review/generate', validateBody(reviewGenerateSchema), studentExt.reviewGenerate);
+studentRouter.post('/review/submit', studentExt.reviewSubmit);
+studentRouter.post('/ai-speaking/start', studentExt.aiSpeakingStart);
+studentRouter.post('/ai-speaking/message', studentExt.aiSpeakingMessage);
+studentRouter.get('/speech/stt/config', studentExt.speechSttConfig);
+studentRouter.post('/speech/tts', studentExt.speechTts);
+studentRouter.post('/speech/stt', studentExt.speechStt);
+studentRouter.get('/jlpt-sim/exams', studentExt.jlptListExams);
+studentRouter.get('/jlpt-sim/active', studentExt.jlptGetActiveSession);
+studentRouter.get('/jlpt-sim/history', studentExt.jlptHistory);
+studentRouter.post('/jlpt-sim/start', studentExt.jlptStart);
+studentRouter.get('/jlpt-sim/:sessionId', studentExt.jlptGetSession);
+studentRouter.post('/jlpt-sim/:sessionId/submit', studentExt.jlptSubmit);
+studentRouter.get('/ocr/status', studentExt.ocrStatus);
+studentRouter.post('/ocr/analyze', studentExt.ocrAnalyze);
+studentRouter.post('/ocr/notebook/add', studentExt.ocrNotebookAdd);
+studentRouter.post('/ocr/quiz/generate', studentExt.ocrQuizGenerate);
+studentRouter.post('/ocr/grade', studentExt.ocrGrade);
+studentRouter.get('/dictionary/search', studentExt.dictionarySearch);
+studentRouter.get(
+  '/studysets/public',
+  validateQuery(studySetListQuerySchema),
+  studentExt.studySetsPublic,
+);
+studentRouter.get('/studysets/mine', studentExt.studySetsMine);
 studentRouter.post(
   "/lessons/:lessonId/speaking/message",
   studentExt.lessonSpeakingMessage,
@@ -232,23 +269,23 @@ contentRouter.put(
 );
 contentRouter.delete("/conversations/:id", admin.deleteConversation);
 
-contentRouter.get(
-  "/questions",
-  validateQuery(paginationQuery),
-  admin.listQuestions,
-);
-contentRouter.get("/questions/:id", admin.getQuestion);
+contentRouter.get('/mock-exams', validateQuery(mockExamListQuery), admin.listMockExams);
+contentRouter.post('/mock-exams', validateBody(mockExamSchema), admin.createMockExam);
+contentRouter.get('/mock-exams/:id', admin.getMockExam);
+contentRouter.put('/mock-exams/:id', validateBody(mockExamSchema.partial()), admin.updateMockExam);
+contentRouter.delete('/mock-exams/:id', admin.deleteMockExam);
 contentRouter.post(
-  "/questions",
-  validateBody(questionSchema),
-  admin.createQuestion,
+  '/mock-exams/:id/import',
+  validateBody(mockExamImportSchema),
+  admin.importMockExamQuestions,
 );
-contentRouter.put(
-  "/questions/:id",
-  validateBody(questionSchema.partial()),
-  admin.updateQuestion,
-);
-contentRouter.delete("/questions/:id", admin.deleteQuestion);
+contentRouter.delete('/mock-exams/:id/questions/:questionId', admin.removeMockExamQuestion);
+
+contentRouter.get('/questions', validateQuery(paginationQuery), admin.listQuestions);
+contentRouter.get('/questions/:id', admin.getQuestion);
+contentRouter.post('/questions', validateBody(questionSchema), admin.createQuestion);
+contentRouter.put('/questions/:id', validateBody(questionSchema.partial()), admin.updateQuestion);
+contentRouter.delete('/questions/:id', admin.deleteQuestion);
 
 contentRouter.get("/kanji", validateQuery(paginationQuery), admin.listKanji);
 contentRouter.get("/kanji/:id", admin.getKanji);

@@ -19,6 +19,35 @@ export type ApiQuestion = {
   questionType: string;
   options?: Array<{ label: string; text: string }> | null;
   jlptLevel?: string | null;
+  section?: string | null;
+  audioUrl?: string | null;
+};
+
+export type JlptExamListItem = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  durationMinutes: number;
+  questionCount: number;
+  maxAttempts: number;
+  myAttemptCount: number;
+  attemptsRemaining: number;
+  hasActiveSession: boolean;
+  canStart: boolean;
+};
+
+export type JlptScore = {
+  total: number;
+  bySection: Record<string, number>;
+};
+
+export type JlptAnswerDetail = {
+  questionId: string;
+  answer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  explanation: string | null;
+  questionCategory: string | null;
 };
 
 export function listPublicCourses() {
@@ -332,13 +361,40 @@ export function postAiSpeaking(body: {
   });
 }
 
+export function listJlptExams(level?: string) {
+  const q = level ? `?level=${encodeURIComponent(level)}` : "";
+  return apiFetch<JlptExamListItem[]>(`/student/jlpt-sim/exams${q}`);
+}
+
+export type JlptSessionPayload = {
+  sessionId: string;
+  expiresAt: string;
+  startedAt: string;
+  durationMinutes: number;
+  remainingMs: number;
+  mockExamId: string;
+  examTitle: string;
+  jlptLevel: string;
+  questionCount: number;
+  questions: ApiQuestion[];
+  resumed: boolean;
+  maxAttempts: number;
+  myAttemptCount: number;
+  attemptsRemaining: number;
+};
+
+export function getActiveJlptSession(mockExamId: string) {
+  return apiFetch<JlptSessionPayload | null>(
+    `/student/jlpt-sim/active?mockExamId=${encodeURIComponent(mockExamId)}`,
+  );
+}
+
+export function getJlptSession(sessionId: string) {
+  return apiFetch<JlptSessionPayload>(`/student/jlpt-sim/${sessionId}`);
+}
+
 export function startJlptSim(level: string, mockExamId?: string) {
-  return apiFetch<{
-    sessionId: string;
-    expiresAt: string;
-    durationMinutes: number;
-    questions: ApiQuestion[];
-  }>("/student/jlpt-sim/start", {
+  return apiFetch<JlptSessionPayload>("/student/jlpt-sim/start", {
     method: "POST",
     body: JSON.stringify({ level, mockExamId }),
   });
@@ -349,17 +405,26 @@ export function submitJlptSim(
   answers: Array<{ questionId: string; answer: string }>,
   autoSubmit = false,
 ) {
-  return apiFetch<{ score: Record<string, unknown> }>(
-    `/student/jlpt-sim/${sessionId}/submit`,
-    {
-      method: "POST",
-      body: JSON.stringify({ answers, autoSubmit }),
-    },
-  );
+  return apiFetch<{
+    score: JlptScore;
+    submittedAt: string;
+    details: JlptAnswerDetail[];
+  }>(`/student/jlpt-sim/${sessionId}/submit`, {
+    method: "POST",
+    body: JSON.stringify({ answers, autoSubmit }),
+  });
 }
 
+export type JlptHistoryItem = {
+  id: string;
+  level: string | null;
+  score: JlptScore | null;
+  submittedAt: string | null;
+  isAutoSubmitted: boolean;
+};
+
 export function getJlptHistory() {
-  return apiFetch("/student/jlpt-sim/history");
+  return apiFetch<JlptHistoryItem[]>("/student/jlpt-sim/history");
 }
 
 export type OcrMeta = {
@@ -414,7 +479,14 @@ export function getOcrStatus() {
   return apiFetch<{
     default_engine: string;
     use_gpu: boolean;
-    paddle: { installed: boolean; cuda_compiled?: boolean; error?: string };
+    paddle: {
+      installed: boolean;
+      version?: string;
+      ocr_version?: string;
+      model_tier?: string;
+      cuda_compiled?: boolean;
+      error?: string;
+    };
   }>("/student/ocr/status");
 }
 

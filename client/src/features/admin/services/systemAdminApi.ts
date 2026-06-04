@@ -51,6 +51,8 @@ export type LlmAdminConfig = {
   openaiApiKeySet: boolean;
   openaiApiKeyPreview: string | null;
   temperature: string;
+  ocrAgentRouterVisionModel: string;
+  ocrGeminiFallbackModel: string;
 };
 
 export type SaveLlmAdminConfig = {
@@ -61,6 +63,8 @@ export type SaveLlmAdminConfig = {
   openaiModel: string;
   openaiApiKey?: string;
   temperature: string;
+  ocrAgentRouterVisionModel: string;
+  ocrGeminiFallbackModel: string;
 };
 
 export function getLlmConfig() {

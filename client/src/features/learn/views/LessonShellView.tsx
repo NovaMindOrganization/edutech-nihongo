@@ -35,38 +35,45 @@ export function LessonShellView() {
 
   return (
     <LessonContext.Provider value={data}>
-      <div className="mx-auto max-w-3xl">
-        <Link
-          to={courseId ? paths.learn.course(courseId) : paths.learn.hub}
-          className="text-sm text-primary hover:underline"
-        >
-          ← {data.lesson.course.title}
-        </Link>
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-          <p className="text-sm text-muted-foreground">Tiết {data.lesson.orderIndex}</p>
-          <h1 className="font-display text-2xl font-bold">{data.lesson.title}</h1>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {tabs.map((tab) => (
-              <NavLink
-                key={tab.to}
-                to={tab.path(lessonId)}
-                className={({ isActive }) =>
-                  `rounded-full px-3 py-1 text-sm transition-colors ${
-                    isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`
-                }
-              >
-                {tab.label}
-              </NavLink>
-            ))}
-            <Link to={paths.learn.miniTest(lessonId)}>
-              <Button size="sm" variant="outline">
-                MiniTest
-              </Button>
-            </Link>
-          </div>
-        </motion.div>
-        <div className="mt-8">
+      <div className="w-full">
+        <header className="border-b border-border/60 pb-6">
+          <Link
+            to={courseId ? paths.learn.course(courseId) : paths.learn.hub}
+            className="text-sm text-primary hover:underline"
+          >
+            ← {data.lesson.course.title}
+          </Link>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+            <p className="font-display text-sm tracking-widest text-primary uppercase">
+              Bài học
+            </p>
+            <p className="text-sm text-muted-foreground">Tiết {data.lesson.orderIndex}</p>
+            <h1 className="font-display text-3xl font-bold">{data.lesson.title}</h1>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {tabs.map((tab) => (
+                <NavLink
+                  key={tab.to}
+                  to={tab.path(lessonId)}
+                  className={({ isActive }) =>
+                    `rounded-full px-3 py-1 text-sm transition-colors ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`
+                  }
+                >
+                  {tab.label}
+                </NavLink>
+              ))}
+              <Link to={paths.learn.miniTest(lessonId)}>
+                <Button size="sm" variant="outline">
+                  MiniTest
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        </header>
+        <div className="mt-8 w-full">
           <Outlet />
         </div>
       </div>

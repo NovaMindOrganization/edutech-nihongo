@@ -38,7 +38,7 @@ export function AiSpeakingView() {
   const showLive = phase === 'listening' && (liveTranscript || recording);
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col">
+    <div className="flex w-full flex-col">
       <p className="font-display text-sm tracking-widest text-primary uppercase">Luyện nói với AI</p>
       <h1 className="font-display mt-2 text-3xl font-bold">Nói như với bạn bè</h1>
       <p className="mt-2 text-sm text-muted-foreground">

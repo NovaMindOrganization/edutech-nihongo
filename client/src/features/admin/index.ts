@@ -8,6 +8,8 @@ export { LessonDetailAdminView } from "./views/LessonDetailAdminView";
 export { UsersAdminView } from "./views/UsersAdminView";
 export { ConfigAdminView } from "./views/ConfigAdminView";
 export { QuestionsAdminView } from "./views/QuestionsAdminView";
+export { MockExamsAdminView } from "./views/MockExamsAdminView";
+export { MockExamDetailAdminView } from "./views/MockExamDetailAdminView";
 export { ConversationsAdminView } from "./views/ConversationsAdminView";
 export { StudySetApproveFields } from "./components/study-set-approve-fields";
 export { StudySetsAdminView } from "./views/StudySetsAdminView";
