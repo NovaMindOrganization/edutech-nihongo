@@ -268,6 +268,7 @@ model SystemConfig {
 model Kanji {
   id                 String   @id @default(uuid())
   character          String   @unique
+  slug               String   @unique
   hanVietPronunciation String? @map("han_viet_pronunciation")
   readingsOn         String[] @map("readings_on")
   readingsKun        String[] @map("readings_kun")
