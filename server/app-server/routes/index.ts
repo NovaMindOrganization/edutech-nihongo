@@ -70,7 +70,7 @@ router.get("/public/courses", publicCtrl.listCourses);
 router.get("/public/courses/:id/outline", publicCtrl.getCourseOutline);
 router.get("/public/courses/:id/lessons", publicCtrl.getCourseOutline);
 router.get("/public/lessons/:id/preview", publicCtrl.getLessonPreview);
-router.get("/public/kanji/:slug/memory-image", publicCtrl.getKanjiMemoryImage);
+router.get("/public/kanji/:id/memory-image", publicCtrl.getKanjiMemoryImage);
 router.post("/public/placement-test/start", publicCtrl.placementStart);
 router.post(
   "/public/placement-test/submit",

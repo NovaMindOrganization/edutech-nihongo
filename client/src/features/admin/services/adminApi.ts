@@ -1,3 +1,8 @@
+import type {
+  StudySetDetail,
+  StudySetListRow,
+  StudySetModerationStatus,
+} from "@/features/student/types/study-set.types";
 import {
   ApiRequestError,
   apiAssetUrl,
@@ -457,21 +462,111 @@ export function deleteQuestion(id: string) {
   return apiFetch<null>(`/admin/questions/${id}`, { method: "DELETE" });
 }
 
-export function listPendingStudySets() {
-  return apiFetch<
-    Array<{
-      id: string;
-      title: string;
-      description: string | null;
-      owner: { email: string; displayName: string | null };
-      _count: { cards: number };
-    }>
-  >("/admin/studysets/pending");
+export type StudySetAdminDetail = StudySetDetail;
+
+export function listAdminStudySets(params?: {
+  status?: StudySetModerationStatus | "all";
+  search?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.status) q.set("status", params.status);
+  if (params?.search) q.set("search", params.search);
+  const qs = q.toString();
+  return apiFetch<StudySetListRow[]>(
+    `/admin/studysets/pending${qs ? `?${qs}` : ""}`,
+  );
 }
 
-export function moderateStudySet(id: string, status: "approved" | "rejected") {
+/** @deprecated use listAdminStudySets */
+export function listPendingStudySets() {
+  return listAdminStudySets({ status: "pending" });
+}
+
+export function getStudySetAdmin(id: string) {
+  return apiFetch<StudySetAdminDetail>(`/admin/studysets/${id}`);
+}
+
+export function moderateStudySet(
+  id: string,
+  status: "approved" | "rejected",
+  options?: { moderationNote?: string; quizQuestionCount?: number },
+) {
   return apiFetch(`/admin/studysets/${id}/moderate`, {
     method: "POST",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({
+      status,
+      moderationNote: options?.moderationNote,
+      quizQuestionCount: options?.quizQuestionCount,
+    }),
   });
+}
+
+export type PricingPlanCourseRef = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  isPublished: boolean;
+};
+
+export type PricingPlanItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  durationDays: number | null;
+  features: string[];
+  isActive: boolean;
+  isPopular: boolean;
+  sortOrder: number;
+  createdAt: string;
+  courses: PricingPlanCourseRef[];
+};
+
+export function listPricingPlans() {
+  return apiFetch<PricingPlanItem[]>("/admin/pricing-plans");
+}
+
+export function getPricingPlan(id: string) {
+  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`);
+}
+
+export function createPricingPlan(body: {
+  name: string;
+  description?: string | null;
+  price: number;
+  durationDays?: number | null;
+  features: string[];
+  isActive?: boolean;
+  isPopular?: boolean;
+  sortOrder?: number;
+  courseIds: string[];
+}) {
+  return apiFetch<PricingPlanItem>("/admin/pricing-plans", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updatePricingPlan(
+  id: string,
+  body: Partial<{
+    name: string;
+    description: string | null;
+    price: number;
+    durationDays: number | null;
+    features: string[];
+    isActive: boolean;
+    isPopular: boolean;
+    sortOrder: number;
+    courseIds: string[];
+  }>,
+) {
+  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deletePricingPlan(id: string) {
+  return apiFetch<null>(`/admin/pricing-plans/${id}`, { method: "DELETE" });
 }

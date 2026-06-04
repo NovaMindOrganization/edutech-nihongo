@@ -5,6 +5,7 @@
   "scripts": {
     "dev:client": "pnpm --dir client dev",
     "build:client": "pnpm --dir client build",
+    "db:setup": "pnpm --dir server/app-server db:setup",
     "dev:app-server": "pnpm --dir server/app-server dev",
     "build:app-server": "pnpm --dir server/app-server build"
   },

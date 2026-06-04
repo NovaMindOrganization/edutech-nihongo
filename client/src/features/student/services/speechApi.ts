@@ -59,9 +59,14 @@ export function postSpeechTts(text: string, voice?: string) {
   );
 }
 
-export function postSpeechStt(audio: string, language?: string, mimeType = 'audio/webm') {
+export function postSpeechStt(
+  audio: string,
+  language?: string,
+  mimeType = 'audio/webm',
+  allowGeminiFallback = true,
+) {
   return apiFetch<SttResult>('/student/speech/stt', {
     method: 'POST',
-    body: JSON.stringify({ audio, language, mimeType }),
+    body: JSON.stringify({ audio, language, mimeType, allowGeminiFallback }),
   });
 }

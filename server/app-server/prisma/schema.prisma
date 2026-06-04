@@ -30,6 +30,21 @@ enum StudySetModerationStatus {
   rejected
 }
 
+enum StudySetContentType {
+  vocabulary
+  grammar
+  kanji
+  listening
+  speaking
+}
+
+enum OrderStatus {
+  pending
+  paid
+  expired
+  failed
+}
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
@@ -60,6 +75,7 @@ model User {
   refreshTokens       RefreshToken[]
   reportsFiled        AbuseReport[]        @relation("Reporter")
   reportsReceived     AbuseReport[]        @relation("Reported")
+  orders              Order[]
 
   @@map("users")
 }
@@ -75,10 +91,11 @@ model Course {
   createdById  String?  @map("created_by")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  createdBy    User?              @relation("CourseCreator", fields: [createdById], references: [id])
+  createdBy    User?               @relation("CourseCreator", fields: [createdById], references: [id])
   lessons      Lesson[]
   vocabulary   Vocabulary[]
   enrollments  CourseEnrollment[]
+  pricingPlans CoursePricingPlan[]
 
   @@map("courses")
 }
@@ -433,34 +450,43 @@ model UserErrorLog {
 }
 
 model StudySet {
-  id          String   @id @default(uuid())
-  ownerId     String   @map("owner_id")
-  title       String
-  description String?
-  isPublic    Boolean  @default(false) @map("is_public")
+  id               String                   @id @default(uuid())
+  ownerId          String                   @map("owner_id")
+  title            String
+  description      String?
+  coverImageUrl    String?                  @map("cover_image_url")
+  tags             Json                     @default("[]")
+  isPublic         Boolean                  @default(false) @map("is_public")
   moderationStatus StudySetModerationStatus @default(pending) @map("moderation_status")
-  moderatedAt DateTime? @map("moderated_at")
-  clonedFrom  String?  @map("cloned_from")
-  createdAt   DateTime @default(now()) @map("created_at")
+  moderationNote   String?                  @map("moderation_note")
+  moderatedAt      DateTime?                @map("moderated_at")
+  viewCount        Int                      @default(0) @map("view_count")
+  cloneCount       Int                      @default(0) @map("clone_count")
+  clonedFrom       String?                  @map("cloned_from")
+  quiz               Json?                    @map("quiz")
+  quizQuestionCount  Int?                     @map("quiz_question_count")
+  quizGeneratedAt    DateTime?                @map("quiz_generated_at")
+  createdAt        DateTime                 @default(now()) @map("created_at")
 
   owner  User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  cards  StudySetCard[]
+  items  StudySetItem[]
   source StudySet?      @relation("StudySetClone", fields: [clonedFrom], references: [id])
   clones StudySet[]     @relation("StudySetClone")
 
   @@map("study_sets")
 }
 
-model StudySetCard {
-  id         String @id @default(uuid())
-  studySetId String @map("study_set_id")
-  front      String
-  back       String
-  orderIndex Int    @default(0) @map("order_index")
+model StudySetItem {
+  id          String              @id @default(uuid())
+  studySetId  String              @map("study_set_id")
+  contentType StudySetContentType @map("content_type")
+  content     Json
+  orderIndex  Int                 @default(0) @map("order_index")
 
   studySet StudySet @relation(fields: [studySetId], references: [id], onDelete: Cascade)
 
-  @@map("study_set_cards")
+  @@index([studySetId, contentType])
+  @@map("study_set_items")
 }
 
 model AbuseReport {
@@ -525,4 +551,52 @@ model Radical {
 
   @@unique([radicalIndex])
   @@map("radicals")
+}
+
+model PricingPlan {
+  id           String              @id @default(uuid())
+  name         String
+  description  String?
+  price        Decimal             @db.Decimal(10, 2)
+  durationDays Int?                @map("duration_days")
+  features     String[]
+  isActive     Boolean             @default(true) @map("is_active")
+  isPopular    Boolean             @default(false) @map("is_popular")
+  sortOrder    Int                 @default(0) @map("sort_order")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  courses      CoursePricingPlan[]
+  orders       Order[]
+
+  @@map("pricing_plans")
+}
+
+model CoursePricingPlan {
+  planId   String      @map("plan_id")
+  courseId String      @map("course_id")
+  plan     PricingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  course   Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([planId, courseId])
+  @@map("course_pricing_plans")
+}
+
+model Order {
+  id                 String      @id @default(uuid())
+  userId             String      @map("user_id")
+  planId             String      @map("plan_id")
+  amount             Decimal     @db.Decimal(10, 2)
+  paymentCode        String      @unique @map("payment_code")
+  status             OrderStatus @default(pending)
+  sepayTransactionId Int?        @unique @map("sepay_transaction_id")
+  expiresAt          DateTime    @map("expires_at")
+  paidAt             DateTime?   @map("paid_at")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan               PricingPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([paymentCode])
+  @@map("orders")
 }

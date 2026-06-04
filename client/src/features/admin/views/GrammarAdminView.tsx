@@ -25,7 +25,7 @@ import {
   type GrammarItem,
 } from '../services/adminApi';
 
-type ExampleItem = { jp: string; vi: string; reading?: string; en?: string };
+type ExampleItem = { jp: string; vi: string; reading?: string | null; en?: string | null };
 type QuizItem = { question: string; choices: string[]; answer: number };
 
 const emptyForm = {

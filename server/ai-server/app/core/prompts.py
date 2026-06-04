@@ -11,8 +11,16 @@ DEFAULT_JSON_TUTOR = (
 
 @lru_cache(maxsize=32)
 def load_prompt(name: str) -> str:
-    """Load system prompt from app/prompts/{name}.md."""
+    """Load prompt template from app/prompts/{name}.md."""
     path = PROMPTS_DIR / f'{name}.md'
     if path.is_file():
         return path.read_text(encoding='utf-8').strip()
     return DEFAULT_JSON_TUTOR
+
+
+def render_prompt(name: str, **variables: str) -> str:
+    """Load prompt template and substitute ``{placeholders}``."""
+    template = load_prompt(name)
+    if not variables:
+        return template
+    return template.format(**variables)

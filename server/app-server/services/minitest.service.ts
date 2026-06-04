@@ -1,5 +1,6 @@
 import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
+import { touchStreak } from './dashboard.service.js';
 import { getConfigValue } from './config.service.js';
 
 export async function getMiniTestQuestions(userId: string, lessonId: string) {
@@ -87,6 +88,8 @@ export async function submitMiniTest(
         : {}),
     },
   });
+
+  await touchStreak(userId);
 
   if (passed) {
     const courseLessons = progress.lesson.course.lessons;
