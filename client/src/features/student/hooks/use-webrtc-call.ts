@@ -50,6 +50,9 @@ export function useWebRtcCall() {
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const micOnRef = useRef(micOn);
+  const camOnRef = useRef(camOn);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isInitiatorRef = useRef(false);
   const roomIdRef = useRef<string | null>(null);
@@ -57,6 +60,18 @@ export function useWebRtcCall() {
   const negotiatingRef = useRef(false);
   const intentionalLeaveRef = useRef(false);
   const peerDisconnectedRef = useRef(false);
+
+  useEffect(() => {
+    micOnRef.current = micOn;
+  }, [micOn]);
+
+  useEffect(() => {
+    camOnRef.current = camOn;
+  }, [camOn]);
+
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
 
   const stopPoll = useCallback(() => {
     if (pollRef.current) {
@@ -79,7 +94,13 @@ export function useWebRtcCall() {
     ws.send(JSON.stringify({ type: 'leave', roomId: rid }));
   }, []);
 
-  const teardownMedia = useCallback(() => {
+  const stopLocalTracks = useCallback(() => {
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = null;
+    setLocalStream(null);
+  }, []);
+
+  const teardownCall = useCallback(() => {
     try {
       pcRef.current?.close();
     } catch {
@@ -98,31 +119,55 @@ export function useWebRtcCall() {
     offerSentRef.current = false;
     negotiatingRef.current = false;
 
-    setLocalStream((prev) => {
-      prev?.getTracks().forEach((t) => t.stop());
-      return null;
-    });
     setRemoteStream((prev) => {
       prev?.getTracks().forEach((t) => t.stop());
       return null;
     });
   }, []);
 
+  const teardownMedia = useCallback(() => {
+    teardownCall();
+    stopLocalTracks();
+  }, [stopLocalTracks, teardownCall]);
+
+  const acquireLocalMedia = useCallback(async (): Promise<MediaStream> => {
+    const current = localStreamRef.current;
+    const hasLiveTracks =
+      current?.active && current.getTracks().some((t) => t.readyState === 'live');
+    if (hasLiveTracks && current) {
+      return current;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+    });
+    stream.getAudioTracks().forEach((t) => {
+      t.enabled = micOnRef.current;
+    });
+    stream.getVideoTracks().forEach((t) => {
+      t.enabled = camOnRef.current;
+    });
+    localStreamRef.current = stream;
+    setLocalStream(stream);
+    return stream;
+  }, []);
+
   const handlePeerDisconnected = useCallback(() => {
     if (intentionalLeaveRef.current || peerDisconnectedRef.current) return;
     peerDisconnectedRef.current = true;
-    teardownMedia();
+    teardownCall();
     setRemoteStream(null);
     setPeerLeftNotice('Bạn học đã rời cuộc gọi');
     setPhase('peer-left');
     void webrtcLeave();
-  }, [teardownMedia]);
+  }, [teardownCall]);
 
   const endCall = useCallback(async () => {
     stopPoll();
     intentionalLeaveRef.current = true;
     sendWsLeave();
-    teardownMedia();
+    teardownCall();
     roomIdRef.current = null;
     setRoomId(null);
     setPeerId(null);
@@ -132,7 +177,7 @@ export function useWebRtcCall() {
     } catch {
       /* ignore */
     }
-  }, [sendWsLeave, stopPoll, teardownMedia]);
+  }, [sendWsLeave, stopPoll, teardownCall]);
 
   const createPeerConnection = useCallback(() => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
@@ -160,15 +205,19 @@ export function useWebRtcCall() {
     return pc;
   }, [handlePeerDisconnected, sendRoomPayload]);
 
-  const attachLocalTracks = useCallback(async (pc: RTCPeerConnection) => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-    });
-    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-    setLocalStream(stream);
-    return stream;
-  }, []);
+  const attachLocalTracks = useCallback(
+    async (pc: RTCPeerConnection) => {
+      const stream = await acquireLocalMedia();
+      const senders = pc.getSenders();
+      stream.getTracks().forEach((track) => {
+        if (!senders.some((s) => s.track === track)) {
+          pc.addTrack(track, stream);
+        }
+      });
+      return stream;
+    },
+    [acquireLocalMedia],
+  );
 
   const tryCreateOffer = useCallback(async () => {
     const pc = pcRef.current;
@@ -352,7 +401,7 @@ export function useWebRtcCall() {
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Không thể bắt đầu cuộc gọi');
         intentionalLeaveRef.current = true;
-        teardownMedia();
+        teardownCall();
         roomIdRef.current = null;
         setRoomId(null);
         setPeerId(null);
@@ -365,7 +414,7 @@ export function useWebRtcCall() {
       connectSignaling,
       createPeerConnection,
       resetSessionRefs,
-      teardownMedia,
+      teardownCall,
     ],
   );
 
@@ -389,6 +438,12 @@ export function useWebRtcCall() {
   const startMatching = useCallback(async () => {
     resetSessionRefs();
     setError(null);
+    try {
+      await acquireLocalMedia();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không truy cập được camera/mic');
+      return;
+    }
     setPhase('searching');
     try {
       const data = await webrtcMatch();
@@ -412,13 +467,13 @@ export function useWebRtcCall() {
       setError(err instanceof Error ? err.message : 'Ghép cặp thất bại');
       setPhase('idle');
     }
-  }, [applyMatchResult, resetSessionRefs, stopPoll]);
+  }, [acquireLocalMedia, applyMatchResult, resetSessionRefs, stopPoll]);
 
   const cancelMatching = useCallback(async () => {
     stopPoll();
     intentionalLeaveRef.current = true;
     sendWsLeave();
-    teardownMedia();
+    teardownCall();
     roomIdRef.current = null;
     setRoomId(null);
     setPeerId(null);
@@ -429,7 +484,7 @@ export function useWebRtcCall() {
     } catch {
       /* ignore */
     }
-  }, [sendWsLeave, stopPoll, teardownMedia]);
+  }, [sendWsLeave, stopPoll, teardownCall]);
 
   const sendChat = useCallback(
     (text: string) => {
@@ -476,6 +531,13 @@ export function useWebRtcCall() {
     setError(null);
     setPeerLeftNotice(null);
   }, [resetSessionRefs]);
+
+  useEffect(() => {
+    if (phase !== 'idle' && phase !== 'ended') return;
+    void acquireLocalMedia().catch((err) => {
+      setError(err instanceof Error ? err.message : 'Không truy cập được camera/mic');
+    });
+  }, [acquireLocalMedia, phase]);
 
   useEffect(() => {
     return () => {

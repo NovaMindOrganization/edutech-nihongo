@@ -351,6 +351,80 @@ export async function generateStudySetQuizViaAi(input: {
   }
 }
 
+export type OcrQuizQuestionDto = {
+  id: string;
+  prompt: string;
+  choices: string[];
+  answer: number;
+  explanation?: string | null;
+};
+
+export async function generateOcrQuiz(imageBase64: string, questionCount: number) {
+  try {
+    const data = await aiPost(
+      '/api/v1/ocr/quiz/generate',
+      { image: imageBase64, question_count: questionCount },
+      120_000,
+    );
+    return data as {
+      extracted_text: string;
+      questions?: OcrQuizQuestionDto[];
+      error?: string | null;
+      meta?: unknown;
+    };
+  } catch (err) {
+    const message =
+      axios.isAxiosError(err)
+        ? (err.response?.data as { error?: { message?: string } })?.error?.message ??
+          err.message
+        : err instanceof Error
+          ? err.message
+          : 'OCR quiz generation failed';
+    return { extracted_text: '', questions: [], error: message, meta: null };
+  }
+}
+
+export type OcrGradingErrorDto = {
+  location: string;
+  student_answer: string;
+  correct_answer: string;
+  explanation: string;
+};
+
+export async function gradeOcrHomework(imageBase64: string, context?: string) {
+  try {
+    const data = await aiPost(
+      '/api/v1/ocr/grade',
+      { image: imageBase64, context: context?.trim() || undefined },
+      120_000,
+    );
+    return data as {
+      extracted_text: string;
+      errors?: OcrGradingErrorDto[];
+      overall_feedback?: string;
+      score_estimate?: string | null;
+      error?: string | null;
+      meta?: unknown;
+    };
+  } catch (err) {
+    const message =
+      axios.isAxiosError(err)
+        ? (err.response?.data as { error?: { message?: string } })?.error?.message ??
+          err.message
+        : err instanceof Error
+          ? err.message
+          : 'OCR grading failed';
+    return {
+      extracted_text: '',
+      errors: [],
+      overall_feedback: '',
+      score_estimate: null,
+      error: message,
+      meta: null,
+    };
+  }
+}
+
 export async function getOcrStatus() {
   try {
     const { data } = await axios.get(`${env.aiServerUrl}/api/v1/ocr/status`, { timeout: 10_000 });

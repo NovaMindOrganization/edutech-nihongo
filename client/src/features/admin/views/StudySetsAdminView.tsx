@@ -83,6 +83,7 @@ export function StudySetsAdminView() {
       <h1 className="font-display text-2xl font-bold">Kiểm duyệt Study sets</h1>
       <p className="text-sm text-muted-foreground">
         {filtered.length}/{items.length} bộ · trạng thái: {status}
+        {status === 'pending' && ' · chỉ bộ công khai chờ duyệt'}
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -115,7 +116,11 @@ export function StudySetsAdminView() {
 
       <ul className="mt-6 space-y-3">
         {filtered.length === 0 && (
-          <p className="text-sm text-muted-foreground">Không có bộ phù hợp.</p>
+          <p className="text-sm text-muted-foreground">
+            {status === 'pending'
+              ? 'Không có bộ chờ duyệt. Study set tạo ở chế độ riêng tư (không tick Công khai cộng đồng) sẽ không vào hàng đợi — học viên cần sửa bộ và bật công khai.'
+              : 'Không có bộ phù hợp.'}
+          </p>
         )}
         {filtered.map((s) => (
           <li

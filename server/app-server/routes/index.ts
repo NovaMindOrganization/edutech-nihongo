@@ -102,6 +102,9 @@ studentRouter.post('/jlpt-sim/:sessionId/submit', studentExt.jlptSubmit);
 studentRouter.get('/jlpt-sim/history', studentExt.jlptHistory);
 studentRouter.get('/ocr/status', studentExt.ocrStatus);
 studentRouter.post('/ocr/analyze', studentExt.ocrAnalyze);
+studentRouter.post('/ocr/notebook/add', studentExt.ocrNotebookAdd);
+studentRouter.post('/ocr/quiz/generate', studentExt.ocrQuizGenerate);
+studentRouter.post('/ocr/grade', studentExt.ocrGrade);
 studentRouter.get('/dictionary/search', studentExt.dictionarySearch);
 studentRouter.get(
   '/studysets/public',
@@ -206,6 +209,18 @@ contentRouter.post('/radicals', validateBody(radicalSchema), admin.createRadical
 contentRouter.put('/radicals/:id', validateBody(radicalSchema.partial()), admin.updateRadical);
 contentRouter.delete('/radicals/:id', admin.deleteRadical);
 
+contentRouter.get(
+  '/studysets/pending',
+  validateQuery(studySetAdminListQuerySchema),
+  admin.listPendingStudySets,
+);
+contentRouter.get('/studysets/:id', admin.getStudySetAdmin);
+contentRouter.post(
+  '/studysets/:id/moderate',
+  validateBody(studySetModerateSchema),
+  admin.moderateStudySet,
+);
+
 router.use('/instructor', contentRouter);
 router.use('/admin', contentRouter);
 
@@ -227,17 +242,6 @@ sysAdminRouter.get('/reports', systemAdmin.listReports);
 sysAdminRouter.put('/reports/:id/resolve', systemAdmin.resolveReport);
 sysAdminRouter.get('/analytics/dau', systemAdmin.analytics);
 sysAdminRouter.get('/health', systemAdmin.adminHealth);
-sysAdminRouter.get(
-  '/studysets/pending',
-  validateQuery(studySetAdminListQuerySchema),
-  admin.listPendingStudySets,
-);
-sysAdminRouter.get('/studysets/:id', admin.getStudySetAdmin);
-sysAdminRouter.post(
-  '/studysets/:id/moderate',
-  validateBody(studySetModerateSchema),
-  admin.moderateStudySet,
-);
 
 router.use('/admin', sysAdminRouter);
 

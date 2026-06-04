@@ -27,7 +27,7 @@ export function StudySetCreateView() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [items, setItems] = useState<StudySetItemInput[]>([emptyItem('vocabulary')]);
   const [newItemType, setNewItemType] = useState<StudySetContentType>('vocabulary');
@@ -71,6 +71,10 @@ export function StudySetCreateView() {
     e.preventDefault();
     if (!title.trim()) {
       toast.error('Nhập tiêu đề');
+      return;
+    }
+    if (!isEdit && !isPublic) {
+      toast.error('Bật "Công khai cộng đồng" để gửi kiểm duyệt');
       return;
     }
     setSaving(true);

@@ -233,7 +233,8 @@ export async function createStudySet(
     items?: StudySetItemInput[];
   },
 ) {
-  const isPublic = data.isPublic ?? false;
+  // Community uploads default to public → enter moderation queue
+  const isPublic = data.isPublic ?? true;
   const items = data.items?.length ? normalizeItems(data.items) : [];
 
   return db.studySet.create({

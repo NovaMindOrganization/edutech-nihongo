@@ -7,6 +7,7 @@ import * as dictionaryService from '../services/dictionary.service.js';
 import * as jlptService from '../services/jlpt.service.js';
 import * as minitestService from '../services/minitest.service.js';
 import * as notebookService from '../services/notebook.service.js';
+import * as ocrNotebookService from '../services/ocr-notebook.service.js';
 import * as reviewService from '../services/review.service.js';
 import * as studySetMediaService from '../services/study-set-media.service.js';
 import * as studySetService from '../services/study-set.service.js';
@@ -138,7 +139,37 @@ export const jlptHistory = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const ocrAnalyze = asyncHandler(async (req: Request, res: Response) => {
-  const data = await aiClient.analyzeOcr(req.body.image);
+  const ai = await aiClient.analyzeOcr(req.body.image);
+  const notebook = await ocrNotebookService.discoverNotInNotebook(
+    req.user!.id,
+    ai.extracted_text ?? '',
+  );
+  res.json({
+    success: true,
+    data: {
+      extracted_text: ai.extracted_text ?? '',
+      grammar_explanation: ai.grammar_explanation ?? null,
+      meta: ai.meta ?? null,
+      suggested_vocabulary: notebook.suggested_vocabulary,
+      suggested_kanji: notebook.suggested_kanji,
+    },
+  });
+});
+
+export const ocrNotebookAdd = asyncHandler(async (req: Request, res: Response) => {
+  const items = Array.isArray(req.body.items) ? req.body.items : [];
+  const data = await ocrNotebookService.addItemsToNotebook(req.user!.id, items);
+  res.json({ success: true, data });
+});
+
+export const ocrQuizGenerate = asyncHandler(async (req: Request, res: Response) => {
+  const questionCount = Math.min(20, Math.max(3, Number(req.body.questionCount ?? 5)));
+  const data = await aiClient.generateOcrQuiz(req.body.image, questionCount);
+  res.json({ success: true, data });
+});
+
+export const ocrGrade = asyncHandler(async (req: Request, res: Response) => {
+  const data = await aiClient.gradeOcrHomework(req.body.image, req.body.context);
   res.json({ success: true, data });
 });
 

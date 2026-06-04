@@ -22,6 +22,51 @@ import { webrtcReport } from '@/features/student/services/studentApi';
 import { paths } from '@/router/paths';
 import { cn } from '@/utils/cn';
 
+type CallMediaControlsProps = {
+  micOn: boolean;
+  camOn: boolean;
+  disabled?: boolean;
+  onToggleMic: () => void;
+  onToggleCam: () => void;
+  className?: string;
+};
+
+function CallMediaControls({
+  micOn,
+  camOn,
+  disabled,
+  onToggleMic,
+  onToggleCam,
+  className,
+}: CallMediaControlsProps) {
+  return (
+    <div className={cn('flex items-center justify-center gap-3', className)}>
+      <Button
+        type="button"
+        size="icon"
+        variant={micOn ? 'secondary' : 'destructive'}
+        className="h-12 w-12 rounded-full"
+        disabled={disabled}
+        onClick={onToggleMic}
+        aria-label={micOn ? 'Tắt mic' : 'Bật mic'}
+      >
+        {micOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+      </Button>
+      <Button
+        type="button"
+        size="icon"
+        variant={camOn ? 'secondary' : 'destructive'}
+        className="h-12 w-12 rounded-full"
+        disabled={disabled}
+        onClick={onToggleCam}
+        aria-label={camOn ? 'Tắt camera' : 'Bật camera'}
+      >
+        {camOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+      </Button>
+    </div>
+  );
+}
+
 export function CommunityCallView() {
   const {
     phase,
@@ -80,29 +125,60 @@ export function CommunityCallView() {
   }
 
   if (phase === 'idle' || phase === 'ended') {
+    const previewReady = Boolean(localStream);
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col justify-center px-4">
+      <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col px-4 py-8">
         <Link to={paths.student.community} className="text-sm text-primary hover:underline">
           ← Cộng đồng
         </Link>
-        <div className="mt-8 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-            <Users className="h-10 w-10 text-primary" />
-          </div>
-          <h1 className="font-display mt-6 text-2xl font-bold">Luyện nói ngẫu nhiên</h1>
+        <div className="mt-6">
+          <h1 className="font-display text-2xl font-bold">Luyện nói ngẫu nhiên</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Video/voice WebRTC + chat, STT, dịch — giao diện kiểu Google Meet.
+            Kiểm tra camera và mic trước khi vào cuộc gọi.
           </p>
-          {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-          <Button className="mt-8 w-full" size="lg" onClick={() => void startMatching()}>
-            Tìm bạn luyện nói
-          </Button>
-          {phase === 'ended' && (
-            <Button className="mt-3 w-full" variant="outline" onClick={resetToIdle}>
-              Quay lại
-            </Button>
-          )}
         </div>
+
+        <CommunityCallVideo
+          stream={localStream}
+          muted
+          mirror
+          label="Bạn"
+          className="mt-6 aspect-video w-full rounded-2xl border border-border shadow-md"
+          placeholder={error ? 'Không mở được camera' : 'Đang bật camera…'}
+        />
+
+        <CallMediaControls
+          className="mt-4"
+          micOn={micOn}
+          camOn={camOn}
+          disabled={!previewReady}
+          onToggleMic={toggleMic}
+          onToggleCam={toggleCam}
+        />
+
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          {previewReady
+            ? 'Mic/camera sẵn sàng — nhấn bên dưới để ghép cặp.'
+            : 'Cho phép quyền camera và microphone trong trình duyệt.'}
+        </p>
+
+        {error && <p className="mt-3 text-center text-sm text-destructive">{error}</p>}
+
+        <Button
+          className="mt-6 w-full"
+          size="lg"
+          disabled={!previewReady}
+          onClick={() => void startMatching()}
+        >
+          <Users className="mr-2 h-5 w-5" />
+          Tìm bạn luyện nói
+        </Button>
+
+        {phase === 'ended' && (
+          <Button className="mt-3 w-full" variant="outline" onClick={resetToIdle}>
+            Quay lại
+          </Button>
+        )}
       </div>
     );
   }
@@ -196,28 +272,13 @@ export function CommunityCallView() {
             )}
           >
             <div className="flex items-center justify-center gap-3">
-              <Button
-                type="button"
-                size="icon"
-                variant={micOn ? 'secondary' : 'destructive'}
-                className="h-12 w-12 rounded-full"
-                disabled={!inRoom}
-                onClick={toggleMic}
-                aria-label={micOn ? 'Tắt mic' : 'Bật mic'}
-              >
-                {micOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant={camOn ? 'secondary' : 'destructive'}
-                className="h-12 w-12 rounded-full"
-                disabled={!inRoom}
-                onClick={toggleCam}
-                aria-label={camOn ? 'Tắt camera' : 'Bật camera'}
-              >
-                {camOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-              </Button>
+              <CallMediaControls
+                micOn={micOn}
+                camOn={camOn}
+                disabled={!localStream}
+                onToggleMic={toggleMic}
+                onToggleCam={toggleCam}
+              />
               <Button
                 type="button"
                 size="icon"
