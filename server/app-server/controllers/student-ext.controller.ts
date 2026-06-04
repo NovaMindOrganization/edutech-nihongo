@@ -15,7 +15,6 @@ import * as webrtcService from '../services/webrtc.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
 export const dashboard = asyncHandler(async (req: Request, res: Response) => {
-  await dashboardService.touchStreak(req.user!.id);
   const data = await dashboardService.getStudentDashboard(req.user!.id);
   res.json({ success: true, data });
 });

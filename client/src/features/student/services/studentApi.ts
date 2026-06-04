@@ -224,7 +224,9 @@ export function getDashboard() {
     stats: {
       lessonsCompleted: number;
       lessonsActive: string | null;
+      lessonsActiveCount?: number;
       lessonsLocked: number;
+      lessonsTotal?: number;
       lessonsInProgress: number;
       currentStreak: number;
       longestStreak: number;
