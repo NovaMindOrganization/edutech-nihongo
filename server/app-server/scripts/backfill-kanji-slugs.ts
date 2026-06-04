@@ -5,20 +5,27 @@ import { createKanjiSlug } from "../utils/kanji-slug.js";
 const db = new PrismaClient();
 
 async function main() {
-  const kanjiRows = await db.kanji.findMany({
-    select: { id: true, character: true, slug: true },
-    orderBy: { character: "asc" },
-  });
+  const kanjiRows = await db.$queryRaw<{ id: string; character: string; slug: string | null }[]>`
+    SELECT id, character, slug FROM kanji ORDER BY character ASC
+  `;
 
   let updated = 0;
+  const usedSlugs = new Set(
+    kanjiRows.map((row) => row.slug).filter((slug): slug is string => Boolean(slug)),
+  );
 
   for (const row of kanjiRows) {
     if (row.slug) continue;
 
-    await db.kanji.update({
-      where: { id: row.id },
-      data: { slug: createKanjiSlug(row.character) },
-    });
+    let slug = createKanjiSlug(row.character);
+    let suffix = 2;
+    while (usedSlugs.has(slug)) {
+      slug = `${createKanjiSlug(row.character)}-${suffix}`;
+      suffix += 1;
+    }
+    usedSlugs.add(slug);
+
+    await db.$executeRaw`UPDATE kanji SET slug = ${slug} WHERE id = ${row.id}`;
     updated += 1;
   }
 

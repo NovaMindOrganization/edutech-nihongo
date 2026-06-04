@@ -14,8 +14,17 @@ import { ensureKanjiStorageIdentity } from "./kanji.service.js";
 
 const KANJI_BUCKET = "kanji";
 
+/** S3 object key inside bucket `kanji` (e.g. N5/kanji-4e00.webp). */
 function buildKanjiMemoryObjectKey(jlptLevel: string, slug: string) {
-  return `${KANJI_BUCKET}/${jlptLevel}/${slug}.webp`;
+  return `${jlptLevel}/${slug}.webp`;
+}
+
+function normalizeKanjiObjectKey(key: string) {
+  const trimmed = key.replace(/^\/+/, '');
+  if (trimmed.startsWith(`${KANJI_BUCKET}/`)) {
+    return trimmed.slice(KANJI_BUCKET.length + 1);
+  }
+  return trimmed;
 }
 
 async function ensureBucketExists() {
@@ -105,9 +114,23 @@ function getObjectKeyFromMemoryImageUrl(
     // Not a URL – it's already a storage path / object key.
   }
 
-  // The value is the object key as stored during upload (e.g. "kanji/N5/slug.webp"
-  // or legacy "memory/uuid.png"). Return as-is.
-  return memoryImageUrl;
+  return normalizeKanjiObjectKey(memoryImageUrl);
+}
+
+function resolveKanjiMemoryObjectKeys(kanji: {
+  id: string;
+  memoryImageUrl: string | null;
+  slug: string;
+  jlptLevel: string;
+}): string[] {
+  const keys = new Set<string>();
+  if (kanji.memoryImageUrl) {
+    keys.add(getObjectKeyFromMemoryImageUrl(kanji.memoryImageUrl, kanji.id));
+  }
+  if (kanji.slug) {
+    keys.add(buildKanjiMemoryObjectKey(kanji.jlptLevel, kanji.slug));
+  }
+  return [...keys];
 }
 
 export async function getKanjiMemoryImage(identifier: string) {
@@ -124,43 +147,46 @@ export async function getKanjiMemoryImage(identifier: string) {
     throw new AppError("Kanji memory image not found", 404, "NOT_FOUND");
   }
 
-  const objectKey = kanji.memoryImageUrl
-    ? getObjectKeyFromMemoryImageUrl(kanji.memoryImageUrl, kanji.id)
-    : kanji.slug
-      ? buildKanjiMemoryObjectKey(kanji.jlptLevel, kanji.slug)
-      : null;
-
-  if (!objectKey) {
+  const objectKeys = resolveKanjiMemoryObjectKeys(kanji);
+  if (!objectKeys.length) {
     throw new AppError("Kanji memory image not found", 404, "NOT_FOUND");
   }
+
   const s3 = getS3Client();
-  const object = await s3
-    .send(
-      new GetObjectCommand({
-        Bucket: KANJI_BUCKET,
-        Key: objectKey,
-      }),
-    )
-    .catch((error) => {
+  let lastNotFound: unknown;
+  for (const objectKey of objectKeys) {
+    try {
+      const object = await s3.send(
+        new GetObjectCommand({
+          Bucket: KANJI_BUCKET,
+          Key: objectKey,
+        }),
+      );
+      if (!object.Body) {
+        throw new AppError("Kanji memory image is empty", 404, "NOT_FOUND");
+      }
+      return {
+        body: object.Body,
+        contentType: object.ContentType ?? "image/webp",
+        contentLength: object.ContentLength,
+        cacheControl: "public, max-age=86400",
+      };
+    } catch (error) {
       if (
         error instanceof S3ServiceException &&
         (error.name === "NoSuchKey" ||
           error.name === "NoSuchBucket" ||
           error.$metadata.httpStatusCode === 404)
       ) {
-        throw new AppError("Kanji memory image not found", 404, "NOT_FOUND");
+        lastNotFound = error;
+        continue;
       }
       throw error;
-    });
-
-  if (!object.Body) {
-    throw new AppError("Kanji memory image is empty", 404, "NOT_FOUND");
+    }
   }
 
-  return {
-    body: object.Body,
-    contentType: object.ContentType ?? "application/octet-stream",
-    contentLength: object.ContentLength,
-    cacheControl: "no-cache",
-  };
+  if (lastNotFound) {
+    throw new AppError("Kanji memory image not found", 404, "NOT_FOUND");
+  }
+  throw new AppError("Kanji memory image not found", 404, "NOT_FOUND");
 }

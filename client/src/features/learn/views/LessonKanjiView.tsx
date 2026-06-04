@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { useLessonData } from "../context/lesson-context";
 import { useSpeech } from "@/hooks/use-speech";
-import { kanjiMemoryImageAssetUrl } from "@/services/httpClient";
+import { kanjiHasMemoryImage, kanjiMemoryImageSrc } from "@/services/httpClient";
 
 export function LessonKanjiView() {
   const { kanji } = useLessonData();
@@ -336,13 +336,13 @@ export function LessonKanjiView() {
                 <span className="font-medium">Số nét:</span>{" "}
                 {activeKanji.strokeCount ?? "—"}
               </p>
-              {activeKanji.memoryImageUrl && (
+              {kanjiHasMemoryImage(activeKanji) && (
                 <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-3">
                   <p className="text-xs font-medium text-muted-foreground">
                     Tượng hình / Cách nhớ
                   </p>
                   <img
-                    src={kanjiMemoryImageAssetUrl(activeKanji.id)}
+                    src={kanjiMemoryImageSrc(activeKanji)}
                     alt={`Memoric ${activeKanji.character}`}
                     className="mt-2 w-full max-w-[420px] rounded object-contain"
                   />

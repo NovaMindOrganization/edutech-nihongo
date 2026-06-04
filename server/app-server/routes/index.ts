@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import multer from 'multer';
 
 import { db } from '../config/db.js';
 import * as admin from '../controllers/admin.controller.js';
@@ -45,6 +46,10 @@ import {
 import { sepayConfigSchema } from '../validators/sepay-config.validator.js';
 
 const router = Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 router.get('/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok', service: 'app-server' } });
@@ -236,7 +241,7 @@ contentRouter.put('/kanji/:id', validateBody(kanjiSchema.partial()), admin.updat
 contentRouter.delete('/kanji/:id', admin.deleteKanji);
 contentRouter.post(
   '/kanji/:id/memory-image',
-  express.raw({ type: 'image/*', limit: '10mb' }),
+  upload.single('image'),
   admin.uploadKanjiMemoryImage,
 );
 
