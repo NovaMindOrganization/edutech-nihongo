@@ -130,7 +130,12 @@ function parseCsvLine(line: string): string[] {
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch === '"') {
-      inQuotes = !inQuotes;
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
       continue;
     }
     if (ch === "," && !inQuotes) {
@@ -154,6 +159,93 @@ function loadCsv(path: string): Record<string, string>[] {
       headers.map((h, i) => [h.trim(), (cols[i] ?? "").trim()]),
     );
   });
+}
+
+function parseJsonField(value: string | undefined) {
+  const raw = (value ?? "").trim();
+  if (!raw) return null;
+
+  return JSON.parse(raw);
+}
+
+async function seedGrammarFromCsv(
+  adminId: string,
+  lessons: { id: string; orderIndex: number }[],
+) {
+  const grammarPath = join(__dirname, "../data/grammar-n5vsn4.csv");
+  const grammarRows = loadCsv(grammarPath);
+  const lessonIdByNumber = new Map(
+    lessons.map((lesson) => [lesson.orderIndex, lesson.id]),
+  );
+  const jlptLevels = [
+    ...new Set(grammarRows.map((row) => (row.jlpt ?? "").trim()).filter(Boolean)),
+  ];
+
+  if (jlptLevels.length > 0) {
+    const existingGrammar = await db.grammar.findMany({
+      where: { jlpt: { in: jlptLevels } },
+      select: { id: true },
+    });
+
+    if (existingGrammar.length > 0) {
+      await db.lessonGrammar.deleteMany({
+        where: { grammarId: { in: existingGrammar.map((row) => row.id) } },
+      });
+    }
+
+    await db.grammar.deleteMany({ where: { jlpt: { in: jlptLevels } } });
+  }
+
+  let created = 0;
+  let linked = 0;
+
+  for (const row of grammarRows) {
+    const lessonNumber = Number.parseInt(row.lesson ?? "", 10);
+    const order = Number.parseInt(row.order ?? "", 10);
+
+    if (!Number.isInteger(lessonNumber) || !Number.isInteger(order)) {
+      throw new Error(`Invalid lesson/order in grammar row: ${JSON.stringify(row)}`);
+    }
+
+    const title = (row.title ?? "").trim();
+    const jlpt = (row.jlpt ?? "").trim();
+    const pattern = (row.pattern ?? "").trim();
+    const meaningVi = (row.meaning_vi ?? "").trim();
+
+    if (!title || !jlpt || !pattern || !meaningVi) {
+      throw new Error(`Missing required grammar data in row: ${JSON.stringify(row)}`);
+    }
+
+    const lessonId = lessonIdByNumber.get(lessonNumber) ?? null;
+    const createdGrammar = await db.grammar.create({
+      data: {
+        title,
+        jlpt,
+        type: row.type || null,
+        pattern,
+        meaningVi,
+        usage: row.usage || null,
+        notes: row.notes || null,
+        examples: parseJsonField(row.examples),
+        quiz: parseJsonField(row.quiz),
+        lessonId,
+        order,
+        createdById: adminId,
+      },
+    });
+    created++;
+
+    if (lessonId) {
+      await db.lessonGrammar.create({
+        data: { lessonId, grammarId: createdGrammar.id },
+      });
+      linked++;
+    }
+  }
+
+  console.log(
+    `[seed] Imported ${created} grammar rows from grammar-n5vsn4.csv, linked ${linked} to lessons.`,
+  );
 }
 
 async function seedStudySets(ownerId: string) {
@@ -331,11 +423,10 @@ async function main() {
   const vocabRows = loadCsv(vocabPath);
 
   console.log(
-    `[seed] Importing ${vocabRows.length} vocabulary, sample grammar...`,
+    `[seed] Importing ${vocabRows.length} vocabulary and grammar CSV...`,
   );
 
   await db.vocabulary.deleteMany({ where: { jlptLevel: "N5" } });
-  await db.grammar.deleteMany({ where: { jlpt: "N5" } });
 
   const vocabBatchSize = 100;
   for (let i = 0; i < vocabRows.length; i += vocabBatchSize) {
@@ -430,104 +521,7 @@ async function main() {
     }
   }
 
-  const lessonIdByNumber = new Map(lessons.map((l) => [l.orderIndex, l.id]));
-  const grammarSamples = [
-    {
-      lessonNumber: 1,
-      order: 1,
-      title: "Câu khẳng định danh từ",
-      jlpt: "N5",
-      type: "basic",
-      pattern: "N1 は N2 です。",
-      meaningVi: "N1 là N2",
-      usage: "Dùng để giới thiệu hoặc khẳng định.",
-      notes: "は đọc là 'wa'.",
-      examples: [
-        { jp: "わたしは学生です。", vi: "Tôi là học sinh." },
-        { jp: "キムさんは先生です。", vi: "Anh Kim là giáo viên." },
-      ],
-      quiz: [
-        {
-          question: "わたし ___ 学生です。",
-          choices: ["は", "を", "に"],
-          answer: 0,
-        },
-      ],
-    },
-    {
-      lessonNumber: 1,
-      order: 2,
-      title: "Câu hỏi danh từ",
-      jlpt: "N5",
-      type: "basic",
-      pattern: "N1 は N2 ですか。",
-      meaningVi: "N1 có phải là N2 không?",
-      usage: "Dùng để hỏi xác nhận thông tin.",
-      notes: "か dùng ở cuối câu hỏi.",
-      examples: [
-        { jp: "あなたは学生ですか。", vi: "Bạn là học sinh không?" },
-        {
-          jp: "ミラーさんは先生ですか。",
-          vi: "Anh Miller là giáo viên không?",
-        },
-      ],
-      quiz: [
-        {
-          question: "ミラーさん ___ 先生ですか。",
-          choices: ["は", "を", "に"],
-          answer: 0,
-        },
-      ],
-    },
-    {
-      lessonNumber: 2,
-      order: 1,
-      title: "Câu phủ định danh từ",
-      jlpt: "N5",
-      type: "basic",
-      pattern: "N1 は N2 じゃありません。",
-      meaningVi: "N1 không phải là N2.",
-      usage: "Dùng để phủ định danh từ.",
-      notes: "じゃありません là dạng phủ định lịch sự.",
-      examples: [
-        { jp: "わたしは先生じゃありません。", vi: "Tôi không phải giáo viên." },
-        { jp: "ここは図書館じゃありません。", vi: "Đây không phải thư viện." },
-      ],
-      quiz: [
-        {
-          question: "わたしは先生 ___ 。",
-          choices: ["じゃありません", "です", "でした"],
-          answer: 0,
-        },
-      ],
-    },
-  ];
-
-  for (const sample of grammarSamples) {
-    const lessonId = lessonIdByNumber.get(sample.lessonNumber) ?? null;
-    const created = await db.grammar.create({
-      data: {
-        title: sample.title,
-        jlpt: sample.jlpt,
-        type: sample.type,
-        pattern: sample.pattern,
-        meaningVi: sample.meaningVi,
-        usage: sample.usage,
-        notes: sample.notes,
-        lessonId,
-        order: sample.order,
-        examples: sample.examples,
-        quiz: sample.quiz,
-        createdById: admin.id,
-      },
-    });
-
-    if (lessonId) {
-      await db.lessonGrammar.create({
-        data: { lessonId, grammarId: created.id },
-      });
-    }
-  }
+  await seedGrammarFromCsv(admin.id, lessons);
 
   // Seed Kanji from CSV and link to lessons
   await seedKanji(admin.id, lessons);
