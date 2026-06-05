@@ -27,6 +27,85 @@ export type SyncKanjiMemoryImagesOptions = {
   onlyIfMissing?: boolean;
 };
 
+export type AssignKanjiMemoryImagePathsOptions = {
+  db?: PrismaClient;
+  jlptLevel?: string;
+  /** Chỉ ghi khi memory_image_url đang null/trống (mặc định: false). */
+  onlyIfMissing?: boolean;
+};
+
+/**
+ * Gán memory_image_url theo slug + JLPT (vd. N5/kanji-706b.webp).
+ * Không cần file trên MinIO — upload ảnh sau vẫn khớp key.
+ */
+export async function assignKanjiMemoryImagePaths(
+  options: AssignKanjiMemoryImagePathsOptions = {},
+) {
+  const db = options.db ?? new PrismaClient();
+  const ownsClient = !options.db;
+  const jlptLevel = options.jlptLevel;
+  const onlyIfMissing = options.onlyIfMissing ?? false;
+
+  try {
+    const kanjiRows = await db.kanji.findMany({
+      where: jlptLevel ? { jlptLevel } : undefined,
+      select: {
+        id: true,
+        character: true,
+        slug: true,
+        jlptLevel: true,
+        memoryImageUrl: true,
+      },
+      orderBy: { character: "asc" },
+    });
+
+    let assigned = 0;
+    let skipped = 0;
+    let noSlug = 0;
+
+    for (const kanji of kanjiRows) {
+      if (!kanji.slug?.trim()) {
+        noSlug += 1;
+        continue;
+      }
+
+      const expectedPath = buildKanjiMemoryObjectKey(
+        kanji.jlptLevel,
+        kanji.slug,
+      );
+      const current = kanji.memoryImageUrl?.trim()
+        ? normalizeKanjiMemoryStoragePath(kanji.memoryImageUrl)
+        : null;
+
+      if (onlyIfMissing && current) {
+        skipped += 1;
+        continue;
+      }
+
+      if (current === expectedPath) {
+        skipped += 1;
+        continue;
+      }
+
+      await db.kanji.update({
+        where: { id: kanji.id },
+        data: { memoryImageUrl: expectedPath },
+      });
+      assigned += 1;
+    }
+
+    console.log(
+      `[assign:kanji-images] Đã gán ${assigned} đường dẫn (slug → N5/kanji-….webp), giữ nguyên ${skipped}, thiếu slug ${noSlug}/${kanjiRows.length}.`,
+    );
+
+    return { assigned, skipped, noSlug, total: kanjiRows.length };
+  } finally {
+    if (ownsClient) {
+      await db.$disconnect();
+    }
+  }
+}
+
 async function listKanjiObjectKeys(): Promise<Set<string>> {
   const s3 = getS3Client();
   const keys = new Set<string>();
@@ -168,6 +247,12 @@ async function main() {
   const onlyIfMissing = process.argv.includes("--only-if-missing");
   const jlptArg = process.argv.find((arg) => arg.startsWith("--jlpt="));
   const jlptLevel = jlptArg?.split("=")[1];
+  const assignPathsOnly = process.argv.includes("--assign-paths");
+
+  if (assignPathsOnly) {
+    await assignKanjiMemoryImagePaths({ onlyIfMissing, jlptLevel });
+    return;
+  }
 
   await syncKanjiMemoryImagesFromMinio({ onlyIfMissing, jlptLevel });
 }
