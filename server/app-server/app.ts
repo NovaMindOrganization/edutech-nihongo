@@ -11,6 +11,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/error-handler.js';
+import { sePayWebhook } from './controllers/payment.controller.js';
 import { apiRouter } from './routes/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -29,6 +30,11 @@ export function createApp() {
     }),
   );
   app.use(cookieParser());
+  app.post(
+    '/api/public/webhook/sepay',
+    express.raw({ type: '*/*', limit: '1mb' }),
+    sePayWebhook,
+  );
   app.use(express.json({ limit: '2mb' }));
   app.use(
     rateLimit({

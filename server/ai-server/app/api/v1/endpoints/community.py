@@ -1,11 +1,13 @@
 import json
+import re
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
-from app.core.llm import _gemini_generate, chat_tutor
+from app.core.llm import _gemini_generate, chat_tutor, openai_raw_generate
+from app.core.llm_runtime import apply_llm_config, get_llm_config
 from app.core.prompts import load_prompt
+from app.schemas.llm_config import LlmConfigPayload
 
 router = APIRouter(prefix='/community', tags=['community'])
 
@@ -17,6 +19,7 @@ class TranscriptLine(BaseModel):
 
 class EvaluateRequest(BaseModel):
     transcripts: list[TranscriptLine] = Field(default_factory=list)
+    llm_config: LlmConfigPayload | None = None
 
 
 class SpeakerFeedback(BaseModel):
@@ -31,19 +34,7 @@ class EvaluateResponse(BaseModel):
     feedback_per_speaker: list[SpeakerFeedback] = Field(default_factory=list)
 
 
-def _gemini_evaluate(transcripts: list[TranscriptLine]) -> EvaluateResponse | None:
-    import re
-
-    if not settings.gemini_key:
-        return None
-
-    system = load_prompt('community-eval')
-    user_block = (
-        f'Transcripts:\n{json.dumps([t.model_dump() for t in transcripts], ensure_ascii=False)}'
-    )
-    text = _gemini_generate([{'text': f'System: {system}'}, {'text': user_block}])
-    if not text:
-        return None
+def _parse_eval_json(text: str) -> EvaluateResponse | None:
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         return None
@@ -59,12 +50,33 @@ def _gemini_evaluate(transcripts: list[TranscriptLine]) -> EvaluateResponse | No
         return None
 
 
+def _llm_evaluate(transcripts: list[TranscriptLine]) -> EvaluateResponse | None:
+    cfg = get_llm_config()
+    system = load_prompt('community-eval')
+    user_block = (
+        f'Transcripts:\n{json.dumps([t.model_dump() for t in transcripts], ensure_ascii=False)}'
+    )
+
+    if cfg.provider == 'agent_router':
+        text = openai_raw_generate(system, user_block)
+    else:
+        if not cfg.gemini_api_key:
+            return None
+        text = _gemini_generate([{'text': f'System: {system}'}, {'text': user_block}])
+
+    if not text:
+        return None
+    return _parse_eval_json(text)
+
+
 @router.post('/evaluate', response_model=EvaluateResponse)
 def evaluate_call(body: EvaluateRequest) -> EvaluateResponse:
+    apply_llm_config(body.llm_config)
+
     if not body.transcripts:
         return EvaluateResponse(summary='Không có transcript để đánh giá.', feedback_per_speaker=[])
 
-    parsed = _gemini_evaluate(body.transcripts)
+    parsed = _llm_evaluate(body.transcripts)
     if parsed:
         return parsed
 

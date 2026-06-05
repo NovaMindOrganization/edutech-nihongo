@@ -48,8 +48,8 @@ export function LessonSpeakingView() {
         toast.message('Đang ghi âm…');
         return;
       }
-      const transcript = await stopRecording();
-      if (!transcript) {
+      const { text: transcript } = await stopRecording();
+      if (!transcript.trim()) {
         toast.error('Không nhận dạng được');
         return;
       }

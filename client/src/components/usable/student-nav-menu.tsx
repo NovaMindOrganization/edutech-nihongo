@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { cn } from '@/utils/cn';
@@ -27,6 +27,7 @@ export const studentNavTree: NavEntry[] = [
       { label: 'Khóa học', to: paths.learn.hub },
       { label: 'Kanji — khóa đang học', to: paths.learn.kanjiHub },
       { label: 'Sổ tay kanji', to: paths.learn.kanjiHandbook },
+      { label: 'Luyện kana', to: paths.learn.kanaQuiz },
     ],
   },
   {
@@ -81,10 +82,32 @@ function groupActive(pathname: string, group: NavGroup) {
 function NavDropdown({ group }: { group: NavGroup }) {
   const { pathname } = useLocation();
   const active = groupActive(pathname, group);
-  const [open, setOpen] = useState(active);
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (rootRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={rootRef}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -98,7 +121,12 @@ function NavDropdown({ group }: { group: NavGroup }) {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-30" aria-hidden onClick={() => setOpen(false)} />
+          <div
+            className="fixed inset-0 z-30"
+            aria-hidden
+            onClick={() => setOpen(false)}
+            onPointerDown={() => setOpen(false)}
+          />
           <div className="absolute left-0 top-full z-40 mt-1 min-w-[200px] rounded-lg border border-border/80 bg-background py-1 shadow-lg">
             {group.children.map((child) => (
               <Link

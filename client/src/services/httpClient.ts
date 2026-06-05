@@ -34,8 +34,26 @@ export function apiAssetUrl(path: string): string {
   return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-export function kanjiMemoryImageAssetUrl(kanjiId: string): string {
-  return apiAssetUrl(`/api/public/kanji/${encodeURIComponent(kanjiId)}/memory-image`);
+/** Public route accepts kanji UUID or slug (e.g. kanji-4e00). */
+export function kanjiMemoryImageAssetUrl(kanjiIdOrSlug: string): string {
+  return apiAssetUrl(
+    `/api/public/kanji/${encodeURIComponent(kanjiIdOrSlug)}/memory-image`,
+  );
+}
+
+export function kanjiHasMemoryImage(kanji: {
+  memoryImageUrl?: string | null;
+  slug?: string | null;
+}): boolean {
+  return Boolean(kanji.slug?.trim() || kanji.memoryImageUrl?.trim());
+}
+
+export function kanjiMemoryImageSrc(kanji: {
+  id: string;
+  slug?: string | null;
+  memoryImageUrl?: string | null;
+}): string {
+  return kanjiMemoryImageAssetUrl(kanji.slug?.trim() || kanji.id);
 }
 
 const AUTH_NO_RETRY = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];

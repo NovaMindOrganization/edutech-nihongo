@@ -1,4 +1,4 @@
-import { BookOpen, Languages, GraduationCap } from 'lucide-react';
+import { BookOpen, CreditCard, Languages, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,12 @@ const links = [
   { to: paths.admin.vocabulary, title: 'Từ vựng', desc: '860+ mục N5 đã import', icon: Languages },
   { to: paths.admin.grammar, title: 'Ngữ pháp', desc: '159 mẫu cấu trúc N5', icon: BookOpen },
   { to: paths.admin.courses, title: 'Khóa học', desc: '25 bài + sequential unlock', icon: GraduationCap },
+  {
+    to: paths.admin.pricing,
+    title: 'Gói & giá',
+    desc: 'Gói học, SePAY, mở khóa tự động',
+    icon: CreditCard,
+  },
 ];
 
 export function AdminDashboardView() {

@@ -24,7 +24,7 @@ export function LessonView() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="w-full">
       <Link to={paths.learn.hub} className="text-sm text-primary hover:underline">
         ← Lộ trình
       </Link>

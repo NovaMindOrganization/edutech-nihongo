@@ -1,4 +1,14 @@
-import { ApiRequestError, apiAssetUrl, apiFetch, getAccessToken } from "@/services/httpClient";
+import type {
+  StudySetDetail,
+  StudySetListRow,
+  StudySetModerationStatus,
+} from "@/features/student/types/study-set.types";
+import {
+  ApiRequestError,
+  apiAssetUrl,
+  apiFetch,
+  getAccessToken,
+} from "@/services/httpClient";
 
 export type VocabItem = {
   id: string;
@@ -26,7 +36,12 @@ export type GrammarItem = {
   meaningVi: string;
   usage: string | null;
   notes: string | null;
-  examples: Array<{ jp: string; vi: string; reading?: string | null; en?: string | null }> | null;
+  examples: Array<{
+    jp: string;
+    vi: string;
+    reading?: string | null;
+    en?: string | null;
+  }> | null;
   quiz: Array<{ question: string; choices: string[]; answer: number }> | null;
 };
 
@@ -174,7 +189,7 @@ export function listCourses() {
 }
 
 export function listCoursesWithLessons() {
-  return apiFetch<CourseDetail[]>('/admin/courses-with-lessons');
+  return apiFetch<CourseDetail[]>("/admin/courses-with-lessons");
 }
 
 export function getCourse(id: string) {
@@ -285,15 +300,21 @@ export function updateKanji(id: string, body: Partial<KanjiUpsertBody>) {
 
 export async function uploadKanjiMemoryImage(id: string, file: File) {
   const token = getAccessToken();
-  const headers = new Headers({ "Content-Type": file.type || "image/png" });
+  const headers = new Headers();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(apiAssetUrl(`/api/admin/kanji/${encodeURIComponent(id)}/memory-image`), {
-    method: "POST",
-    credentials: "include",
-    headers,
-    body: file,
-  });
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch(
+    apiAssetUrl(`/api/admin/kanji/${encodeURIComponent(id)}/memory-image`),
+    {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: formData,
+    },
+  );
   const json = (await res.json()) as {
     success: boolean;
     data?: {
@@ -429,6 +450,8 @@ export function createQuestion(body: {
   questionType: string;
   correctAnswer: string;
   jlptLevel?: string;
+  questionCategory?: string;
+  explanation?: string;
   options?: unknown;
 }) {
   return apiFetch<QuestionItem>("/admin/questions", {
@@ -441,21 +464,218 @@ export function deleteQuestion(id: string) {
   return apiFetch<null>(`/admin/questions/${id}`, { method: "DELETE" });
 }
 
-export function listPendingStudySets() {
-  return apiFetch<
-    Array<{
+export type MockExamListItem = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  durationMinutes: number;
+  maxAttempts: number;
+  createdAt: string;
+  questionCount: number;
+  totalSessions: number;
+};
+
+export type MockExamDetail = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  durationMinutes: number;
+  maxAttempts: number;
+  createdAt: string;
+  totalSessions: number;
+  questions: Array<{
+    order: number;
+    section: string | null;
+    question: {
       id: string;
-      title: string;
-      description: string | null;
-      owner: { email: string; displayName: string | null };
-      _count: { cards: number };
-    }>
-  >("/admin/studysets/pending");
+      questionText: string;
+      questionType: string;
+      options: Array<{ label: string; text: string }> | null;
+      correctAnswer: string;
+      explanation: string | null;
+      jlptLevel: string | null;
+      questionCategory: string | null;
+      difficulty: number;
+      audioUrl: string | null;
+    };
+  }>;
+};
+
+export type ImportQuestionBody = {
+  questionText: string;
+  questionType?: string;
+  options: Array<{ label: string; text: string }>;
+  correctAnswer: string;
+  explanation?: string;
+  questionCategory?: string;
+  section?: string;
+  difficulty?: number;
+};
+
+export function listMockExams(params?: Record<string, string | number>) {
+  const q = new URLSearchParams(params as Record<string, string>).toString();
+  return apiFetch<Paginated<MockExamListItem>>(`/admin/mock-exams?${q}`);
 }
 
-export function moderateStudySet(id: string, status: "approved" | "rejected") {
+export function getMockExam(id: string) {
+  return apiFetch<MockExamDetail>(`/admin/mock-exams/${id}`);
+}
+
+export function createMockExam(body: {
+  title: string;
+  jlptLevel: string;
+  durationMinutes: number;
+  maxAttempts?: number;
+}) {
+  return apiFetch<MockExamListItem>("/admin/mock-exams", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateMockExam(
+  id: string,
+  body: Partial<{
+    title: string;
+    jlptLevel: string;
+    durationMinutes: number;
+    maxAttempts: number;
+  }>,
+) {
+  return apiFetch<MockExamListItem>(`/admin/mock-exams/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteMockExam(id: string) {
+  return apiFetch<null>(`/admin/mock-exams/${id}`, { method: "DELETE" });
+}
+
+export function importMockExamQuestions(
+  examId: string,
+  questions: ImportQuestionBody[],
+) {
+  return apiFetch<{ imported: number; questionIds: string[] }>(
+    `/admin/mock-exams/${examId}/import`,
+    {
+      method: "POST",
+      body: JSON.stringify({ questions }),
+    },
+  );
+}
+
+export function removeMockExamQuestion(examId: string, questionId: string) {
+  return apiFetch<null>(`/admin/mock-exams/${examId}/questions/${questionId}`, {
+    method: "DELETE",
+  });
+}
+
+export type StudySetAdminDetail = StudySetDetail;
+
+export function listAdminStudySets(params?: {
+  status?: StudySetModerationStatus | "all";
+  search?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.status) q.set("status", params.status);
+  if (params?.search) q.set("search", params.search);
+  const qs = q.toString();
+  return apiFetch<StudySetListRow[]>(
+    `/admin/studysets/pending${qs ? `?${qs}` : ""}`,
+  );
+}
+
+/** @deprecated use listAdminStudySets */
+export function listPendingStudySets() {
+  return listAdminStudySets({ status: "pending" });
+}
+
+export function getStudySetAdmin(id: string) {
+  return apiFetch<StudySetAdminDetail>(`/admin/studysets/${id}`);
+}
+
+export function moderateStudySet(
+  id: string,
+  status: "approved" | "rejected",
+  options?: { moderationNote?: string; quizQuestionCount?: number },
+) {
   return apiFetch(`/admin/studysets/${id}/moderate`, {
     method: "POST",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({
+      status,
+      moderationNote: options?.moderationNote,
+      quizQuestionCount: options?.quizQuestionCount,
+    }),
   });
+}
+
+export type PricingPlanCourseRef = {
+  id: string;
+  title: string;
+  jlptLevel: string;
+  isPublished: boolean;
+};
+
+export type PricingPlanItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  durationDays: number | null;
+  features: string[];
+  isActive: boolean;
+  isPopular: boolean;
+  sortOrder: number;
+  createdAt: string;
+  courses: PricingPlanCourseRef[];
+};
+
+export function listPricingPlans() {
+  return apiFetch<PricingPlanItem[]>("/admin/pricing-plans");
+}
+
+export function getPricingPlan(id: string) {
+  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`);
+}
+
+export function createPricingPlan(body: {
+  name: string;
+  description?: string | null;
+  price: number;
+  durationDays?: number | null;
+  features: string[];
+  isActive?: boolean;
+  isPopular?: boolean;
+  sortOrder?: number;
+  courseIds: string[];
+}) {
+  return apiFetch<PricingPlanItem>("/admin/pricing-plans", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updatePricingPlan(
+  id: string,
+  body: Partial<{
+    name: string;
+    description: string | null;
+    price: number;
+    durationDays: number | null;
+    features: string[];
+    isActive: boolean;
+    isPopular: boolean;
+    sortOrder: number;
+    courseIds: string[];
+  }>,
+) {
+  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deletePricingPlan(id: string) {
+  return apiFetch<null>(`/admin/pricing-plans/${id}`, { method: "DELETE" });
 }

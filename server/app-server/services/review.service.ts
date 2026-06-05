@@ -1,4 +1,5 @@
 import { db } from '../config/db.js';
+import { touchStreak } from './dashboard.service.js';
 
 type ReviewType = 'kanji' | 'vocabulary' | 'grammar' | 'mixed';
 
@@ -144,5 +145,10 @@ export async function submitReview(
       });
     }
   }
+
+  if (results.length > 0) {
+    await touchStreak(userId);
+  }
+
   return { logged: results.filter((r) => !r.correct).length };
 }

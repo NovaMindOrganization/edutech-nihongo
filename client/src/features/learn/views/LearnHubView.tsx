@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { PageGrid, PageShell } from '@/components/usable/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,19 +22,20 @@ export function LearnHubView() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <p className="font-display text-sm tracking-widest text-primary uppercase">Học → Khóa học</p>
-        <h1 className="font-display text-3xl font-bold">Khóa học JLPT</h1>
-        <p className="mt-2 text-muted-foreground">
-          N5, N4, N3… Mỗi khóa gồm nhiều tiết: nghe nói AI, ngữ pháp, hội thoại, kanji.
-        </p>
-      </motion.div>
-
-      <div className="mt-8 grid gap-4">
+    <PageShell
+      eyebrow="Học"
+      title="Khóa học JLPT"
+      description="N5, N4, N3… Mỗi khóa gồm nhiều tiết: nghe nói AI, ngữ pháp, hội thoại, kanji."
+    >
+      <PageGrid cols="wide">
         {courses.map((course, i) => (
-          <motion.div key={course.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}>
-            <Card className="overflow-hidden border-primary/20">
+          <motion.div
+            key={course.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06 }}
+          >
+            <Card className="h-full overflow-hidden border-primary/20">
               <CardHeader className="flex-row items-center justify-between bg-gradient-to-r from-primary/10 to-transparent">
                 <div>
                   <Badge className="mb-2">{course.jlptLevel}</Badge>
@@ -50,12 +52,12 @@ export function LearnHubView() {
             </Card>
           </motion.div>
         ))}
-      </div>
+      </PageGrid>
 
       <p className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
         <Lock className="size-3" />
         Bài bị khóa cho đến khi hoàn thành MiniTest bài trước (logic server-side).
       </p>
-    </div>
+    </PageShell>
   );
 }

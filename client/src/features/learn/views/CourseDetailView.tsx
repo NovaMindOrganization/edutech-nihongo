@@ -53,7 +53,7 @@ export function CourseDetailView() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="w-full">
       <Link to={paths.learn.hub} className="text-sm text-primary hover:underline">
         ← Lộ trình
       </Link>

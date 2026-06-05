@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import multer from 'multer';
 
 import { db } from '../config/db.js';
 import * as admin from '../controllers/admin.controller.js';
@@ -7,6 +8,7 @@ import * as publicCtrl from '../controllers/public.controller.js';
 import * as student from '../controllers/student.controller.js';
 import * as studentExt from '../controllers/student-ext.controller.js';
 import * as systemAdmin from '../controllers/system-admin.controller.js';
+import * as payment from '../controllers/payment.controller.js';
 import { optionalAuth, requireAuth, requireRoles } from '../middlewares/auth.js';
 import {
   assignIdsSchema,
@@ -20,14 +22,34 @@ import {
   paginationQuery,
   usersListQuery,
   questionSchema,
+  mockExamSchema,
+  mockExamImportSchema,
+  mockExamListQuery,
   reviewGenerateSchema,
   validateBody,
   validateQuery,
   vocabSchema,
   radicalSchema,
 } from '../validators/common.js';
+import {
+  studySetAddItemsSchema,
+  studySetAdminListQuerySchema,
+  studySetCreateSchema,
+  studySetListQuerySchema,
+  studySetModerateSchema,
+  studySetUpdateSchema,
+} from '../validators/study-set.validator.js';
+import {
+  createOrderSchema,
+  pricingPlanSchema,
+} from '../validators/pricing-plan.validator.js';
+import { sepayConfigSchema } from '../validators/sepay-config.validator.js';
 
 const router = Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 router.get('/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok', service: 'app-server' } });
@@ -62,15 +84,19 @@ router.get('/public/courses/:id/outline', publicCtrl.getCourseOutline);
 router.get('/public/courses/:id/lessons', publicCtrl.getCourseOutline);
 router.get('/public/lessons/:id/preview', publicCtrl.getLessonPreview);
 router.get('/public/kanji/:id/memory-image', publicCtrl.getKanjiMemoryImage);
+router.get('/public/study-sets/asset', publicCtrl.getStudySetAsset);
 router.post('/public/placement-test/start', publicCtrl.placementStart);
 router.post('/public/placement-test/submit', optionalAuth, publicCtrl.placementSubmit);
 router.get('/public/dictionary/search', publicCtrl.dictionarySearch);
+router.get('/public/pricing-plans', payment.listPublicPricingPlans);
 
 // Student
 const studentRouter = Router();
 studentRouter.use(requireAuth, requireRoles('student', 'instructor', 'admin'));
 
 studentRouter.get('/dashboard', studentExt.dashboard);
+studentRouter.post('/orders', validateBody(createOrderSchema), payment.createOrder);
+studentRouter.get('/orders/:id', payment.getOrder);
 studentRouter.post('/courses/:courseId/enroll', student.enrollCourse);
 studentRouter.get('/courses/:courseId/lessons', student.getCourseLessons);
 studentRouter.get('/lessons/:id', student.getLesson);
@@ -88,19 +114,50 @@ studentRouter.post('/ai-speaking/message', studentExt.aiSpeakingMessage);
 studentRouter.get('/speech/stt/config', studentExt.speechSttConfig);
 studentRouter.post('/speech/tts', studentExt.speechTts);
 studentRouter.post('/speech/stt', studentExt.speechStt);
-studentRouter.post('/jlpt-sim/start', studentExt.jlptStart);
-studentRouter.post('/jlpt-sim/:sessionId/submit', studentExt.jlptSubmit);
+studentRouter.get('/jlpt-sim/exams', studentExt.jlptListExams);
+studentRouter.get('/jlpt-sim/active', studentExt.jlptGetActiveSession);
 studentRouter.get('/jlpt-sim/history', studentExt.jlptHistory);
+studentRouter.post('/jlpt-sim/start', studentExt.jlptStart);
+studentRouter.get('/jlpt-sim/:sessionId', studentExt.jlptGetSession);
+studentRouter.post('/jlpt-sim/:sessionId/submit', studentExt.jlptSubmit);
 studentRouter.get('/ocr/status', studentExt.ocrStatus);
 studentRouter.post('/ocr/analyze', studentExt.ocrAnalyze);
+studentRouter.post('/ocr/notebook/add', studentExt.ocrNotebookAdd);
+studentRouter.post('/ocr/quiz/generate', studentExt.ocrQuizGenerate);
+studentRouter.post('/ocr/grade', studentExt.ocrGrade);
 studentRouter.get('/dictionary/search', studentExt.dictionarySearch);
-studentRouter.get('/studysets/public', studentExt.studySetsPublic);
+studentRouter.get(
+  '/studysets/public',
+  validateQuery(studySetListQuerySchema),
+  studentExt.studySetsPublic,
+);
 studentRouter.get('/studysets/mine', studentExt.studySetsMine);
-studentRouter.post('/studysets', studentExt.studySetCreate);
-studentRouter.put('/studysets/:id', studentExt.studySetUpdate);
+studentRouter.post(
+  '/studysets/upload',
+  express.raw({
+    type: ['image/*', 'audio/*', 'application/octet-stream'],
+    limit: '25mb',
+  }),
+  studentExt.studySetUpload,
+);
+studentRouter.get('/studysets/:id', studentExt.studySetGet);
+studentRouter.post('/studysets', validateBody(studySetCreateSchema), studentExt.studySetCreate);
+studentRouter.put(
+  '/studysets/:id',
+  validateBody(studySetUpdateSchema),
+  studentExt.studySetUpdate,
+);
 studentRouter.delete('/studysets/:id', studentExt.studySetDelete);
 studentRouter.post('/studysets/:id/clone', studentExt.studySetClone);
+studentRouter.post(
+  '/studysets/:id/items',
+  validateBody(studySetAddItemsSchema),
+  studentExt.studySetAddItems,
+);
+studentRouter.delete('/studysets/:id/items/:itemId', studentExt.studySetRemoveItem);
 studentRouter.post('/webrtc/match', studentExt.webrtcMatch);
+studentRouter.post('/webrtc/leave', studentExt.webrtcLeave);
+studentRouter.post('/community/translate', studentExt.communityTranslate);
 studentRouter.post('/webrtc/evaluate', studentExt.webrtcEvaluate);
 studentRouter.post('/webrtc/report', studentExt.webrtcReport);
 
@@ -129,6 +186,16 @@ contentRouter.post('/courses', validateBody(courseSchema), admin.createCourse);
 contentRouter.put('/courses/:id', validateBody(courseSchema.partial()), admin.updateCourse);
 contentRouter.delete('/courses/:id', admin.deleteCourse);
 
+contentRouter.get('/pricing-plans', payment.listAdminPricingPlans);
+contentRouter.get('/pricing-plans/:id', payment.getAdminPricingPlan);
+contentRouter.post('/pricing-plans', validateBody(pricingPlanSchema), payment.createAdminPricingPlan);
+contentRouter.put(
+  '/pricing-plans/:id',
+  validateBody(pricingPlanSchema.partial()),
+  payment.updateAdminPricingPlan,
+);
+contentRouter.delete('/pricing-plans/:id', payment.deleteAdminPricingPlan);
+
 contentRouter.get('/lessons/:id', admin.getLesson);
 contentRouter.post('/lessons', validateBody(lessonSchema), admin.createLesson);
 contentRouter.put('/lessons/:id', validateBody(lessonSchema.partial().omit({ courseId: true })), admin.updateLesson);
@@ -149,6 +216,18 @@ contentRouter.post('/conversations', validateBody(conversationSchema), admin.cre
 contentRouter.put('/conversations/:id', validateBody(conversationSchema.partial()), admin.updateConversation);
 contentRouter.delete('/conversations/:id', admin.deleteConversation);
 
+contentRouter.get('/mock-exams', validateQuery(mockExamListQuery), admin.listMockExams);
+contentRouter.post('/mock-exams', validateBody(mockExamSchema), admin.createMockExam);
+contentRouter.get('/mock-exams/:id', admin.getMockExam);
+contentRouter.put('/mock-exams/:id', validateBody(mockExamSchema.partial()), admin.updateMockExam);
+contentRouter.delete('/mock-exams/:id', admin.deleteMockExam);
+contentRouter.post(
+  '/mock-exams/:id/import',
+  validateBody(mockExamImportSchema),
+  admin.importMockExamQuestions,
+);
+contentRouter.delete('/mock-exams/:id/questions/:questionId', admin.removeMockExamQuestion);
+
 contentRouter.get('/questions', validateQuery(paginationQuery), admin.listQuestions);
 contentRouter.get('/questions/:id', admin.getQuestion);
 contentRouter.post('/questions', validateBody(questionSchema), admin.createQuestion);
@@ -162,7 +241,7 @@ contentRouter.put('/kanji/:id', validateBody(kanjiSchema.partial()), admin.updat
 contentRouter.delete('/kanji/:id', admin.deleteKanji);
 contentRouter.post(
   '/kanji/:id/memory-image',
-  express.raw({ type: 'image/*', limit: '10mb' }),
+  upload.single('image'),
   admin.uploadKanjiMemoryImage,
 );
 
@@ -171,6 +250,18 @@ contentRouter.get('/radicals/:id', admin.getRadical);
 contentRouter.post('/radicals', validateBody(radicalSchema), admin.createRadical);
 contentRouter.put('/radicals/:id', validateBody(radicalSchema.partial()), admin.updateRadical);
 contentRouter.delete('/radicals/:id', admin.deleteRadical);
+
+contentRouter.get(
+  '/studysets/pending',
+  validateQuery(studySetAdminListQuerySchema),
+  admin.listPendingStudySets,
+);
+contentRouter.get('/studysets/:id', admin.getStudySetAdmin);
+contentRouter.post(
+  '/studysets/:id/moderate',
+  validateBody(studySetModerateSchema),
+  admin.moderateStudySet,
+);
 
 router.use('/instructor', contentRouter);
 router.use('/admin', contentRouter);
@@ -184,14 +275,17 @@ sysAdminRouter.put('/users/:id/role', systemAdmin.updateUserRole);
 sysAdminRouter.post('/users/:id/ban', systemAdmin.banUser);
 sysAdminRouter.post('/users/:id/suspend', systemAdmin.suspendUser);
 sysAdminRouter.post('/users/:id/reset-password', systemAdmin.resetPassword);
+sysAdminRouter.get('/config/llm', systemAdmin.getLlmConfig);
+sysAdminRouter.put('/config/llm', systemAdmin.saveLlmConfig);
+sysAdminRouter.post('/config/llm/test', systemAdmin.testLlmConfig);
+sysAdminRouter.get('/config/sepay', systemAdmin.getSepayConfig);
+sysAdminRouter.put('/config/sepay', validateBody(sepayConfigSchema), systemAdmin.saveSepayConfig);
 sysAdminRouter.get('/config', systemAdmin.getConfig);
 sysAdminRouter.put('/config/:key', systemAdmin.setConfig);
 sysAdminRouter.get('/reports', systemAdmin.listReports);
 sysAdminRouter.put('/reports/:id/resolve', systemAdmin.resolveReport);
 sysAdminRouter.get('/analytics/dau', systemAdmin.analytics);
 sysAdminRouter.get('/health', systemAdmin.adminHealth);
-sysAdminRouter.get('/studysets/pending', admin.listPendingStudySets);
-sysAdminRouter.post('/studysets/:id/moderate', admin.moderateStudySet);
 
 router.use('/admin', sysAdminRouter);
 

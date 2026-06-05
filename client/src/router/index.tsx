@@ -10,10 +10,14 @@ import {
   LessonDetailAdminView,
   GrammarAdminView,
   QuestionsAdminView,
+  MockExamsAdminView,
+  MockExamDetailAdminView,
+  StudySetAdminDetailView,
   StudySetsAdminView,
   UsersAdminView,
   VocabularyAdminView,
   RadicalsAdminView,
+  PricingAdminView,
 } from "@/features/admin";
 import { RedirectIfAuthenticated } from "@/features/auth/components/redirect-if-authenticated";
 import { RequireAuth } from "@/features/auth/components/require-auth";
@@ -38,17 +42,24 @@ import {
   CommunityHubView,
   DashboardView,
   JlptSimView,
+  JlptExamView,
   MiniTestView,
   OcrView,
   PracticeHubView,
   ReviewByTypeView,
   ReviewHubView,
+  StudySetCreateView,
+  StudySetDetailView,
   StudySetsView,
+  KanaQuizView,
 } from "@/features/student";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { AuthLayout } from "@/layouts/auth-layout";
+import { ExamLayout } from "@/layouts/exam-layout";
 import { LearnLayout } from "@/layouts/learn-layout";
+import { CheckoutPage } from "@/pages/CheckoutPage";
 import { HomePage } from "@/pages/HomePage";
+import { PricingPage } from "@/pages/PricingPage";
 
 import { paths } from "./paths";
 
@@ -57,6 +68,7 @@ export function AppRouter() {
     <BrowserRouter>
       <Routes>
         <Route path={paths.home} element={<HomePage />} />
+        <Route path={paths.pricing} element={<PricingPage />} />
 
         <Route element={<AuthLayout />}>
           <Route element={<RedirectIfAuthenticated />}>
@@ -65,10 +77,17 @@ export function AppRouter() {
           </Route>
         </Route>
 
+        <Route element={<RequireAuth />}>
+          <Route element={<ExamLayout />}>
+            <Route path="/practice/jlpt/:examId" element={<JlptExamView />} />
+          </Route>
+        </Route>
+
         <Route element={<LearnLayout />}>
           <Route path={paths.learn.hub} element={<LearnHubView />} />
 
           <Route element={<RequireAuth />}>
+            <Route path="/checkout/:orderId" element={<CheckoutPage />} />
             <Route path={paths.placementTest} element={<PlacementTestView />} />
 
             <Route path={paths.student.dashboard} element={<DashboardView />} />
@@ -101,6 +120,18 @@ export function AppRouter() {
             />
             <Route path={paths.student.studySets} element={<StudySetsView />} />
             <Route
+              path={paths.student.studySetCreate}
+              element={<StudySetCreateView />}
+            />
+            <Route
+              path="/community/study-sets/:id/edit"
+              element={<StudySetCreateView />}
+            />
+            <Route
+              path="/community/study-sets/:id"
+              element={<StudySetDetailView />}
+            />
+            <Route
               path={paths.student.communityCall}
               element={<CommunityCallView />}
             />
@@ -118,6 +149,7 @@ export function AppRouter() {
               path={paths.learn.kanjiHandbook}
               element={<KanjiHandbookView />}
             />
+            <Route path={paths.learn.kanaQuiz} element={<KanaQuizView />} />
             <Route
               path="/learn/courses/:courseId"
               element={<CourseDetailView />}
@@ -140,7 +172,7 @@ export function AppRouter() {
           </Route>
         </Route>
 
-        <Route path={paths.admin.dashboard} element={<AdminLayout />}>
+        <Route path={`${paths.admin.dashboard}/*`} element={<AdminLayout />}>
           <Route index element={<AdminDashboardView />} />
           <Route path="kanji" element={<KanjiAdminView />} />
           <Route path="radicals" element={<RadicalsAdminView />} />
@@ -156,10 +188,14 @@ export function AppRouter() {
             element={<LessonDetailAdminView />}
           />
           <Route path="conversations" element={<ConversationsAdminView />} />
+          <Route path="mock-exams" element={<MockExamsAdminView />} />
+          <Route path="mock-exams/:examId" element={<MockExamDetailAdminView />} />
           <Route path="questions" element={<QuestionsAdminView />} />
           <Route path="study-sets" element={<StudySetsAdminView />} />
+          <Route path="study-sets/:id" element={<StudySetAdminDetailView />} />
           <Route path="users" element={<UsersAdminView />} />
           <Route path="config" element={<ConfigAdminView />} />
+          <Route path="pricing" element={<PricingAdminView />} />
         </Route>
 
         <Route path="*" element={<Navigate to={paths.home} replace />} />

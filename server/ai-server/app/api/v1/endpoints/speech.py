@@ -25,6 +25,7 @@ class SttRequest(BaseModel):
     audio: str = Field(description='Base64-encoded audio (webm/wav/mp3)')
     language: str | None = None
     mime_type: str = 'audio/webm'
+    allow_gemini_fallback: bool = True
 
 
 class SttResponse(BaseModel):
@@ -135,6 +136,7 @@ def speech_to_text(body: SttRequest) -> SttResponse:
         raw,
         language=lang,
         mime_type=body.mime_type,
+        allow_gemini_fallback=body.allow_gemini_fallback,
     )
     return SttResponse(
         text=text,

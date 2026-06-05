@@ -19,13 +19,13 @@ uvicorn app.main:app --reload --port 8000
 
 ## Japanese OCR (GPU)
 
-Default engine: **PaddleOCR** (`lang=japan`) — best open-source choice for JLPT/edu text (printed + 縦書き).
+Default engine: **PP-OCRv5** (`lang=japan`, PaddleOCR 3.x) — printed + 縦書き.
 
 ```bash
 # From repo root (NVIDIA GPU + CUDA 11.8 wheels by default)
 bash scripts/setup-ocr-gpu.sh
 ```
 
-Env: `OCR_ENGINE=paddleocr`, `OCR_USE_GPU=true`. Status: `GET /api/v1/ocr/status`.
+Env: `OCR_ENGINE=paddleocr`, `OCR_USE_GPU=true`, `OCR_PP_OCR_MODEL=server|mobile`. Status: `GET /api/v1/ocr/status`.
 
 Optional: `GOOGLE_VISION_API_KEY` for cloud fallback only.

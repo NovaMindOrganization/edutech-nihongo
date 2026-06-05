@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getHandbookKanji, upsertMastery } from '@/features/student/services/studentApi';
 import { paths } from '@/router/paths';
-import { kanjiMemoryImageAssetUrl } from '@/services/httpClient';
+import { kanjiHasMemoryImage, kanjiMemoryImageSrc } from '@/services/httpClient';
 
 export function KanjiHandbookView() {
   const [items, setItems] = useState<Awaited<ReturnType<typeof getHandbookKanji>>['items']>([]);
@@ -42,9 +42,9 @@ export function KanjiHandbookView() {
                 <div>
                   <p className="font-jp text-3xl font-bold">{row.kanji.character}</p>
                   <p className="text-sm">{row.kanji.meaning}</p>
-                  {row.kanji.memoryImageUrl && (
+                  {kanjiHasMemoryImage(row.kanji) && (
                     <img
-                      src={kanjiMemoryImageAssetUrl(row.kanji.id)}
+                      src={kanjiMemoryImageSrc(row.kanji)}
                       alt={`Memoric ${row.kanji.character}`}
                       className="mt-2 h-20 w-40 rounded object-contain border border-border/60 bg-muted/20 p-1"
                     />

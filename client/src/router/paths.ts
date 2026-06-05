@@ -4,6 +4,8 @@ export const paths = {
   login: "/login",
   register: "/register",
   placementTest: "/placement-test",
+  pricing: "/pricing",
+  checkout: (orderId: string) => `/checkout/${orderId}`,
   learn: {
     hub: "/learn",
     course: (id: string) => `/learn/courses/${id}`,
@@ -17,6 +19,7 @@ export const paths = {
     kanjiHub: "/learn/kanji",
     kanjiCourse: (courseId: string) => `/learn/kanji/course/${courseId}`,
     kanjiHandbook: "/learn/kanji/handbook",
+    kanaQuiz: "/learn/kana-quiz",
   },
   student: {
     dashboard: "/dashboard",
@@ -27,9 +30,13 @@ export const paths = {
     aiSpeaking: "/ai-speaking",
     practice: "/practice",
     jlptSim: "/practice/jlpt",
+    jlptExam: (examId: string) => `/practice/jlpt/${examId}`,
     ocr: "/ocr",
     community: "/community",
     studySets: "/community/study-sets",
+    studySetCreate: "/community/study-sets/create",
+    studySetDetail: (id: string) => `/community/study-sets/${id}`,
+    studySetEdit: (id: string) => `/community/study-sets/${id}/edit`,
     communityCall: "/community/call",
     /** @deprecated use learn.kanjiHandbook */
     notebook: "/learn/kanji/handbook",
@@ -45,9 +52,13 @@ export const paths = {
     lessonDetail: (courseId: string, lessonId: string) =>
       `/admin/courses/${courseId}/lessons/${lessonId}`,
     conversations: "/admin/conversations",
+    mockExams: "/admin/mock-exams",
+    mockExamDetail: (examId: string) => `/admin/mock-exams/${examId}`,
     questions: "/admin/questions",
     studySets: "/admin/study-sets",
+    studySetDetail: (id: string) => `/admin/study-sets/${id}`,
     users: "/admin/users",
     config: "/admin/config",
+    pricing: "/admin/pricing",
   },
 } as const;

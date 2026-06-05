@@ -156,6 +156,85 @@ function loadCsv(path: string): Record<string, string>[] {
   });
 }
 
+async function seedStudySets(ownerId: string) {
+  const existing = await db.studySet.count({ where: { ownerId } });
+  if (existing > 0) {
+    console.log("[seed] Study sets already exist, skipping sample sets.");
+    return;
+  }
+
+  const sampleSet = await db.studySet.create({
+    data: {
+      ownerId,
+      title: "N5 Cộng đồng — Từ vựng & Ngữ pháp",
+      description: "Bộ mẫu hỗn hợp từ vựng và ngữ pháp JLPT N5 cho cộng đồng.",
+      isPublic: true,
+      moderationStatus: "approved",
+      moderatedAt: new Date(),
+      tags: ["N5", "vocabulary", "grammar"],
+      items: {
+        create: [
+          {
+            contentType: "vocabulary",
+            orderIndex: 0,
+            content: {
+              word: "こんにちは",
+              reading: "konnichiwa",
+              meaning: "Xin chào",
+              exampleSentence: "こんにちは、元気ですか。",
+              exampleTranslation: "Xin chào, bạn khỏe không?",
+            },
+          },
+          {
+            contentType: "vocabulary",
+            orderIndex: 1,
+            content: {
+              word: "ありがとう",
+              reading: "arigatou",
+              meaning: "Cảm ơn",
+            },
+          },
+          {
+            contentType: "grammar",
+            orderIndex: 2,
+            content: {
+              title: "です / だ",
+              pattern: "A は B です",
+              meaningVi: "A là B (lịch sự)",
+              examples: [
+                { jp: "私は学生です。", vi: "Tôi là học sinh." },
+              ],
+            },
+          },
+          {
+            contentType: "kanji",
+            orderIndex: 3,
+            content: {
+              character: "日",
+              meaning: "ngày, mặt trời",
+              readingsOn: ["ニチ", "ジツ"],
+              readingsKun: ["ひ", "か"],
+              hanViet: "nhật",
+              examples: [{ word: "日本", reading: "にほん", meaning: "Nhật Bản" }],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  try {
+    const { generateAndStoreStudySetQuiz } =
+      await import("../services/study-set-quiz.service.js");
+    await generateAndStoreStudySetQuiz(sampleSet.id);
+    console.log("[seed] Generated AI quiz for sample study set.");
+  } catch (err) {
+    console.warn("[seed] Quiz generation skipped (AI server may be offline):", err);
+  }
+
+  console.log("[seed] Created sample public study set.");
+}
+
 async function main() {
   console.log("[seed] Starting...");
 
@@ -179,6 +258,51 @@ async function main() {
       key: "maintenance_mode",
       value: "false",
       description: "Toggle maintenance mode",
+    },
+    {
+      key: "llm_provider",
+      value: "gemini",
+      description: "LLM provider: gemini | agent_router",
+    },
+    {
+      key: "llm_gemini_model",
+      value: "gemini-2.5-flash",
+      description: "Gemini model id",
+    },
+    {
+      key: "llm_gemini_api_key",
+      value: "",
+      description: "Google Gemini API key (set in admin)",
+    },
+    {
+      key: "llm_openai_base_url",
+      value: "https://agentrouter.org/v1",
+      description: "OpenAI-compatible API base URL (AgentRouter)",
+    },
+    {
+      key: "llm_openai_model",
+      value: "claude-opus-4-6",
+      description: "OpenAI-compatible model id (AgentRouter: claude-opus-4-6)",
+    },
+    {
+      key: "llm_openai_api_key",
+      value: "",
+      description: "AgentRouter / OpenAI-compatible API key (set in admin)",
+    },
+    {
+      key: "llm_temperature",
+      value: "0.4",
+      description: "LLM sampling temperature",
+    },
+    {
+      key: "ocr_agent_router_vision_model",
+      value: "claude-opus-4-6",
+      description: "Agent Router vision model for OCR (not chat model)",
+    },
+    {
+      key: "ocr_gemini_fallback_model",
+      value: "gemini-2.5-flash-lite",
+      description: "Gemini model for OCR vision when AR fails or provider=gemini",
     },
   ];
 
@@ -510,6 +634,7 @@ async function main() {
         title: "JLPT N5 Mock Exam",
         jlptLevel: "N5",
         durationMinutes: 90,
+        maxAttempts: 3,
         createdById: admin.id,
       },
     });
@@ -544,10 +669,37 @@ async function main() {
     update: {},
   });
 
+  const existingPlan = await db.pricingPlan.findFirst({
+    where: { name: "Gói N5 — Trọn khóa" },
+  });
+  if (!existingPlan) {
+    await db.pricingPlan.create({
+      data: {
+        name: "Gói N5 — Trọn khóa",
+        description: "Toàn bộ khóa Japanese N5 — Complete Course",
+        price: 299000,
+        durationDays: null,
+        features: [
+          "25 bài học tuần tự",
+          "MiniTest mở khóa",
+          "AI Speaking & OCR",
+          "Truy cập trọn đời",
+        ],
+        isActive: true,
+        isPopular: true,
+        sortOrder: 0,
+        courses: { create: [{ courseId: course.id }] },
+      },
+    });
+    console.log("[seed] Created sample pricing plan (N5)");
+  }
+
   const { enrollAndInitProgress } =
     await import("../services/lesson.service.js");
   await enrollAndInitProgress(admin.id, course.id);
   console.log("[seed] Admin enrolled in N5 course (test student flows)");
+
+  await seedStudySets(admin.id);
 
   await db.studySet.updateMany({
     where: { isPublic: true },

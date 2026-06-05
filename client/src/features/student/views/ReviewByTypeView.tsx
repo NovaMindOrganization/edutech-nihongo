@@ -41,7 +41,7 @@ export function ReviewByTypeView({ type }: { type: ReviewType }) {
   const current = items[idx];
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="w-full">
       <Link
         to={paths.student.review}
         className="text-sm text-primary hover:underline"
