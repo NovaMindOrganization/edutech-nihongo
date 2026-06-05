@@ -3,8 +3,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { PrismaClient } from "@prisma/client";
 
+import { backfillKanjiSlugs } from "./backfill-kanji-slugs.js";
 import { normalizeKanjiMemoryStoragePath } from "../utils/kanji-memory-storage.js";
-import { createKanjiSlug } from "../utils/kanji-slug.js";
+import { reserveUniqueKanjiSlug } from "../utils/kanji-slug.js";
 import { syncKanjiMemoryImagesFromMinio } from "./sync-kanji-memory-images.js";
 import { loadCsvStream } from "./seed-vocabulary-n5-from-csv.js";
 
@@ -33,6 +34,8 @@ export type SeedKanjiN5Options = {
   replaceExamples?: boolean;
   /** Gắn memoryImageUrl từ MinIO sau khi seed (mặc định: true). */
   syncMemoryImages?: boolean;
+  /** Sửa slug dạng kanji-{uuid} từ migration (mặc định: true). */
+  backfillSlugs?: boolean;
 };
 
 /** Parse ô CSV dạng `一つ【ひとつ】một cái`. */
@@ -127,23 +130,13 @@ function mapKanjiRow(row: Record<string, string>) {
   };
 }
 
-function reserveUniqueSlug(character: string, usedSlugs: Set<string>) {
-  let slug = createKanjiSlug(character);
-  let suffix = 2;
-  while (usedSlugs.has(slug)) {
-    slug = `${createKanjiSlug(character)}-${suffix}`;
-    suffix += 1;
-  }
-  usedSlugs.add(slug);
-  return slug;
-}
-
 export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
   const db = options.db ?? new PrismaClient();
   const ownsClient = !options.db;
   const csvPath = options.csvPath ?? DEFAULT_N5_KANJI_CSV;
   const replaceExamples = options.replaceExamples ?? true;
   const syncMemoryImages = options.syncMemoryImages ?? true;
+  const backfillSlugs = options.backfillSlugs ?? true;
 
   try {
     const rows = await loadCsvStream(csvPath);
@@ -195,7 +188,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       });
 
       if (!kanji) {
-        const slug = reserveUniqueSlug(mapped.character, usedSlugs);
+        const slug = reserveUniqueKanjiSlug(mapped.character, usedSlugs);
         kanji = await db.kanji.create({
           data: {
             ...kanjiData,
@@ -236,6 +229,11 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       `[seed:kanji-n5] Tạo mới ${created}, cập nhật ${updated}, ví dụ ${examplesWritten}, bỏ qua ${skipped}.`,
     );
 
+    let slugBackfill: Awaited<ReturnType<typeof backfillKanjiSlugs>> | undefined;
+    if (backfillSlugs) {
+      slugBackfill = await backfillKanjiSlugs({ db });
+    }
+
     let imageSync: Awaited<ReturnType<typeof syncKanjiMemoryImagesFromMinio>> | undefined;
     if (syncMemoryImages) {
       imageSync = await syncKanjiMemoryImagesFromMinio({
@@ -251,6 +249,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       skipped,
       rowCount: rows.length,
       imageSync,
+      slugBackfill,
     };
   } finally {
     if (ownsClient) {

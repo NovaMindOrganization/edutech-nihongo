@@ -1,10 +1,30 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createKanjiSlug,
+  isKanjiMigrationPlaceholderSlug,
+} from "../utils/kanji-slug.js";
+import {
   parseKanjiExampleCell,
   parseKanjiExamplesFromRow,
   parseKanjiReadingList,
 } from "./seed-kanji-n5-from-csv.js";
+
+describe("isKanjiMigrationPlaceholderSlug", () => {
+  it("detects migration placeholder slugs", () => {
+    const id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+    expect(isKanjiMigrationPlaceholderSlug(`kanji-${id.replace(/-/g, "")}`, id)).toBe(
+      true,
+    );
+    expect(isKanjiMigrationPlaceholderSlug("kanji-4e00", id)).toBe(false);
+  });
+});
+
+describe("createKanjiSlug", () => {
+  it("matches production slug for 火", () => {
+    expect(createKanjiSlug("火")).toBe("kanji-706b");
+  });
+});
 
 describe("parseKanjiExampleCell", () => {
   it("parses word, reading, and meaning", () => {
