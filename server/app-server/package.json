@@ -11,6 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:import:radicals": "tsx scripts/import-radicals.ts",
+    "db:import:grammar-n5": "tsx scripts/import-grammar-n5.ts",
     "db:push": "prisma db push",
     "worker": "tsx worker.ts"
   },
