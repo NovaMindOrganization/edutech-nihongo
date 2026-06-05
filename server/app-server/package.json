@@ -17,6 +17,7 @@
     "db:seed:lesson-titles": "tsx scripts/update-n5-lesson-titles.ts",
     "db:backfill:kanji-slugs": "tsx scripts/backfill-kanji-slugs.ts",
     "db:import:radicals": "tsx scripts/import-radicals.ts",
+    "db:import:grammar-n5": "tsx scripts/import-grammar-n5.ts",
     "db:push": "prisma db push",
     "worker": "tsx worker.ts"
   },

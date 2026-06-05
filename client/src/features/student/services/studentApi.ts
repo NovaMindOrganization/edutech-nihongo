@@ -105,6 +105,15 @@ export type DialogueLine = {
   translation?: string;
 };
 
+export type JapaneseSegment =
+  | {
+      text: string;
+    }
+  | {
+      kanji: string;
+      reading: string;
+    };
+
 export type LessonPayload = {
   lesson: {
     id: string;
@@ -124,8 +133,19 @@ export type LessonPayload = {
     meaningVi: string;
     usage: string | null;
     notes: string | null;
-    examples: Array<{ jp: string; vi: string; reading?: string | null; en?: string | null }> | null;
-    quiz: Array<{ question: string; choices: string[]; answer: number }> | null;
+
+    examples: Array<{
+      segments: JapaneseSegment[];
+      vi: string;
+    }> | null;
+
+    quiz: Array<{
+      question: {
+        segments: JapaneseSegment[];
+      };
+      choices: string[];
+      answer: number;
+    }> | null;
   }>;
   kanji: Array<{
     id: string;
