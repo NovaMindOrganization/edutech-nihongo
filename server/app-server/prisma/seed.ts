@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
 import { N5_LESSON_TITLES } from "../data/n5-lesson-titles.js";
+import { seedKanjiN5FromCsv } from "../scripts/seed-kanji-n5-from-csv.js";
 import {
   DEFAULT_N5_VOCAB_CSV,
   lessonNumbersFromVocabRows,
@@ -60,76 +61,6 @@ async function seedRadicals(adminId: string) {
   console.log(`[seed] Seeded ${radicals.length} radicals successfully.`);
 }
 
-// --- Dán hàm này phía trên hàm main() của prisma/seed.ts ---
-async function seedKanji(
-  adminId: string,
-  lessons: { id: string; orderIndex: number }[],
-) {
-  const kanjiPath = join(
-    __dirname,
-    "../data/Database_Kanji_and_Example_N5_Updated.csv",
-  );
-  const kanjiRows = loadCsv(kanjiPath);
-
-  console.log(
-    `[seed] Found ${kanjiRows.length} kanji rows in CSV. Processing...`,
-  );
-
-  let updatedKanjiCount = 0;
-
-  function parseStrokeCount(value: string | undefined) {
-    const raw = (value ?? "").trim();
-    if (!raw) return null;
-
-    const parsed = Number.parseFloat(raw.replace(/,/g, ""));
-    if (!Number.isFinite(parsed)) return null;
-
-    const normalized = Math.round(parsed);
-    if (normalized < 1 || normalized > 80) return null;
-
-    return normalized;
-  }
-
-  for (const row of kanjiRows) {
-    const character = (row.Kanji || row.kanji || row.Character || "").trim();
-    if (!character) continue;
-
-    const targetKanji = await db.kanji.findFirst({ where: { character } });
-    if (!targetKanji) continue;
-
-    const updateData: {
-      hanVietPronunciation?: string | null;
-      strokeCount?: number | null;
-    } = {};
-
-    const hanVietPronunciation = (row["Han-Viet Pronunciation"] || "").trim();
-    if (hanVietPronunciation && !targetKanji.hanVietPronunciation?.trim()) {
-      updateData.hanVietPronunciation = hanVietPronunciation;
-    }
-
-    const parsedStrokeCount = parseStrokeCount(row.StrokeCount);
-    if (
-      parsedStrokeCount !== null &&
-      Number.isFinite(parsedStrokeCount) &&
-      targetKanji.strokeCount !== parsedStrokeCount
-    ) {
-      updateData.strokeCount = parsedStrokeCount;
-    }
-
-    if (Object.keys(updateData).length > 0) {
-      await db.kanji.update({
-        where: { id: targetKanji.id },
-        data: updateData,
-      });
-      updatedKanjiCount += 1;
-    }
-  }
-
-  console.log(
-    `[seed] Updated ${updatedKanjiCount} kanji rows from Updated CSV.`,
-  );
-}
-
 function parseCsvLine(line: string): string[] {
   const result: string[] = [];
   let current = "";
@@ -150,18 +81,6 @@ function parseCsvLine(line: string): string[] {
   }
   result.push(current);
   return result;
-}
-
-function loadCsv(path: string): Record<string, string>[] {
-  const raw = readFileSync(path, "utf-8").replace(/^\uFEFF/, "");
-  const lines = raw.split(/\r?\n/).filter((l) => l.trim());
-  const headers = parseCsvLine(lines[0]);
-  return lines.slice(1).map((line) => {
-    const cols = parseCsvLine(line);
-    return Object.fromEntries(
-      headers.map((h, i) => [h.trim(), (cols[i] ?? "").trim()]),
-    );
-  });
 }
 
 async function seedStudySets(ownerId: string) {
@@ -489,8 +408,7 @@ async function main() {
     }
   }
 
-  // Seed Kanji from CSV and link to lessons
-  await seedKanji(admin.id, lessons);
+  await seedKanjiN5FromCsv({ db, adminId: admin.id });
 
   console.log(
     `[seed] Created ${lessons.length} lessons for course ${course.title}`,
