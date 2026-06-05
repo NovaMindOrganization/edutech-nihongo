@@ -32,6 +32,7 @@ import {
   LessonGrammarView,
   LessonKanjiView,
   LessonVocabularyView,
+  VocabularyFlashcardView,
   LessonShellView,
   LessonSpeakingView,
 } from "@/features/learn";
@@ -161,6 +162,10 @@ export function AppRouter() {
               <Route index element={<Navigate to="grammar" replace />} />
               <Route path="speaking" element={<LessonSpeakingView />} />
               <Route path="vocabulary" element={<LessonVocabularyView />} />
+              <Route
+                path="vocabulary/flashcards"
+                element={<VocabularyFlashcardView />}
+              />
               <Route path="grammar" element={<LessonGrammarView />} />
               <Route path="dialogue" element={<LessonDialogueView />} />
               <Route path="kanji" element={<LessonKanjiView />} />

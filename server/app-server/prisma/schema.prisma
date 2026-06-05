@@ -24,6 +24,11 @@ enum MasteryItemType {
   kanji
 }
 
+enum VocabularyProgressStatus {
+  learning
+  mastered
+}
+
 enum StudySetModerationStatus {
   pending
   approved
@@ -76,6 +81,7 @@ model User {
   reportsFiled        AbuseReport[]        @relation("Reporter")
   reportsReceived     AbuseReport[]        @relation("Reported")
   orders              Order[]
+  vocabularyProgress  UserVocabularyProgress[]
 
   @@map("users")
 }
@@ -144,13 +150,31 @@ model Vocabulary {
   createdBy User?              @relation("VocabCreator", fields: [createdById], references: [id])
   course    Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
   lesson    Lesson?            @relation("LessonVocabularyItems", fields: [lessonId], references: [id], onDelete: SetNull)
-  lessons   LessonVocabulary[]
+  lessons        LessonVocabulary[]
+  userProgress   UserVocabularyProgress[]
 
   @@index([jlptLevel])
   @@index([topic])
   @@index([courseId])
   @@index([lessonId])
   @@map("vocabulary")
+}
+
+model UserVocabularyProgress {
+  id           String                    @id @default(uuid())
+  userId       String                    @map("user_id")
+  vocabularyId String                    @map("vocabulary_id")
+  isStarred    Boolean                   @default(false) @map("is_starred")
+  status       VocabularyProgressStatus? @map("status")
+  updatedAt    DateTime                  @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vocabularyId])
+  @@index([userId, isStarred])
+  @@index([userId, status])
+  @@map("user_vocabulary_progress")
 }
 
 model Grammar {
