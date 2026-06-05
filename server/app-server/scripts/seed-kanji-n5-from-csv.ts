@@ -6,7 +6,10 @@ import { PrismaClient } from "@prisma/client";
 import { backfillKanjiSlugs } from "./backfill-kanji-slugs.js";
 import { normalizeKanjiMemoryStoragePath } from "../utils/kanji-memory-storage.js";
 import { reserveUniqueKanjiSlug } from "../utils/kanji-slug.js";
-import { syncKanjiMemoryImagesFromMinio } from "./sync-kanji-memory-images.js";
+import {
+  assignKanjiMemoryImagePaths,
+  syncKanjiMemoryImagesFromMinio,
+} from "./sync-kanji-memory-images.js";
 import { loadCsvStream } from "./seed-vocabulary-n5-from-csv.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -32,7 +35,9 @@ export type SeedKanjiN5Options = {
   db?: PrismaClient;
   /** Ghi đè ví dụ từ CSV (mặc định: true). */
   replaceExamples?: boolean;
-  /** Gắn memoryImageUrl từ MinIO sau khi seed (mặc định: true). */
+  /** Gán memoryImageUrl = N5/{slug}.webp (không cần file MinIO, mặc định: true). */
+  assignImagePaths?: boolean;
+  /** Chỉ gắn URL khi file đã có trên MinIO (mặc định: false). */
   syncMemoryImages?: boolean;
   /** Sửa slug dạng kanji-{uuid} từ migration (mặc định: true). */
   backfillSlugs?: boolean;
@@ -135,7 +140,8 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
   const ownsClient = !options.db;
   const csvPath = options.csvPath ?? DEFAULT_N5_KANJI_CSV;
   const replaceExamples = options.replaceExamples ?? true;
-  const syncMemoryImages = options.syncMemoryImages ?? true;
+  const assignImagePaths = options.assignImagePaths ?? true;
+  const syncMemoryImages = options.syncMemoryImages ?? false;
   const backfillSlugs = options.backfillSlugs ?? true;
 
   try {
@@ -234,6 +240,14 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       slugBackfill = await backfillKanjiSlugs({ db });
     }
 
+    let imagePaths: Awaited<ReturnType<typeof assignKanjiMemoryImagePaths>> | undefined;
+    if (assignImagePaths) {
+      imagePaths = await assignKanjiMemoryImagePaths({
+        db,
+        jlptLevel: "N5",
+      });
+    }
+
     let imageSync: Awaited<ReturnType<typeof syncKanjiMemoryImagesFromMinio>> | undefined;
     if (syncMemoryImages) {
       imageSync = await syncKanjiMemoryImagesFromMinio({
@@ -248,6 +262,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       examplesWritten,
       skipped,
       rowCount: rows.length,
+      imagePaths,
       imageSync,
       slugBackfill,
     };
