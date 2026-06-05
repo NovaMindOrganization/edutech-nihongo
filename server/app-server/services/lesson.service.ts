@@ -5,7 +5,7 @@ import { assertCourseEnrollmentAllowed } from "./pricing-plan.service.js";
 import { AppError } from "../utils/app-error.js";
 
 /** Vocabulary by lesson_id FK; falls back to junction if legacy rows lack FK. */
-async function loadLessonVocabulary(lessonId: string): Promise<Vocabulary[]> {
+export async function loadLessonVocabulary(lessonId: string): Promise<Vocabulary[]> {
   const direct = await db.vocabulary.findMany({
     where: { lessonId },
     orderBy: { word: "asc" },

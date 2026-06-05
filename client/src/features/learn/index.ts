@@ -3,6 +3,8 @@ export { CourseDetailView } from './views/CourseDetailView';
 export { LessonShellView } from './views/LessonShellView';
 export { LessonSpeakingView } from './views/LessonSpeakingView';
 export { LessonVocabularyView } from './views/LessonVocabularyView';
+export { VocabularyList } from './components/vocabulary/VocabularyList';
+export { VocabularyFlashcardView } from './views/VocabularyFlashcardView';
 export { LessonGrammarView } from './views/LessonGrammarView';
 export { LessonDialogueView } from './views/LessonDialogueView';
 export { LessonKanjiView } from './views/LessonKanjiView';
