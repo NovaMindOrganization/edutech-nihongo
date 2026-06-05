@@ -10,21 +10,17 @@ import sharp from "sharp";
 import { db } from "../config/db.js";
 import { AppError } from "../utils/app-error.js";
 import { getS3Client } from "../utils/s3.js";
+import {
+  buildKanjiMemoryObjectKey,
+  KANJI_MEMORY_BUCKET,
+  normalizeKanjiMemoryStoragePath,
+} from "../utils/kanji-memory-storage.js";
 import { ensureKanjiStorageIdentity } from "./kanji.service.js";
 
-const KANJI_BUCKET = "kanji";
-
-/** S3 object key inside bucket `kanji` (e.g. N5/kanji-4e00.webp). */
-function buildKanjiMemoryObjectKey(jlptLevel: string, slug: string) {
-  return `${jlptLevel}/${slug}.webp`;
-}
+const KANJI_BUCKET = KANJI_MEMORY_BUCKET;
 
 function normalizeKanjiObjectKey(key: string) {
-  const trimmed = key.replace(/^\/+/, '');
-  if (trimmed.startsWith(`${KANJI_BUCKET}/`)) {
-    return trimmed.slice(KANJI_BUCKET.length + 1);
-  }
-  return trimmed;
+  return normalizeKanjiMemoryStoragePath(key);
 }
 
 async function ensureBucketExists() {
