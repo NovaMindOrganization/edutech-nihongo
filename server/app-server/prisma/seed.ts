@@ -248,6 +248,78 @@ async function seedGrammarFromCsv(
   );
 }
 
+async function seedConversationsFromCsv(
+  adminId: string,
+  lessons: { id: string; orderIndex: number }[],
+) {
+  const conversationPath = join(__dirname, "../data/conversation-n5.csv");
+  const conversationRows = loadCsv(conversationPath);
+  const lessonIdByNumber = new Map(
+    lessons.map((lesson) => [lesson.orderIndex, lesson.id]),
+  );
+  const jlptLevels = [
+    ...new Set(
+      conversationRows.map((row) => (row.jlpt ?? "").trim()).filter(Boolean),
+    ),
+  ];
+
+  if (jlptLevels.length > 0) {
+    const existingConversations = await db.conversation.findMany({
+      where: { jlptLevel: { in: jlptLevels } },
+      select: { id: true },
+    });
+
+    if (existingConversations.length > 0) {
+      await db.lessonConversation.deleteMany({
+        where: {
+          conversationId: { in: existingConversations.map((row) => row.id) },
+        },
+      });
+    }
+
+    await db.conversation.deleteMany({
+      where: { jlptLevel: { in: jlptLevels } },
+    });
+  }
+
+  let created = 0;
+  let linked = 0;
+
+  for (const row of conversationRows) {
+    const lessonNumber = Number.parseInt(row.lessonId ?? "", 10);
+    const title = (row.title ?? "").trim();
+    const jlptLevel = (row.jlpt ?? "").trim();
+
+    if (!Number.isInteger(lessonNumber) || !title || !jlptLevel) {
+      throw new Error(
+        `Missing required conversation data in row: ${JSON.stringify(row)}`,
+      );
+    }
+
+    const lessonId = lessonIdByNumber.get(lessonNumber) ?? null;
+    const createdConversation = await db.conversation.create({
+      data: {
+        title,
+        jlptLevel,
+        dialogue: parseJsonField(row.turns),
+        createdById: adminId,
+      },
+    });
+    created++;
+
+    if (lessonId) {
+      await db.lessonConversation.create({
+        data: { lessonId, conversationId: createdConversation.id },
+      });
+      linked++;
+    }
+  }
+
+  console.log(
+    `[seed] Imported ${created} conversations from conversation-n5.csv, linked ${linked} to lessons.`,
+  );
+}
+
 async function seedStudySets(ownerId: string) {
   const existing = await db.studySet.count({ where: { ownerId } });
   if (existing > 0) {
@@ -558,36 +630,7 @@ async function main() {
     }
   }
 
-  const dialogue1 = await db.conversation.upsert({
-    where: { id: "00000000-0000-4000-8000-000000000001" },
-    create: {
-      id: "00000000-0000-4000-8000-000000000001",
-      title: "Chào hỏi — Bài 1",
-      jlptLevel: "N5",
-      dialogue: [
-        {
-          speaker: "A",
-          text: "こんにちは。",
-          reading: "konnichiwa",
-          translation: "Xin chào.",
-        },
-        {
-          speaker: "B",
-          text: "こんにちは。はじめまして。",
-          reading: "konnichiwa. hajimemashite.",
-          translation: "Xin chào. Rất vui được gặp.",
-        },
-        {
-          speaker: "A",
-          text: "わたしは田中です。",
-          reading: "watashi wa Tanaka desu.",
-          translation: "Tôi là Tanaka.",
-        },
-      ],
-      createdById: admin.id,
-    },
-    update: {},
-  });
+  await seedConversationsFromCsv(admin.id, lessons);
 
   const lesson1 = lessons.find((l) => l.orderIndex === 1);
   if (lesson1) {
@@ -597,16 +640,6 @@ async function main() {
         speakingPrompt:
           "Luyện chào hỏi và giới thiệu tên. Dùng です/ます. Gợi ý từ: こんにちは、はじめまして、わたしは〜です。",
       },
-    });
-    await db.lessonConversation.upsert({
-      where: {
-        lessonId_conversationId: {
-          lessonId: lesson1.id,
-          conversationId: dialogue1.id,
-        },
-      },
-      create: { lessonId: lesson1.id, conversationId: dialogue1.id },
-      update: {},
     });
   }
 
