@@ -13,6 +13,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:setup": "prisma migrate deploy && prisma db seed",
     "db:seed": "prisma db seed",
+    "db:seed:vocab-n5": "tsx scripts/seed-vocabulary-n5-from-csv.ts",
+    "db:seed:lesson-titles": "tsx scripts/update-n5-lesson-titles.ts",
     "db:backfill:kanji-slugs": "tsx scripts/backfill-kanji-slugs.ts",
     "db:import:radicals": "tsx scripts/import-radicals.ts",
     "db:import:grammar-n5": "tsx scripts/import-grammar-n5.ts",

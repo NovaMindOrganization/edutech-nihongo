@@ -7,6 +7,7 @@ import * as auth from '../controllers/auth.controller.js';
 import * as publicCtrl from '../controllers/public.controller.js';
 import * as student from '../controllers/student.controller.js';
 import * as studentExt from '../controllers/student-ext.controller.js';
+import * as vocabularyCtrl from '../controllers/vocabulary.controller.js';
 import * as systemAdmin from '../controllers/system-admin.controller.js';
 import * as payment from '../controllers/payment.controller.js';
 import { optionalAuth, requireAuth, requireRoles } from '../middlewares/auth.js';
@@ -44,6 +45,10 @@ import {
   pricingPlanSchema,
 } from '../validators/pricing-plan.validator.js';
 import { sepayConfigSchema } from '../validators/sepay-config.validator.js';
+import {
+  lessonVocabularyQuerySchema,
+  vocabularyProgressPatchSchema,
+} from '../validators/vocabulary.validator.js';
 
 const router = Router();
 const upload = multer({
@@ -162,6 +167,21 @@ studentRouter.post('/webrtc/evaluate', studentExt.webrtcEvaluate);
 studentRouter.post('/webrtc/report', studentExt.webrtcReport);
 
 router.use('/student', studentRouter);
+
+// Vocabulary flashcards + progress (authenticated students)
+const vocabularyRouter = Router();
+vocabularyRouter.use(requireAuth, requireRoles('student', 'instructor', 'admin'));
+vocabularyRouter.get(
+  '/lesson/:id',
+  validateQuery(lessonVocabularyQuerySchema),
+  vocabularyCtrl.getLessonVocabulary,
+);
+vocabularyRouter.patch(
+  '/progress',
+  validateBody(vocabularyProgressPatchSchema),
+  vocabularyCtrl.patchVocabularyProgress,
+);
+router.use('/vocabulary', vocabularyRouter);
 
 // Instructor + Admin content CRUD
 const contentRouter = Router();

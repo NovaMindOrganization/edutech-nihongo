@@ -5,6 +5,14 @@ import { fileURLToPath } from "node:url";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
+import { N5_LESSON_TITLES } from "../data/n5-lesson-titles.js";
+import {
+  DEFAULT_N5_VOCAB_CSV,
+  lessonNumbersFromVocabRows,
+  loadCsvStream,
+  seedN5VocabularyFromCsv,
+} from "../scripts/seed-vocabulary-n5-from-csv.js";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const db = new PrismaClient();
 
@@ -490,32 +498,14 @@ async function main() {
     update: { passwordHash: adminHash, role: "admin" },
   });
 
-  const vocabPath = join(__dirname, "../data/vocabulary-n5.csv");
-
-  const vocabRows = loadCsv(vocabPath);
+  const vocabCsvRows = await loadCsvStream(DEFAULT_N5_VOCAB_CSV);
+  const vocabLessonNumbers = lessonNumbersFromVocabRows(vocabCsvRows);
 
   console.log(
-    `[seed] Importing ${vocabRows.length} vocabulary and grammar CSV...`,
+    `[seed] N5 vocabulary: ${vocabCsvRows.length} từ (bài ${vocabLessonNumbers[0] ?? "?"}–${vocabLessonNumbers[vocabLessonNumbers.length - 1] ?? "?"}), sample grammar...`,
   );
 
   await db.vocabulary.deleteMany({ where: { jlptLevel: "N5" } });
-
-  const vocabBatchSize = 100;
-  for (let i = 0; i < vocabRows.length; i += vocabBatchSize) {
-    const batch = vocabRows.slice(i, i + vocabBatchSize);
-    await db.vocabulary.createMany({
-      data: batch.map((row) => ({
-        word: row.word,
-        reading: row.reading || null,
-        meaning: row.meaning_vi,
-        meaningEn: row.meaning_en || null,
-        jlptLevel: row.jlpt || "N5",
-        partOfSpeech: row.type || null,
-        topic: row.type || null,
-        createdById: admin.id,
-      })),
-    });
-  }
 
   let course = await db.course.findFirst({
     where: { jlptLevel: "N5", title: "Japanese N5 — Complete Course" },
@@ -538,19 +528,7 @@ async function main() {
     });
   }
 
-  const lessonTitles: Record<number, string> = {
-    1: "Bài 1: Chào hỏi cơ bản",
-    2: "Bài 2: Đồ vật",
-    3: "Bài 3: Địa điểm",
-    4: "Bài 4: Tính từ",
-    5: "Bài 5: Thời gian",
-  };
-
-  const lessonNumbers = [
-    ...new Set(
-      vocabRows.map((r) => Number(r.lesson)).filter((n) => !Number.isNaN(n)),
-    ),
-  ].sort((a, b) => a - b);
+  const lessonNumbers = vocabLessonNumbers;
 
   await db.lesson.deleteMany({ where: { courseId: course.id } });
 
@@ -559,41 +537,23 @@ async function main() {
     const lesson = await db.lesson.create({
       data: {
         courseId: course.id,
-        title: lessonTitles[num] ?? `Bài ${num}`,
+        title: N5_LESSON_TITLES[num] ?? `Bài ${num}`,
         orderIndex: num,
         passThreshold: 70,
       },
     });
     lessons.push({ id: lesson.id, orderIndex: num });
-
-    await db.vocabulary.updateMany({
-      where: {
-        jlptLevel: "N5",
-        word: {
-          in: vocabRows
-            .filter((r) => Number(r.lesson) === num)
-            .map((r) => r.word),
-        },
-      },
-      data: { courseId: course.id, lessonId: lesson.id },
-    });
-
-    const vocabForLesson = await db.vocabulary.findMany({
-      where: { lessonId: lesson.id },
-      select: { id: true },
-    });
-    if (vocabForLesson.length > 0) {
-      await db.lessonVocabulary.createMany({
-        data: vocabForLesson.map((v: { id: string }) => ({
-          lessonId: lesson.id,
-          vocabularyId: v.id,
-        })),
-        skipDuplicates: true,
-      });
-    }
   }
 
   await seedGrammarFromCsv(admin.id, lessons);
+  
+  await seedN5VocabularyFromCsv({
+    db,
+    courseId: course.id,
+    adminId: admin.id,
+    csvPath: DEFAULT_N5_VOCAB_CSV,
+    skipDelete: true,
+  });
 
   // Seed Kanji from CSV and link to lessons
   await seedKanji(admin.id, lessons);

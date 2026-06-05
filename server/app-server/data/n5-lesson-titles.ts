@@ -1,0 +1,30 @@
+/** Tiêu đề 25 bài N5 — dùng cho prisma/seed và cập nhật title. */
+export const N5_LESSON_TITLES: Record<number, string> = {
+  1: "Bài 1: Giới thiệu bản thân",
+  2: "Bài 2: Đồ dùng và sở hữu",
+  3: "Bài 3: Trường học và địa điểm",
+  4: "Bài 4: Miêu tả tính chất",
+  5: "Bài 5: Thời gian hằng ngày",
+  6: "Bài 6: Ngày tháng và sinh nhật",
+  7: "Bài 7: Chủ đề ăn uống",
+  8: "Bài 8: Cách dùng cho và nhận",
+  9: "Bài 9: Quốc gia và sở thích",
+  10: "Bài 10: Sự tồn tại và quan hệ",
+  11: "Bài 11: Từ đếm thông dụng",
+  12: "Bài 12: Cấu trúc so sánh",
+  13: "Bài 13: Diễn tả mong muốn",
+  14: "Bài 14: Mệnh lệnh và đề nghị",
+  15: "Bài 15: Xin phép thực hiện",
+  16: "Bài 16: Liệt kê hành động",
+  17: "Bài 17: Cấm đoán và lưu ý",
+  18: "Bài 18: Nói về khả năng",
+  19: "Bài 19: Kể về trải nghiệm",
+  20: "Bài 20: Rủ rê và hẹn gặp",
+  21: "Bài 21: Cảm nhận cá nhân",
+  22: "Bài 22: Bổ nghĩa danh từ",
+  23: "Bài 23: Hành động theo hoàn cảnh",
+  24: "Bài 24: Tặng và nhận quà",
+  25: "Bài 25: Dù... vẫn...",
+};
+
+export const N5_COURSE_TITLE = "Japanese N5 — Complete Course";
