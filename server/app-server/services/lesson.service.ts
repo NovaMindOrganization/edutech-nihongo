@@ -231,6 +231,7 @@ export async function getLessonContentForStudent(
               meaning: true,
               memoryTip: true,
               memoryImageUrl: true,
+              memoryImageUpdatedAt: true,
               slug: true,
               readingsOn: true,
               readingsKun: true,

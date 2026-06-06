@@ -10,6 +10,7 @@ import {
   assignKanjiMemoryImagePaths,
   syncKanjiMemoryImagesFromMinio,
 } from "./sync-kanji-memory-images.js";
+import { seedKanjiLessonsN5FromCsv } from "./seed-kanji-lessons-n5.js";
 import { loadCsvStream } from "./seed-vocabulary-n5-from-csv.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -41,6 +42,8 @@ export type SeedKanjiN5Options = {
   syncMemoryImages?: boolean;
   /** Sửa slug dạng kanji-{uuid} từ migration (mặc định: true). */
   backfillSlugs?: boolean;
+  /** Gắn kanji vào lesson N5 từ n5-kanji-by-lesson.csv (mặc định: true). */
+  linkLessons?: boolean;
 };
 
 /** Parse ô CSV dạng `一つ【ひとつ】một cái`. */
@@ -143,6 +146,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
   const assignImagePaths = options.assignImagePaths ?? true;
   const syncMemoryImages = options.syncMemoryImages ?? false;
   const backfillSlugs = options.backfillSlugs ?? true;
+  const linkLessons = options.linkLessons ?? true;
 
   try {
     const rows = await loadCsvStream(csvPath);
@@ -256,6 +260,11 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       });
     }
 
+    let lessonLinks: Awaited<ReturnType<typeof seedKanjiLessonsN5FromCsv>> | undefined;
+    if (linkLessons) {
+      lessonLinks = await seedKanjiLessonsN5FromCsv({ db });
+    }
+
     return {
       created,
       updated,
@@ -265,6 +274,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       imagePaths,
       imageSync,
       slugBackfill,
+      lessonLinks,
     };
   } finally {
     if (ownsClient) {

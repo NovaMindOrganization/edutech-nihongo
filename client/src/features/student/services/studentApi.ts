@@ -154,6 +154,7 @@ export type LessonPayload = {
     meaning: string;
     memoryTip: string | null;
     memoryImageUrl: string | null;
+    memoryImageUpdatedAt: string | null;
     slug: string;
     readingsOn: string[];
     readingsKun: string[];
@@ -203,6 +204,7 @@ export function getCourseKanji(courseId: string) {
       meaning: string;
       memoryTip: string | null;
       memoryImageUrl: string | null;
+      memoryImageUpdatedAt: string | null;
       slug: string;
       readingsOn: string[];
       readingsKun: string[];
@@ -216,6 +218,13 @@ export function getCourseKanji(courseId: string) {
       }>;
     }>;
   }>(`/student/courses/${courseId}/kanji`);
+}
+
+export function getKanjiLearnedStatus(kanjiIds: string[]) {
+  const ids = [...new Set(kanjiIds.filter(Boolean))];
+  if (ids.length === 0) return Promise.resolve({ learnedIds: [] as string[] });
+  const q = new URLSearchParams({ ids: ids.join(",") });
+  return apiFetch<{ learnedIds: string[] }>(`/student/kanji/learned-status?${q}`);
 }
 
 export function getHandbookKanji() {
@@ -233,6 +242,7 @@ export function getHandbookKanji() {
         meaning: string;
         memoryTip: string | null;
         memoryImageUrl: string | null;
+        memoryImageUpdatedAt: string | null;
         slug: string;
         readingsOn: string[];
         readingsKun: string[];

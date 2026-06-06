@@ -22,7 +22,8 @@ export function VocabularyListItem({
 }: VocabularyListItemProps) {
   const mastered = item.progress?.status === 'mastered';
   const starred = item.progress?.isStarred ?? false;
-  const showReading = Boolean(item.reading && item.reading !== item.word);
+  const primaryText = item.reading ?? item.word;
+  const kanjiText = item.reading ? item.word : null;
 
   return (
     <article
@@ -35,11 +36,11 @@ export function VocabularyListItem({
       <div className="flex items-center gap-3 sm:gap-4">
         <div className="min-w-0 flex-1 sm:max-w-[38%]">
           <p className="font-jp truncate text-xl font-bold text-foreground sm:text-2xl">
-            {item.word}
+            {primaryText}
           </p>
-          {showReading && (
+          {kanjiText && (
             <p className="font-jp mt-0.5 truncate text-sm text-muted-foreground sm:text-base">
-              {item.reading}
+              {kanjiText}
             </p>
           )}
         </div>
@@ -69,7 +70,7 @@ export function VocabularyListItem({
             type="button"
             className={iconBtnClass}
             disabled={speaking}
-            aria-label={`Phát âm ${item.word}`}
+            aria-label={`Phát âm ${primaryText}`}
             onClick={onPlayAudio}
           >
             <Volume2 className="size-5 text-muted-foreground" />
