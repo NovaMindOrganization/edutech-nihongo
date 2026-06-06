@@ -1,0 +1,30 @@
+/** Tiêu đề 25 bài N4 — dùng cho prisma/seed và cập nhật title. */
+export const N4_LESSON_TITLES: Record<number, string> = {
+  26: "Bài 26: Nhờ Vả & Xin Lời Khuyên",
+  27: "Bài 27: Thể Khả Năng",
+  28: "Bài 28: Làm Đồng Thời & Liệt Kê Lý Do",
+  29: "Bài 29: Tự Động Từ & Tha Động Từ",
+  30: "Bài 30: Chuẩn Bị Trước & Hoàn Thành",
+  31: "Bài 31: Kế Hoạch & Dự Định",
+  32: "Bài 32: Đưa Ra Lời Khuyên",
+  33: "Bài 33: Mệnh Lệnh & Cấm Đoán",
+  34: "Bài 34: Chỉ Dẫn & Thực Hiện Theo",
+  35: "Bài 35: Điều Kiện Tự Nhiên",
+  36: "Bài 36: ように & Mục Đích",
+  37: "Bài 37: Bị Động & Được Nhờ",
+  38: "Bài 38: Cách Dùng Trợ Từ の",
+  39: "Bài 39: Cảm Xúc & Đáng Tiếc",
+  40: "Bài 40: Nhớ, Quên & Trạng Thái Kết Quả",
+  41: "Bài 41: Kính Ngữ Cơ Bản",
+  42: "Bài 42: Mục Tiêu & Điều Kiện Đạt Được",
+  43: "Bài 43: Suy Đoán Qua Vẻ Ngoài",
+  44: "Bài 44: Quá Mức & Hối Tiếc",
+  45: "Bài 45: Hành Động Không Mong Muốn",
+  46: "Bài 46: Vừa Mới Xảy Ra",
+  47: "Bài 47: Truyền Đạt Thông Tin",
+  48: "Bài 48: Ý Chí & Quyết Tâm",
+  49: "Bài 49: Cách Diễn Đạt Nâng Cao",
+  50: "Bài 50: Đọc Hiểu & Văn Phong Tường Thuật",
+};
+
+export const N4_COURSE_TITLE = "Japanese N4 — Complete Course";

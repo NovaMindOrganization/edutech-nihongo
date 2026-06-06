@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
+import { N4_COURSE_TITLE, N4_LESSON_TITLES } from "../data/n4-lesson-titles.js";
 import { N5_LESSON_TITLES } from "../data/n5-lesson-titles.js";
 import { seedKanjiN5FromCsv } from "../scripts/seed-kanji-n5-from-csv.js";
 import {
@@ -476,7 +477,49 @@ async function main() {
     lessons.push({ id: lesson.id, orderIndex: num });
   }
 
-  await seedGrammarFromCsv(admin.id, lessons);
+  let n4Course = await db.course.findFirst({
+    where: { jlptLevel: "N4", title: N4_COURSE_TITLE },
+  });
+  if (!n4Course) {
+    n4Course = await db.course.create({
+      data: {
+        title: N4_COURSE_TITLE,
+        jlptLevel: "N4",
+        description:
+          "Continue from N5 and build practical intermediate grammar for JLPT N4.",
+        isPublished: true,
+        createdById: admin.id,
+      },
+    });
+  } else {
+    n4Course = await db.course.update({
+      where: { id: n4Course.id },
+      data: { isPublished: true },
+    });
+  }
+
+  await db.lesson.deleteMany({ where: { courseId: n4Course.id } });
+
+  const n4Lessons: { id: string; orderIndex: number }[] = [];
+  const n4LessonNumbers = Object.keys(N4_LESSON_TITLES)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  for (const num of n4LessonNumbers) {
+    const lesson = await db.lesson.create({
+      data: {
+        courseId: n4Course.id,
+        title: N4_LESSON_TITLES[num] ?? `Bài ${num}`,
+        orderIndex: num,
+        passThreshold: 70,
+      },
+    });
+    n4Lessons.push({ id: lesson.id, orderIndex: num });
+  }
+
+  const allLessons = [...lessons, ...n4Lessons];
+
+  await seedGrammarFromCsv(admin.id, allLessons);
   
   await seedN5VocabularyFromCsv({
     db,
@@ -490,7 +533,7 @@ async function main() {
   await seedKanjiN5FromCsv({ db, adminId: admin.id });
 
   console.log(
-    `[seed] Created ${lessons.length} lessons for course ${course.title}`,
+    `[seed] Created ${lessons.length} N5 lessons for ${course.title} and ${n4Lessons.length} N4 lessons for ${n4Course.title}`,
   );
 
   // Mini-test questions from lesson vocabulary (3 MC per lesson)
