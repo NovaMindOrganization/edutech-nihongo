@@ -66,6 +66,16 @@ export const handbookKanji = asyncHandler(async (req: Request, res: Response) =>
   res.json({ success: true, data });
 });
 
+export const kanjiLearnedStatus = asyncHandler(async (req: Request, res: Response) => {
+  const raw = String(req.query.ids ?? "");
+  const itemIds = raw
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  const data = await kanjiStudentService.getKanjiLearnedStatus(req.user!.id, itemIds);
+  res.json({ success: true, data });
+});
+
 export const lessonSpeakingMessage = asyncHandler(async (req: Request, res: Response) => {
   const data = await aiClient.sendLessonSpeakingMessage(req.user!.id, req.params.lessonId, req.body);
   res.json({ success: true, data });

@@ -36,6 +36,7 @@ export async function getCourseKanji(userId: string, courseId: string) {
             meaning: true,
             memoryTip: true,
             memoryImageUrl: true,
+            memoryImageUpdatedAt: true,
             slug: true,
             readingsOn: true,
             readingsKun: true,
@@ -58,6 +59,7 @@ export async function getCourseKanji(userId: string, courseId: string) {
             meaning: true,
             memoryTip: true,
             memoryImageUrl: true,
+            memoryImageUpdatedAt: true,
             slug: true,
             readingsOn: true,
             readingsKun: true,
@@ -78,6 +80,23 @@ export async function getCourseKanji(userId: string, courseId: string) {
   };
 }
 
+export async function getKanjiLearnedStatus(userId: string, itemIds: string[]) {
+  const uniqueIds = [...new Set(itemIds.filter(Boolean))];
+  if (uniqueIds.length === 0) return { learnedIds: [] as string[] };
+
+  const rows = await db.userMasteryItem.findMany({
+    where: {
+      userId,
+      itemType: "kanji",
+      itemId: { in: uniqueIds },
+      isLearned: true,
+    },
+    select: { itemId: true },
+  });
+
+  return { learnedIds: rows.map((row) => row.itemId) };
+}
+
 export async function getHandbookKanji(userId: string) {
   const mastery = await db.userMasteryItem.findMany({
     where: { userId, itemType: "kanji" },
@@ -94,6 +113,7 @@ export async function getHandbookKanji(userId: string) {
       meaning: true,
       memoryTip: true,
       memoryImageUrl: true,
+      memoryImageUpdatedAt: true,
       slug: true,
       readingsOn: true,
       readingsKun: true,

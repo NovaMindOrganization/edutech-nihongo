@@ -24,6 +24,8 @@ function VocabPanel({ items }: { items: StudySetItemRow[] }) {
     <div className="grid gap-3 sm:grid-cols-2">
       {items.map((item) => {
         const c = item.content as StudySetVocabContent;
+        const primaryText = c.reading ?? c.word;
+        const kanjiText = c.reading ? c.word : null;
         return (
           <div
             key={item.id}
@@ -31,8 +33,8 @@ function VocabPanel({ items }: { items: StudySetItemRow[] }) {
           >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-jp text-xl font-semibold">{c.word}</p>
-                {c.reading && <p className="text-sm text-primary/80">{c.reading}</p>}
+                <p className="font-jp text-xl font-semibold">{primaryText}</p>
+                {kanjiText && <p className="text-sm text-primary/80">{kanjiText}</p>}
                 <p className="mt-1 text-sm">{c.meaning}</p>
                 {c.exampleSentence && (
                   <p className="mt-2 font-jp text-xs text-muted-foreground">{c.exampleSentence}</p>

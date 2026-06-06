@@ -1,7 +1,6 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -11,6 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/error-handler.js';
+import { apiRateLimiter } from './middlewares/rate-limit.js';
 import { sePayWebhook } from './controllers/payment.controller.js';
 import { apiRouter } from './routes/index.js';
 
@@ -36,14 +36,7 @@ export function createApp() {
     sePayWebhook,
   );
   app.use(express.json({ limit: '2mb' }));
-  app.use(
-    rateLimit({
-      windowMs: 15 * 60 * 1000,
-      max: 1000,
-      standardHeaders: true,
-      legacyHeaders: false,
-    }),
-  );
+  app.use(apiRateLimiter);
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use('/api', apiRouter);
