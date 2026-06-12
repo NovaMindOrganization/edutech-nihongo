@@ -1,39 +1,60 @@
-import { Flame, BookOpen, RotateCcw } from 'lucide-react';
+import { ArrowRight, BookOpen, Flame, Target, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { PageShell } from '@/components/usable/page-shell';
-import { Badge } from '@/components/ui/badge';
+import { AppIcon } from '@/components/usable/app-icon';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/features/auth';
 import { getDashboard } from '@/features/student/services/studentApi';
 import { paths } from '@/router/paths';
+import { cn } from '@/lib/utils';
 
-function ProgressBars({
-  data,
+const cardBase = 'rounded-xl border border-[#e7e5e4] bg-white shadow-sm';
+const cardInteractive =
+  'rounded-xl border border-[#e7e5e4] bg-white shadow-sm transition-shadow duration-200 hover:shadow-md';
+
+function ProgressBar({
+  percent,
+  className,
 }: {
-  data: Array<{ label: string; title?: string; percent: number; completed: number; total: number }>;
+  percent: number;
+  className?: string;
+}) {
+  const value = Math.min(100, Math.max(0, percent));
+  return (
+    <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#f5f5f4]">
+      <div
+        className={cn('h-full rounded-full bg-primary transition-all duration-500', className)}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: typeof Flame;
+  label: string;
+  value: string;
+  sub?: string;
 }) {
   return (
-    <div className="space-y-3">
-      {data.map((row) => (
-        <div key={row.label + (row.title ?? '')}>
-          <div className="mb-1 flex justify-between text-xs">
-            <span>{row.title ?? row.label}</span>
-            <span className="text-muted-foreground">
-              {row.completed}/{row.total} ({row.percent}%)
-            </span>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${Math.min(100, Math.max(0, row.percent))}%` }}
-            />
-          </div>
+    <div className={cn(cardBase, 'flex min-h-[112px] flex-col justify-between p-4 md:p-5')}>
+      <p className="text-xs font-medium uppercase tracking-wide text-[#78716c]">{label}</p>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-2xl font-bold tabular-nums leading-none text-[#44403c]">{value}</p>
+          {sub ? <p className="mt-1 text-xs text-[#78716c]">{sub}</p> : null}
         </div>
-      ))}
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#fafaf9]">
+          <AppIcon icon={icon} size="md" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -51,153 +72,171 @@ export function DashboardView() {
   }, []);
 
   if (loading) {
-    return <p className="text-muted-foreground">Đang tải tổng quan...</p>;
+    return <p className="text-sm text-[#78716c]">Đang tải tổng quan…</p>;
   }
 
-  const chart = data?.progressChart;
-  const statusMax = Math.max(...(chart?.byStatus.map((s) => s.value) ?? [1]), 1);
+  const stats = data?.stats;
+  const courses = data?.progressChart?.byCourse ?? [];
+  const displayName = user?.displayName?.trim() || user?.email?.split('@')[0] || 'bạn';
+
+  const focusCourse =
+    courses.find((c) => c.courseId === stats?.activeCourseId) ?? courses[0] ?? null;
+
+  const continueHref = stats?.activeLessonId
+    ? paths.learn.lesson(stats.activeLessonId)
+    : focusCourse
+      ? paths.learn.course(focusCourse.courseId)
+      : paths.learn.hub;
+
+  const lessonTitle = stats?.lessonsActive ?? 'Bắt đầu khóa học đầu tiên';
+  const coursePercent = focusCourse?.percent ?? 0;
+  const courseCompleted = focusCourse?.completed ?? stats?.lessonsCompleted ?? 0;
+  const courseTotal = focusCourse?.total ?? stats?.lessonsTotal ?? 0;
+  const remainingLessons = Math.max(0, courseTotal - courseCompleted);
+  const goalLevel = focusCourse?.jlptLevel ?? data?.enrollments?.[0]?.course.jlptLevel ?? 'N5';
 
   return (
-    <PageShell
-      eyebrow="Dashboard"
-      title={`Xin chào${user?.displayName ? `, ${user.displayName}` : ''}`}
-      description="Theo dõi tiến độ học, streak và bài cần ôn."
-    >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/10 to-transparent">
-          <CardContent className="flex items-center gap-4 pt-6">
-            <Flame className="size-10 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">{data?.stats.currentStreak ?? 0}</p>
-              <p className="text-xs text-muted-foreground">
-                Ngày học liên tiếp (hiện tại)
-              </p>
-              <p className="text-xs text-muted-foreground/80">
-                Kỷ lục {data?.stats.longestStreak ?? 0} ngày
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <RotateCcw className="size-10 text-accent" />
-            <div>
-              <p className="text-2xl font-bold">{data?.stats.lessonsCompleted ?? 0}</p>
-              <p className="text-xs text-muted-foreground">
-                Tiết hoàn thành / {data?.stats.lessonsTotal ?? 0} tiết
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <BookOpen className="size-10 text-primary/70" />
-            <div>
-              <p className="text-2xl font-bold">{data?.stats.lessonsInProgress ?? 0}</p>
-              <p className="text-xs text-muted-foreground">Tiết đang mở (active)</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <BookOpen className="size-10 text-muted-foreground" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium" title={data?.stats.lessonsActive ?? undefined}>
-                {data?.stats.lessonsActive ?? 'Chưa có tiết active'}
-              </p>
-              <p className="text-xs text-muted-foreground">Bài học tiếp theo</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-8">
+      <header className="space-y-1">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-[#44403c] md:text-3xl">
+          Xin chào, {displayName}
+        </h1>
+        <p className="text-sm text-[#78716c] md:text-base">
+          Tiếp tục bài học hôm nay để duy trì chuỗi ngày học.
+        </p>
+      </header>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Tiến độ theo khóa</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {(chart?.byCourse.length ?? 0) > 0 ? (
-              <ProgressBars
-                data={(chart?.byCourse ?? []).map((c) => ({
-                  label: c.courseId,
-                  title: `${c.jlptLevel} — ${c.title}`,
-                  percent: c.percent,
-                  completed: c.completed,
-                  total: c.total,
-                }))}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">Chưa ghi danh khóa nào.</p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Trạng thái tiết học</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-end gap-3 h-32">
-            {(chart?.byStatus ?? []).map((s) => (
-              <div key={s.label} className="flex flex-1 flex-col items-center gap-1">
-                <div
-                  className="w-full rounded-t-md bg-primary/80"
-                  style={{ height: `${(s.value / statusMax) * 100}%`, minHeight: s.value ? 8 : 2 }}
-                />
-                <span className="text-xs capitalize text-muted-foreground">{s.label}</span>
-                <span className="text-sm font-medium">{s.value}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+      <section className="overflow-hidden rounded-xl border border-[#e7e5e4] bg-white shadow-sm">
+        <div className="border-l-4 border-l-primary p-6 md:p-8">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0 flex-1 space-y-4">
+              <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                Tiếp tục học
+              </span>
+              <h2 className="font-display text-xl font-bold leading-snug text-[#44403c] md:text-2xl">
+                {lessonTitle}
+              </h2>
 
-      <Card className="mt-6">
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Khóa đang học</CardTitle>
-          <Link to={paths.learn.hub}>
-            <Button variant="outline" size="sm">
-              Tất cả khóa
-            </Button>
+              {focusCourse ? (
+                <div className="max-w-md space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#78716c]">Tiến độ khóa học</span>
+                    <span className="font-semibold tabular-nums text-primary">{coursePercent}%</span>
+                  </div>
+                  <ProgressBar percent={coursePercent} />
+                  <p className="text-sm text-[#78716c]">
+                    {remainingLessons > 0
+                      ? `Còn ${remainingLessons} bài chưa hoàn thành`
+                      : 'Đã hoàn thành tất cả bài trong khóa này'}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-[#78716c]">
+                  Ghi danh khóa N5 để bắt đầu lộ trình học có khóa bài.
+                </p>
+              )}
+            </div>
+
+            <Link to={continueHref} className="shrink-0">
+              <Button size="lg" className="h-11 w-full gap-2 px-6 font-semibold md:w-auto">
+                Tiếp tục học
+                <ArrowRight className="size-4 shrink-0" strokeWidth={2} />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold text-[#44403c]">Thống kê học tập</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard
+            icon={Flame}
+            label="Ngày học liên tiếp"
+            value={`${stats?.currentStreak ?? 0} ngày`}
+            sub={
+              stats?.longestStreak
+                ? `Kỷ lục ${stats.longestStreak} ngày`
+                : undefined
+            }
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Tiến độ"
+            value={`${courseCompleted} / ${courseTotal}`}
+            sub="bài học"
+          />
+          <StatCard
+            icon={Target}
+            label="Mục tiêu"
+            value={`JLPT ${goalLevel}`}
+            sub="Cấp độ đang theo đuổi"
+          />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold text-[#44403c]">Khóa học của tôi</h2>
+          <Link
+            to={paths.learn.hub}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Xem tất cả
           </Link>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {(data?.enrollments ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              <Link to={paths.learn.hub} className="text-primary hover:underline">
-                Chọn khóa N5
-              </Link>
-            </p>
-          ) : (
-            data?.enrollments.map((e) => (
+        </div>
+
+        {courses.length === 0 ? (
+          <div
+            className={cn(
+              cardBase,
+              'flex flex-col items-center justify-center border-dashed px-6 py-12 text-center',
+            )}
+          >
+            <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-[#f5f5f4]">
+              <AppIcon icon={BookOpen} size="lg" />
+            </div>
+            <p className="text-sm text-[#78716c]">Bạn chưa ghi danh khóa học nào.</p>
+            <Link to={paths.learn.hub} className="mt-4">
+              <Button>Khám phá khóa học</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {courses.map((c) => (
               <Link
-                key={e.course.id}
-                to={paths.learn.course(e.course.id)}
-                className="flex items-center justify-between rounded-xl border border-border/60 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                key={c.courseId}
+                to={paths.learn.course(c.courseId)}
+                className={cn(cardInteractive, 'block p-5 md:p-6')}
               >
-                <div>
-                  <Badge className="mb-1">{e.course.jlptLevel}</Badge>
-                  <p className="font-medium">{e.course.title}</p>
+                <div className="flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#f5f5f4]">
+                    <AppIcon icon={BookOpen} size="md" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-flex rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                      {c.jlptLevel}
+                    </span>
+                    <h3 className="mt-2 line-clamp-2 font-semibold leading-snug text-[#44403c]">
+                      {c.title}
+                    </h3>
+                  </div>
+                </div>
+                <div className="mt-5 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#78716c]">Tiến độ</span>
+                    <span className="font-bold tabular-nums text-primary">{c.percent}%</span>
+                  </div>
+                  <ProgressBar percent={c.percent} />
+                  <p className="text-sm text-[#78716c]">
+                    {c.completed} / {c.total} bài học
+                  </p>
                 </div>
               </Link>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link to={paths.student.review}>
-          <Button>Ôn tập</Button>
-        </Link>
-        <Link to={paths.student.practice}>
-          <Button variant="outline">Luyện đề</Button>
-        </Link>
-        <Link to={paths.student.jlptHistory}>
-          <Button variant="outline">Lịch sử thi JLPT</Button>
-        </Link>
-        <Link to={paths.student.mistakes}>
-          <Button variant="outline">Lỗi hay mắc</Button>
-        </Link>
-      </div>
-    </PageShell>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

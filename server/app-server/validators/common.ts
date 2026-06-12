@@ -128,6 +128,16 @@ export const reviewGenerateSchema = z.object({
   type: z.enum(["kanji", "vocabulary", "grammar", "mixed"]).optional(),
 });
 
+export const miniTestSubmitSchema = z.object({
+  sessionId: z.string().uuid(),
+  answers: z.array(
+    z.object({
+      questionId: z.string().uuid(),
+      answer: z.string(),
+    }),
+  ),
+});
+
 export const assignIdsSchema = z.object({
   ids: z.array(z.string().uuid()).min(0),
 });

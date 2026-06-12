@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import { redis } from '../config/redis.js';
 import { db } from '../config/db.js';
 import { env } from '../config/env.js';
+import { revokeAllUserRefreshTokens } from './session.service.js';
 import { AppError } from '../utils/app-error.js';
 
 const TOKEN_TTL_SECONDS = 60 * 60;
@@ -66,5 +67,6 @@ export async function resetPasswordWithToken(token: string, password: string) {
   }
   const hash = await bcrypt.hash(password, 12);
   await db.user.update({ where: { id: userId }, data: { passwordHash: hash } });
+  await revokeAllUserRefreshTokens(userId);
   return { ok: true };
 }

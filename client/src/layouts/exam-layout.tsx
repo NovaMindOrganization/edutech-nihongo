@@ -14,7 +14,7 @@ export function ExamLayout() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex h-dvh w-full flex-col overflow-hidden bg-slate-200 dark:bg-zinc-900">
+    <div className="fixed inset-0 z-50 flex h-dvh w-full flex-col overflow-hidden bg-background">
       <Outlet />
     </div>
   );

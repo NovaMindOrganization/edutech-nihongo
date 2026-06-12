@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
 import { getLesson, type LessonPayload } from '@/features/student/services/studentApi';
 import { paths } from '@/router/paths';
 
@@ -65,11 +64,18 @@ export function LessonShellView() {
                   {tab.label}
                 </NavLink>
               ))}
-              <Link to={paths.learn.miniTest(lessonId)}>
-                <Button size="sm" variant="outline">
-                  MiniTest
-                </Button>
-              </Link>
+              <NavLink
+                to={paths.learn.miniTest(lessonId)}
+                className={({ isActive }) =>
+                  `rounded-full px-3 py-1 text-sm transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`
+                }
+              >
+                MiniTest
+              </NavLink>
             </div>
           </motion.div>
         </header>

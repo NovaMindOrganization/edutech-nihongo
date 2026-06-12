@@ -1,26 +1,30 @@
-import { motion } from 'framer-motion';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
+import { useAuthStore } from '@/features/auth';
+import { isStaffRole } from '@/features/auth/utils/auth-routes';
+import { examChrome } from '@/features/student/components/exam-shell-theme';
+import {
+  McqExamShell,
+  type McqExamQuestion,
+} from '@/features/student/components/mcq-exam-shell';
 import {
   startPlacementTest,
   submitPlacementTest,
-  type ApiQuestion,
 } from '@/features/student/services/studentApi';
-import { useAuthStore } from '@/features/auth';
-import { isStaffRole } from '@/features/auth/utils/auth-routes';
 import { paths } from '@/router/paths';
+import { cn } from '@/lib/utils';
 
 export function PlacementTestView() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const [questions, setQuestions] = useState<ApiQuestion[]>([]);
-  const [index, setIndex] = useState(0);
+  const [questions, setQuestions] = useState<McqExamQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [highlightIndex, setHighlightIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [resultOpen, setResultOpen] = useState(false);
   const [result, setResult] = useState<Awaited<ReturnType<typeof submitPlacementTest>> | null>(
@@ -33,10 +37,16 @@ export function PlacementTestView() {
       .catch((e) => toast.error(e instanceof Error ? e.message : 'Không tải placement test'));
   }, []);
 
-  const current = questions[index];
-  const selected = current ? answers[current.id] : undefined;
+  const answeredCount = questions.filter((q) => Boolean(answers[q.id])).length;
+  const allAnswered = questions.length > 0 && answeredCount === questions.length;
 
-  async function handleFinish() {
+  async function handleSubmit() {
+    if (!allAnswered) {
+      toast.error(`Còn ${questions.length - answeredCount} câu chưa trả lời`);
+      return;
+    }
+    if (!confirm('Xác nhận nộp bài kiểm tra trình độ?')) return;
+
     setLoading(true);
     try {
       const payload = questions.map((q) => ({
@@ -53,92 +63,110 @@ export function PlacementTestView() {
     }
   }
 
-  function pickOption(text: string) {
-    if (!current) return;
-    setAnswers((prev) => ({ ...prev, [current.id]: text }));
-  }
-
-  function next() {
-    if (index < questions.length - 1) setIndex((i) => i + 1);
-    else handleFinish();
-  }
-
   if (questions.length === 0) {
-    return <p className="text-muted-foreground">Đang tải câu hỏi...</p>;
+    return <p className="text-muted-foreground">Đang tải câu hỏi…</p>;
   }
-
-  if (!current) return null;
-
-  const opts = (current.options as Array<{ label: string; text: string }> | null) ?? [];
 
   return (
-    <div className="w-full">
-      <p className="font-display text-sm tracking-widest text-primary uppercase">Placement Test</p>
-      <h1 className="font-display mt-2 text-3xl font-bold">Xác định trình độ JLPT</h1>
-      <p className="mt-2 text-muted-foreground">
-        Câu {index + 1}/{questions.length}
-        {user ? ` — ${user.email}` : ' — không cần đăng nhập'}
-      </p>
-
-      <motion.div key={current.id} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
-        <Card className="mt-8 border-primary/20">
-          <CardHeader>
-            <CardTitle className="font-jp text-xl">{current.questionText}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            {opts.map((opt) => (
-              <Button
-                key={opt.label}
-                type="button"
-                variant={selected === opt.text ? 'default' : 'outline'}
-                className="h-auto justify-start py-3 text-left"
-                onClick={() => pickOption(opt.text)}
-              >
-                {opt.label}: {opt.text}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <div className="mt-6 flex justify-between gap-3">
-        <Button variant="ghost" disabled={index === 0} onClick={() => setIndex((i) => i - 1)}>
-          Quay lại
-        </Button>
-        <Button disabled={!selected || loading} onClick={next}>
-          {index < questions.length - 1 ? 'Tiếp' : loading ? 'Đang chấm...' : 'Hoàn thành'}
-        </Button>
+    <>
+      <div className="mb-4">
+        <Link
+          to={user ? paths.learn.hub : paths.home}
+          className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+        >
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+          {user ? 'Về khóa học' : 'Về trang chủ'}
+        </Link>
       </div>
 
-      <p className="mt-8 text-center text-sm">
-        {user ? (
-          <>
-            {isStaffRole(user.role) && (
-              <Link to={paths.admin.dashboard} className="mr-4 text-primary hover:underline">
-                ← Quản trị
-              </Link>
+      <McqExamShell
+        variant="embedded"
+        idPrefix="placement"
+        eyebrow="Placement Test · Kiểm tra trình độ"
+        title="Xác định trình độ JLPT"
+        questions={questions}
+        answers={answers}
+        onSelectAnswer={(id, value) =>
+          setAnswers((prev) => ({ ...prev, [id]: value }))
+        }
+        highlightIndex={highlightIndex}
+        onHighlightIndex={setHighlightIndex}
+        disabled={loading}
+        headerExtra={
+          <div className={cn('text-right text-xs', examChrome.fgMuted)}>
+            <p>{questions.length} câu hỏi</p>
+            <p className="mt-1 font-mono tabular-nums">
+              {answeredCount}/{questions.length} đã trả lời
+            </p>
+            {user ? (
+              <p className="mt-1 truncate max-w-[12rem]">{user.email}</p>
+            ) : (
+              <p className="mt-1">Không cần đăng nhập</p>
             )}
-            <Link to={paths.learn.hub} className="text-primary hover:underline">
-              Vào lộ trình học (kết quả gắn tài khoản hiện tại)
-            </Link>
-          </>
-        ) : (
-          <>
-            <Link to={paths.login} state={{ returnTo: paths.placementTest }} className="text-primary hover:underline">
-              Đăng nhập để lưu kết quả
-            </Link>
-            {' · '}
-            <Link to={paths.register} className="text-primary hover:underline">
-              Đăng ký
-            </Link>
-          </>
-        )}
-      </p>
+          </div>
+        }
+        footer={
+          <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-6">
+            <div className="flex items-start gap-2 text-sm">
+              {!allAnswered && (
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+              )}
+              <p className={examChrome.fgSoft}>
+                <span className={cn('font-mono font-semibold', examChrome.fg)}>
+                  {answeredCount}
+                </span>
+                <span className={examChrome.fgMuted}> / </span>
+                <span className="font-mono">{questions.length}</span>
+                <span className="ml-1">câu đã chọn</span>
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {user ? (
+                isStaffRole(user.role) ? (
+                  <Link
+                    to={paths.admin.dashboard}
+                    className={cn(
+                      'text-xs font-medium uppercase tracking-wider hover:opacity-90',
+                      examChrome.fgMuted,
+                    )}
+                  >
+                    Quản trị
+                  </Link>
+                ) : null
+              ) : (
+                <Link
+                  to={paths.login}
+                  state={{ returnTo: paths.placementTest }}
+                  className={cn(
+                    'text-xs font-medium uppercase tracking-wider hover:opacity-90',
+                    examChrome.fgMuted,
+                  )}
+                >
+                  Đăng nhập
+                </Link>
+              )}
+              <button
+                type="button"
+                disabled={loading || !allAnswered}
+                onClick={handleSubmit}
+                className={cn(
+                  'min-w-[10rem] px-6 py-2.5 text-sm font-semibold uppercase tracking-wider',
+                  allAnswered ? examChrome.btnOnChrome : examChrome.btnOnChromeDisabled,
+                )}
+              >
+                {loading ? 'Đang chấm…' : 'Nộp bài'}
+              </button>
+            </div>
+          </div>
+        }
+      />
 
       <Dialog open={resultOpen} onOpenChange={setResultOpen} title="Kết quả Placement">
         {result && (
           <div className="space-y-4">
-            <p className="font-display text-2xl font-bold text-primary">{result.recommendedLevel}</p>
+            <p className="font-display text-2xl font-bold text-primary">
+              {result.recommendedLevel}
+            </p>
             {result.roadmap ? (
               <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-sm">
                 <p className="font-medium">{result.roadmap.courseTitle}</p>
@@ -174,6 +202,6 @@ export function PlacementTestView() {
           </div>
         )}
       </Dialog>
-    </div>
+    </>
   );
 }

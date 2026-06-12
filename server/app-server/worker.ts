@@ -1,4 +1,6 @@
-import { env } from './config/env.js';
+import { assertProductionEnv, env } from './config/env.js';
+
+assertProductionEnv();
 import { db } from './config/db.js';
 import * as webrtcService from './services/webrtc.service.js';
 

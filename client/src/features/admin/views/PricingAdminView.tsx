@@ -11,12 +11,12 @@ import { Input } from '@/components/ui/input';
 import {
   createPricingPlan,
   deletePricingPlan,
-  listCourses,
+  listCoursesForPricing,
   listPricingPlans,
   updatePricingPlan,
-  type CourseItem,
+  type CourseRef,
   type PricingPlanItem,
-} from '../services/adminApi';
+} from '../services/systemAdminApi';
 
 const emptyForm = {
   name: '',
@@ -40,7 +40,7 @@ function formatVnd(amount: number) {
 
 export function PricingAdminView() {
   const [plans, setPlans] = useState<PricingPlanItem[]>([]);
-  const [courses, setCourses] = useState<CourseItem[]>([]);
+  const [courses, setCourses] = useState<CourseRef[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PricingPlanItem | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -49,7 +49,7 @@ export function PricingAdminView() {
     try {
       const [planList, courseList] = await Promise.all([
         listPricingPlans(),
-        listCourses(),
+        listCoursesForPricing(),
       ]);
       setPlans(planList);
       setCourses(courseList);

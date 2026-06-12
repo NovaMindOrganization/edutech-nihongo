@@ -9,14 +9,14 @@ import { paths } from '@/router/paths';
 
 import { login } from '../services/authApi';
 import { useAuthStore } from '../store/authStore';
-import { isStaffRole } from '../utils/auth-routes';
+import { defaultAppPath } from '../utils/auth-routes';
 
 export function LoginView() {
   const navigate = useNavigate();
   const location = useLocation();
   const setSession = useAuthStore((s) => s.setSession);
-  const [email, setEmail] = useState('admin@nihongocoach.com');
-  const [password, setPassword] = useState('Admin@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -27,13 +27,7 @@ export function LoginView() {
       setSession(data.user, data.accessToken);
       toast.success('Đăng nhập thành công');
       const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
-      if (returnTo) {
-        navigate(returnTo, { replace: true });
-      } else if (isStaffRole(data.user.role)) {
-        navigate(paths.admin.dashboard);
-      } else {
-        navigate(paths.student.dashboard);
-      }
+      navigate(returnTo ?? defaultAppPath(data.user), { replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Đăng nhập thất bại');
     } finally {
@@ -54,7 +48,15 @@ export function LoginView() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <div>
             <label className="text-sm font-medium">Email</label>
-            <Input className="mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input
+              className="mt-1"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@example.com"
+              autoComplete="email"
+              required
+            />
           </div>
           <div>
             <div className="flex items-center justify-between">
@@ -68,6 +70,8 @@ export function LoginView() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
               required
             />
           </div>

@@ -1,4 +1,5 @@
 import { db } from '../config/db.js';
+import { toClientReviewQuestion } from '../utils/review-question.js';
 import { touchStreak } from './dashboard.service.js';
 
 type ReviewType = 'kanji' | 'vocabulary' | 'grammar' | 'mixed';
@@ -97,10 +98,9 @@ export async function generateReview(
       return {
         mode,
         type,
-        questions: lessonQuestions.map((lq) => ({
-          ...lq.question,
-          lessonId: lq.lessonId,
-        })),
+        questions: lessonQuestions.map((lq) =>
+          toClientReviewQuestion(lq.question, lq.lessonId, mode),
+        ),
         items: [],
       };
     }
@@ -116,14 +116,9 @@ export async function generateReview(
   return {
     mode,
     type,
-    questions: shuffled.map((lq) => ({
-      id: lq.question.id,
-      questionText: lq.question.questionText,
-      questionType: lq.question.questionType,
-      options: lq.question.options,
-      lessonId: lq.lessonId,
-      ...(mode === 'flashcard' ? { flashcard: true } : {}),
-    })),
+    questions: shuffled.map((lq) =>
+      toClientReviewQuestion(lq.question, lq.lessonId, mode),
+    ),
     items: [],
   };
 }
@@ -135,12 +130,18 @@ export async function submitReview(
   for (const r of results.filter((x) => !x.correct)) {
     const q = await db.question.findUnique({ where: { id: r.questionId } });
     if (q) {
+      const lessonLink = await db.lessonQuestion.findFirst({
+        where: { questionId: r.questionId },
+        select: { lessonId: true },
+      });
       await db.userErrorLog.create({
         data: {
           userId,
           source: 'review',
+          questionText: q.questionText,
           originalText: r.answer,
           correction: q.correctAnswer,
+          lessonId: lessonLink?.lessonId,
         },
       });
     }

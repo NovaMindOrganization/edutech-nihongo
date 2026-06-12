@@ -184,6 +184,13 @@ export async function getStudentLessonsWithProgress(
   userId: string,
   courseId: string,
 ) {
+  const enrollment = await db.courseEnrollment.findUnique({
+    where: { userId_courseId: { userId, courseId } },
+  });
+  if (!enrollment) {
+    throw new AppError("Not enrolled in course", 403, "NOT_ENROLLED");
+  }
+
   const course = await db.course.findUnique({
     where: { id: courseId },
     include: {
@@ -277,7 +284,11 @@ export async function getLessonContentForStudent(
   };
 }
 
-export async function enrollAndInitProgress(userId: string, courseId: string) {
+export async function enrollAndInitProgress(
+  userId: string,
+  courseId: string,
+  options?: { skipAccessCheck?: boolean },
+) {
   const course = await db.course.findUnique({
     where: { id: courseId },
     include: {
@@ -289,7 +300,7 @@ export async function enrollAndInitProgress(userId: string, courseId: string) {
   const existing = await db.courseEnrollment.findUnique({
     where: { userId_courseId: { userId, courseId } },
   });
-  if (!existing) {
+  if (!existing && !options?.skipAccessCheck) {
     await assertCourseEnrollmentAllowed(userId, courseId);
   }
 

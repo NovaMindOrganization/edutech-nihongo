@@ -38,3 +38,40 @@ export const env = {
   paymentCodePrefix: process.env.PAYMENT_CODE_PREFIX ?? 'NIHONGO',
   orderExpiryMinutes: Number(process.env.ORDER_EXPIRY_MINUTES ?? 30),
 } as const;
+
+const WEAK_JWT_SECRETS = new Set([
+  'dev-access-secret-change-me',
+  'dev-refresh-secret-change-me',
+  'change-me-access-secret-min-32-chars',
+  'change-me-refresh-secret-min-32-chars',
+]);
+
+function isWeakSecret(value: string) {
+  return value.length < 32 || WEAK_JWT_SECRETS.has(value);
+}
+
+/** Fail fast in production when secrets are missing or still dev placeholders. */
+export function assertProductionEnv() {
+  if ((process.env.NODE_ENV ?? 'development') !== 'production') return;
+
+  const accessSecret = process.env.JWT_ACCESS_SECRET?.trim() ?? '';
+  const refreshSecret = process.env.JWT_REFRESH_SECRET?.trim() ?? '';
+
+  const missing: string[] = [];
+  if (!process.env.DATABASE_URL?.trim()) missing.push('DATABASE_URL');
+  if (!accessSecret) missing.push('JWT_ACCESS_SECRET');
+  if (!refreshSecret) missing.push('JWT_REFRESH_SECRET');
+  if (!process.env.CORS_ORIGIN?.trim()) missing.push('CORS_ORIGIN');
+
+  if (missing.length > 0) {
+    throw new Error(
+      `[env] Production requires: ${missing.join(', ')}. Copy server/app-server/.env.example and set real values.`,
+    );
+  }
+
+  if (isWeakSecret(accessSecret) || isWeakSecret(refreshSecret)) {
+    throw new Error(
+      '[env] JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be unique random strings (≥32 chars) in production.',
+    );
+  }
+}

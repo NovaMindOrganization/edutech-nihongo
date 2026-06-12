@@ -46,6 +46,13 @@ export const studentNavTree: NavEntry[] = [
       { label: 'Đề JLPT', to: paths.student.jlptSim },
     ],
   },
+  {
+    label: 'Theo dõi',
+    children: [
+      { label: 'Lịch sử JLPT', to: paths.student.jlptHistory },
+      { label: 'Ôn lỗi sai', to: paths.student.mistakes },
+    ],
+  },
   { label: 'OCR', to: paths.student.ocr },
   {
     label: 'Cộng đồng',
@@ -71,6 +78,9 @@ function pathMatches(pathname: string, to: string) {
   }
   if (to === paths.placementTest || to === paths.student.jlptSim) {
     return pathname === paths.placementTest || pathname.startsWith('/practice');
+  }
+  if (to === paths.student.jlptHistory || to === paths.student.mistakes) {
+    return pathname.startsWith('/insights');
   }
   if (to === paths.student.studySets || to === paths.student.communityCall) {
     return pathname.startsWith('/community');

@@ -29,6 +29,7 @@ import {
   mockExamImportSchema,
   mockExamListQuery,
   reviewGenerateSchema,
+  miniTestSubmitSchema,
   validateBody,
   validateQuery,
   vocabSchema,
@@ -115,7 +116,11 @@ studentRouter.get('/courses/:courseId/kanji', studentExt.courseKanji);
 studentRouter.get('/kanji/handbook', studentExt.handbookKanji);
 studentRouter.get('/kanji/learned-status', studentExt.kanjiLearnedStatus);
 studentRouter.get('/lessons/:lessonId/minitest', studentExt.getMiniTest);
-studentRouter.post('/lessons/:lessonId/minitest/submit', studentExt.submitMiniTest);
+studentRouter.post(
+  '/lessons/:lessonId/minitest/submit',
+  validateBody(miniTestSubmitSchema),
+  studentExt.submitMiniTest,
+);
 studentRouter.get('/notebook/vocabulary', studentExt.notebookVocabulary);
 studentRouter.post('/mastery', studentExt.upsertMastery);
 studentRouter.post('/review/generate', validateBody(reviewGenerateSchema), studentExt.reviewGenerate);
@@ -189,112 +194,112 @@ vocabularyRouter.patch(
 );
 router.use('/vocabulary', vocabularyRouter);
 
-// Instructor + Admin content CRUD
-const contentRouter = Router();
-contentRouter.use(requireAuth, requireRoles('admin', 'instructor'));
+// Instructor — quản lý nội dung học
+const instructorRouter = Router();
+instructorRouter.use(requireAuth, requireRoles('instructor'));
 
-contentRouter.get('/vocabulary', validateQuery(paginationQuery), admin.listVocabulary);
-contentRouter.get('/vocabulary/:id', admin.getVocabulary);
-contentRouter.post('/vocabulary', validateBody(vocabSchema), admin.createVocabulary);
-contentRouter.put('/vocabulary/:id', validateBody(vocabSchema.partial()), admin.updateVocabulary);
-contentRouter.delete('/vocabulary/:id', admin.deleteVocabulary);
+instructorRouter.get('/vocabulary', validateQuery(paginationQuery), admin.listVocabulary);
+instructorRouter.get('/vocabulary/:id', admin.getVocabulary);
+instructorRouter.post('/vocabulary', validateBody(vocabSchema), admin.createVocabulary);
+instructorRouter.put('/vocabulary/:id', validateBody(vocabSchema.partial()), admin.updateVocabulary);
+instructorRouter.delete('/vocabulary/:id', admin.deleteVocabulary);
 
-contentRouter.get('/grammar', validateQuery(paginationQuery), admin.listGrammar);
-contentRouter.get('/grammar/:id', admin.getGrammar);
-contentRouter.post('/grammar', validateBody(grammarSchema), admin.createGrammar);
-contentRouter.put('/grammar/:id', validateBody(grammarSchema.partial()), admin.updateGrammar);
-contentRouter.delete('/grammar/:id', admin.deleteGrammar);
+instructorRouter.get('/grammar', validateQuery(paginationQuery), admin.listGrammar);
+instructorRouter.get('/grammar/:id', admin.getGrammar);
+instructorRouter.post('/grammar', validateBody(grammarSchema), admin.createGrammar);
+instructorRouter.put('/grammar/:id', validateBody(grammarSchema.partial()), admin.updateGrammar);
+instructorRouter.delete('/grammar/:id', admin.deleteGrammar);
 
-contentRouter.get('/courses', admin.listCourses);
-contentRouter.get('/courses-with-lessons', admin.listCoursesWithLessons);
-contentRouter.get('/courses/:id', admin.getCourse);
-contentRouter.post('/courses', validateBody(courseSchema), admin.createCourse);
-contentRouter.put('/courses/:id', validateBody(courseSchema.partial()), admin.updateCourse);
-contentRouter.delete('/courses/:id', admin.deleteCourse);
+instructorRouter.get('/courses', admin.listCourses);
+instructorRouter.get('/courses-with-lessons', admin.listCoursesWithLessons);
+instructorRouter.get('/courses/:id', admin.getCourse);
+instructorRouter.post('/courses', validateBody(courseSchema), admin.createCourse);
+instructorRouter.put('/courses/:id', validateBody(courseSchema.partial()), admin.updateCourse);
+instructorRouter.delete('/courses/:id', admin.deleteCourse);
 
-contentRouter.get('/pricing-plans', payment.listAdminPricingPlans);
-contentRouter.get('/pricing-plans/:id', payment.getAdminPricingPlan);
-contentRouter.post('/pricing-plans', validateBody(pricingPlanSchema), payment.createAdminPricingPlan);
-contentRouter.put(
-  '/pricing-plans/:id',
-  validateBody(pricingPlanSchema.partial()),
-  payment.updateAdminPricingPlan,
-);
-contentRouter.delete('/pricing-plans/:id', payment.deleteAdminPricingPlan);
-
-contentRouter.get('/lessons/:id', admin.getLesson);
-contentRouter.post('/lessons', validateBody(lessonSchema), admin.createLesson);
-contentRouter.put('/lessons/:id', validateBody(lessonSchema.partial().omit({ courseId: true })), admin.updateLesson);
-contentRouter.delete('/lessons/:id', admin.deleteLesson);
-contentRouter.post('/lessons/:id/assign/vocabulary', validateBody(assignIdsSchema), admin.assignLessonVocabulary);
-contentRouter.post('/lessons/:id/assign/grammar', validateBody(assignIdsSchema), admin.assignLessonGrammar);
-contentRouter.post('/lessons/:id/assign/kanji', validateBody(assignIdsSchema), admin.assignLessonKanji);
-contentRouter.post('/lessons/:id/assign/questions', validateBody(assignIdsSchema), admin.assignLessonQuestions);
-contentRouter.post(
+instructorRouter.get('/lessons/:id', admin.getLesson);
+instructorRouter.post('/lessons', validateBody(lessonSchema), admin.createLesson);
+instructorRouter.put('/lessons/:id', validateBody(lessonSchema.partial().omit({ courseId: true })), admin.updateLesson);
+instructorRouter.delete('/lessons/:id', admin.deleteLesson);
+instructorRouter.post('/lessons/:id/assign/vocabulary', validateBody(assignIdsSchema), admin.assignLessonVocabulary);
+instructorRouter.post('/lessons/:id/assign/grammar', validateBody(assignIdsSchema), admin.assignLessonGrammar);
+instructorRouter.post('/lessons/:id/assign/kanji', validateBody(assignIdsSchema), admin.assignLessonKanji);
+instructorRouter.post('/lessons/:id/assign/questions', validateBody(assignIdsSchema), admin.assignLessonQuestions);
+instructorRouter.post(
   '/lessons/:id/assign/conversations',
   validateBody(assignIdsSchema),
   admin.assignLessonConversations,
 );
 
-contentRouter.get('/conversations', validateQuery(paginationQuery), admin.listConversations);
-contentRouter.get('/conversations/:id', admin.getConversation);
-contentRouter.post('/conversations', validateBody(conversationSchema), admin.createConversation);
-contentRouter.put('/conversations/:id', validateBody(conversationSchema.partial()), admin.updateConversation);
-contentRouter.delete('/conversations/:id', admin.deleteConversation);
+instructorRouter.get('/conversations', validateQuery(paginationQuery), admin.listConversations);
+instructorRouter.get('/conversations/:id', admin.getConversation);
+instructorRouter.post('/conversations', validateBody(conversationSchema), admin.createConversation);
+instructorRouter.put('/conversations/:id', validateBody(conversationSchema.partial()), admin.updateConversation);
+instructorRouter.delete('/conversations/:id', admin.deleteConversation);
 
-contentRouter.get('/mock-exams', validateQuery(mockExamListQuery), admin.listMockExams);
-contentRouter.post('/mock-exams', validateBody(mockExamSchema), admin.createMockExam);
-contentRouter.get('/mock-exams/:id', admin.getMockExam);
-contentRouter.put('/mock-exams/:id', validateBody(mockExamSchema.partial()), admin.updateMockExam);
-contentRouter.delete('/mock-exams/:id', admin.deleteMockExam);
-contentRouter.post(
+instructorRouter.get('/mock-exams', validateQuery(mockExamListQuery), admin.listMockExams);
+instructorRouter.post('/mock-exams', validateBody(mockExamSchema), admin.createMockExam);
+instructorRouter.get('/mock-exams/:id', admin.getMockExam);
+instructorRouter.put('/mock-exams/:id', validateBody(mockExamSchema.partial()), admin.updateMockExam);
+instructorRouter.delete('/mock-exams/:id', admin.deleteMockExam);
+instructorRouter.post(
   '/mock-exams/:id/import',
   validateBody(mockExamImportSchema),
   admin.importMockExamQuestions,
 );
-contentRouter.delete('/mock-exams/:id/questions/:questionId', admin.removeMockExamQuestion);
+instructorRouter.delete('/mock-exams/:id/questions/:questionId', admin.removeMockExamQuestion);
 
-contentRouter.get('/questions', validateQuery(paginationQuery), admin.listQuestions);
-contentRouter.get('/questions/:id', admin.getQuestion);
-contentRouter.post('/questions', validateBody(questionSchema), admin.createQuestion);
-contentRouter.put('/questions/:id', validateBody(questionSchema.partial()), admin.updateQuestion);
-contentRouter.delete('/questions/:id', admin.deleteQuestion);
+instructorRouter.get('/questions', validateQuery(paginationQuery), admin.listQuestions);
+instructorRouter.get('/questions/:id', admin.getQuestion);
+instructorRouter.post('/questions', validateBody(questionSchema), admin.createQuestion);
+instructorRouter.put('/questions/:id', validateBody(questionSchema.partial()), admin.updateQuestion);
+instructorRouter.delete('/questions/:id', admin.deleteQuestion);
 
-contentRouter.get('/kanji', validateQuery(paginationQuery), admin.listKanji);
-contentRouter.get('/kanji/:id', admin.getKanji);
-contentRouter.post('/kanji', validateBody(kanjiSchema), admin.createKanji);
-contentRouter.put('/kanji/:id', validateBody(kanjiSchema.partial()), admin.updateKanji);
-contentRouter.delete('/kanji/:id', admin.deleteKanji);
-contentRouter.post(
+instructorRouter.get('/kanji', validateQuery(paginationQuery), admin.listKanji);
+instructorRouter.get('/kanji/:id', admin.getKanji);
+instructorRouter.post('/kanji', validateBody(kanjiSchema), admin.createKanji);
+instructorRouter.put('/kanji/:id', validateBody(kanjiSchema.partial()), admin.updateKanji);
+instructorRouter.delete('/kanji/:id', admin.deleteKanji);
+instructorRouter.post(
   '/kanji/:id/memory-image',
   upload.single('image'),
   admin.uploadKanjiMemoryImage,
 );
 
-contentRouter.get('/radicals', validateQuery(paginationQuery), admin.listRadicals);
-contentRouter.get('/radicals/:id', admin.getRadical);
-contentRouter.post('/radicals', validateBody(radicalSchema), admin.createRadical);
-contentRouter.put('/radicals/:id', validateBody(radicalSchema.partial()), admin.updateRadical);
-contentRouter.delete('/radicals/:id', admin.deleteRadical);
+instructorRouter.get('/radicals', validateQuery(paginationQuery), admin.listRadicals);
+instructorRouter.get('/radicals/:id', admin.getRadical);
+instructorRouter.post('/radicals', validateBody(radicalSchema), admin.createRadical);
+instructorRouter.put('/radicals/:id', validateBody(radicalSchema.partial()), admin.updateRadical);
+instructorRouter.delete('/radicals/:id', admin.deleteRadical);
 
-contentRouter.get(
+instructorRouter.get(
   '/studysets/pending',
   validateQuery(studySetAdminListQuerySchema),
   admin.listPendingStudySets,
 );
-contentRouter.get('/studysets/:id', admin.getStudySetAdmin);
-contentRouter.post(
+instructorRouter.get('/studysets/:id', admin.getStudySetAdmin);
+instructorRouter.post(
   '/studysets/:id/moderate',
   validateBody(studySetModerateSchema),
   admin.moderateStudySet,
 );
 
-router.use('/instructor', contentRouter);
-router.use('/admin', contentRouter);
+router.use('/instructor', instructorRouter);
 
 // System admin only
 const sysAdminRouter = Router();
 sysAdminRouter.use(requireAuth, requireRoles('admin'));
+
+sysAdminRouter.get('/courses', admin.listCourses);
+sysAdminRouter.get('/pricing-plans', payment.listAdminPricingPlans);
+sysAdminRouter.get('/pricing-plans/:id', payment.getAdminPricingPlan);
+sysAdminRouter.post('/pricing-plans', validateBody(pricingPlanSchema), payment.createAdminPricingPlan);
+sysAdminRouter.put(
+  '/pricing-plans/:id',
+  validateBody(pricingPlanSchema.partial()),
+  payment.updateAdminPricingPlan,
+);
+sysAdminRouter.delete('/pricing-plans/:id', payment.deleteAdminPricingPlan);
 
 sysAdminRouter.get('/users', validateQuery(usersListQuery), systemAdmin.listUsers);
 sysAdminRouter.put('/users/:id/role', systemAdmin.updateUserRole);

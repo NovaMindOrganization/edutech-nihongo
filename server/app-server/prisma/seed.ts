@@ -3,14 +3,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type User, type UserRole } from "@prisma/client";
 
 import { N4_COURSE_TITLE, N4_LESSON_TITLES } from "../data/n4-lesson-titles.js";
 import { N5_LESSON_TITLES } from "../data/n5-lesson-titles.js";
 import { seedKanjiN4FromCsv } from "../scripts/seed-kanji-n4-from-csv.js";
 import { seedKanjiN5FromCsv } from "../scripts/seed-kanji-n5-from-csv.js";
-import { seedMiniTestN4 } from "../scripts/seed-minitest-n4.js";
-import { seedMiniTestN5 } from "../scripts/seed-minitest-n5.js";
 import {
   DEFAULT_N4_VOCAB_CSV,
   seedN4VocabularyFromCsv,
@@ -348,6 +346,75 @@ async function seedStudySets(ownerId: string) {
   console.log("[seed] Created sample public study set.");
 }
 
+const TEST_USER_PASSWORD = "Student@123";
+
+async function upsertSeedUser(
+  email: string,
+  password: string,
+  role: UserRole,
+  displayName: string,
+): Promise<User> {
+  const passwordHash = await bcrypt.hash(password, 12);
+  return db.user.upsert({
+    where: { email },
+    create: { email, passwordHash, role, displayName },
+    update: { passwordHash, role, displayName },
+  });
+}
+
+async function seedDemoAccounts(options: {
+  n5CourseId: string;
+  n4CourseId: string;
+  adminId: string;
+}) {
+  const { enrollAndInitProgress } =
+    await import("../services/lesson.service.js");
+
+  const instructor = await upsertSeedUser(
+    "instructor@nihongocoach.com",
+    "Instructor@123",
+    "instructor",
+    "Giảng viên Demo",
+  );
+
+  const studentN5 = await upsertSeedUser(
+    "student.n5@nihongocoach.com",
+    TEST_USER_PASSWORD,
+    "student",
+    "Học viên N5",
+  );
+
+  const studentN4 = await upsertSeedUser(
+    "student.n4@nihongocoach.com",
+    TEST_USER_PASSWORD,
+    "student",
+    "Học viên N4",
+  );
+
+  // Admin không ghi danh khóa học — chỉ vận hành hệ thống.
+  await db.userLessonProgress.deleteMany({
+    where: { userId: options.adminId },
+  });
+  await db.courseEnrollment.deleteMany({
+    where: { userId: options.adminId },
+  });
+
+  await enrollAndInitProgress(studentN5.id, options.n5CourseId, {
+    skipAccessCheck: true,
+  });
+  await enrollAndInitProgress(studentN4.id, options.n4CourseId, {
+    skipAccessCheck: true,
+  });
+
+  console.log("[seed] Demo accounts:");
+  console.log("  admin     admin@nihongocoach.com / Admin@123");
+  console.log("  instructor instructor@nihongocoach.com / Instructor@123");
+  console.log(`  student N5 student.n5@nihongocoach.com / ${TEST_USER_PASSWORD} (enrolled N5)`);
+  console.log(`  student N4 student.n4@nihongocoach.com / ${TEST_USER_PASSWORD} (enrolled N4)`);
+
+  return { instructor, studentN5, studentN4 };
+}
+
 async function main() {
   console.log("[seed] Starting...");
 
@@ -371,6 +438,11 @@ async function main() {
       key: "maintenance_mode",
       value: "false",
       description: "Toggle maintenance mode",
+    },
+    {
+      key: "n4_free_access",
+      value: "true",
+      description: "Temporary: enroll N4 without paid plan (set false to require payment)",
     },
     {
       key: "llm_provider",
@@ -419,12 +491,14 @@ async function main() {
     },
   ];
 
+  const { setConfig } = await import("../services/config.service.js");
   for (const c of configs) {
     await db.systemConfig.upsert({
       where: { key: c.key },
       create: c,
       update: { value: c.value, description: c.description },
     });
+    await setConfig(c.key, c.value);
   }
 
   const adminHash = await bcrypt.hash("Admin@123", 12);
@@ -559,20 +633,6 @@ async function main() {
     `[seed] Created ${lessons.length} N5 lessons for ${course.title} and ${n4Lessons.length} N4 lessons for ${n4Course.title}`,
   );
 
-  await seedMiniTestN5({
-    db,
-    adminId: admin.id,
-    courseId: course.id,
-    replaceExisting: true,
-  });
-
-  await seedMiniTestN4({
-    db,
-    adminId: admin.id,
-    courseId: n4Course.id,
-    replaceExisting: true,
-  });
-
   await seedConversationsFromCsv(admin.id, allLessons, [
     "conversation-n5.csv",
     "conversation-n4.csv",
@@ -692,12 +752,13 @@ async function main() {
     console.log("[seed] Created sample pricing plan (N4)");
   }
 
-  const { enrollAndInitProgress } =
-    await import("../services/lesson.service.js");
-  await enrollAndInitProgress(admin.id, course.id);
-  console.log("[seed] Admin enrolled in N5 course (test student flows)");
+  const { instructor } = await seedDemoAccounts({
+    adminId: admin.id,
+    n5CourseId: course.id,
+    n4CourseId: n4Course.id,
+  });
 
-  await seedStudySets(admin.id);
+  await seedStudySets(instructor.id);
 
   await db.studySet.updateMany({
     where: { isPublic: true },
@@ -706,7 +767,6 @@ async function main() {
 
   await seedRadicals(admin.id);
 
-  console.log("[seed] Admin: admin@nihongocoach.com / Admin@123");
   console.log("[seed] Done.");
 }
 

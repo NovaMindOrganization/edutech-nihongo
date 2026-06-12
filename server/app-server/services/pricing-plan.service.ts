@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 
 import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
+import { getConfigValue } from './config.service.js';
 import type { PricingPlanInput } from '../validators/pricing-plan.validator.js';
 
 const planInclude = {
@@ -127,7 +128,20 @@ export async function deletePlan(id: string) {
   await db.pricingPlan.delete({ where: { id } });
 }
 
+export async function isN4FreeAccessEnabled(): Promise<boolean> {
+  return (await getConfigValue('n4_free_access', 'false')) === 'true';
+}
+
 export async function courseRequiresPaidAccess(courseId: string): Promise<boolean> {
+  const course = await db.course.findUnique({
+    where: { id: courseId },
+    select: { jlptLevel: true },
+  });
+
+  if (course?.jlptLevel === 'N4' && (await isN4FreeAccessEnabled())) {
+    return false;
+  }
+
   const link = await db.coursePricingPlan.findFirst({
     where: {
       courseId,

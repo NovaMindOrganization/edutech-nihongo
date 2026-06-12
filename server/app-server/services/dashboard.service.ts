@@ -199,6 +199,8 @@ export async function getStudentDashboard(userId: string) {
     stats: {
       lessonsCompleted: completed,
       lessonsActive: active?.lesson.title ?? null,
+      activeLessonId: active?.lesson.id ?? null,
+      activeCourseId: active?.lesson.courseId ?? null,
       lessonsActiveCount: activeCount,
       lessonsLocked: locked,
       lessonsTotal: progress.length,

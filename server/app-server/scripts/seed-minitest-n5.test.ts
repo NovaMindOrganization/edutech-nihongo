@@ -3,14 +3,29 @@ import { describe, expect, it } from "vitest";
 import {
   buildKanjiQuestionDrafts,
   buildVocabQuestionDrafts,
-} from "./seed-minitest-n5.js";
+  vocabMiniTestPrompt,
+} from "../utils/minitest-generator.js";
 
 describe("seed-minitest-n5 drafts", () => {
+  it("prompts vocabulary by reading when kanji is stored in word", () => {
+    const row = {
+      word: "食べる",
+      reading: "たべる",
+    };
+    expect(vocabMiniTestPrompt(row)).toBe("たべる");
+    const drafts = buildVocabQuestionDrafts(
+      [{ id: "1", lessonId: "l1", ...row, meaning: "Ăn" }],
+      [],
+    );
+    expect(drafts[0].questionText).toBe("「たべる」の意味は？");
+  });
+
   it("picks at least half vocabulary", () => {
     const lessonVocab = Array.from({ length: 6 }, (_, i) => ({
       id: `v${i}`,
       lessonId: "l1",
       word: `語${i}`,
+      reading: null,
       meaning: `nghĩa ${i}`,
     }));
     const drafts = buildVocabQuestionDrafts(lessonVocab, lessonVocab);
@@ -23,12 +38,14 @@ describe("seed-minitest-n5 drafts", () => {
         id: "1",
         lessonId: "l1",
         word: "お仕事は何ですか",
+        reading: null,
         meaning: "Công việc của bạn là gì?",
       },
       {
         id: "2",
         lessonId: "l1",
         word: "お名前をもう一度お願いします",
+        reading: null,
         meaning: "Xin cho biết tên một lần nữa",
       },
     ];

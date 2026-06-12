@@ -20,6 +20,7 @@ export type ApiQuestion = {
   options?: Array<{ label: string; text: string }> | null;
   jlptLevel?: string | null;
   section?: string | null;
+  questionCategory?: string | null;
   audioUrl?: string | null;
 };
 
@@ -295,22 +296,30 @@ export function getHandbookKanji(level?: string) {
   }>(`/student/kanji/handbook${q}`);
 }
 
+export type MiniTestStartPayload = {
+  sessionId: string;
+  questions: ApiQuestion[];
+};
+
 export function getMiniTest(lessonId: string) {
-  return apiFetch<ApiQuestion[]>(`/student/lessons/${lessonId}/minitest`);
+  return apiFetch<MiniTestStartPayload>(`/student/lessons/${lessonId}/minitest`);
 }
 
 export function submitMiniTest(
   lessonId: string,
+  sessionId: string,
   answers: Array<{ questionId: string; answer: string }>,
 ) {
   return apiFetch<{
     score: number;
     passed: boolean;
     passThreshold: number;
+    correct: number;
+    total: number;
     unlockedNext: string | null;
   }>(`/student/lessons/${lessonId}/minitest/submit`, {
     method: "POST",
-    body: JSON.stringify({ answers }),
+    body: JSON.stringify({ sessionId, answers }),
   });
 }
 
@@ -322,6 +331,8 @@ export function getDashboard() {
     stats: {
       lessonsCompleted: number;
       lessonsActive: string | null;
+      activeLessonId?: string | null;
+      activeCourseId?: string | null;
       lessonsActiveCount?: number;
       lessonsLocked: number;
       lessonsTotal?: number;
@@ -499,6 +510,7 @@ export function getJlptHistory() {
 export type MistakeRow = {
   id: string;
   source: string;
+  questionText: string | null;
   userAnswer: string | null;
   correctAnswer: string | null;
   createdAt: string;

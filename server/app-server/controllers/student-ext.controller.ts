@@ -27,7 +27,15 @@ export const getMiniTest = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const submitMiniTest = asyncHandler(async (req: Request, res: Response) => {
-  const data = await minitestService.submitMiniTest(req.user!.id, req.params.lessonId, req.body.answers);
+  const body = (req.validatedBody ?? req.body) as {
+    sessionId: string;
+    answers: Array<{ questionId: string; answer: string }>;
+  };
+  const data = await minitestService.submitMiniTest(
+    req.user!.id,
+    req.params.lessonId,
+    body,
+  );
   res.json({ success: true, data });
 });
 
