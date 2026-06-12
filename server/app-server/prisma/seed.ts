@@ -191,9 +191,11 @@ async function seedGrammarFromCsv(
 async function seedConversationsFromCsv(
   adminId: string,
   lessons: { id: string; orderIndex: number }[],
+  filenames: string[],
 ) {
-  const conversationPath = join(__dirname, "../data/conversation-n5.csv");
-  const conversationRows = loadCsv(conversationPath);
+  const conversationRows: Record<string, string>[] = filenames.flatMap((filename) =>
+    loadCsv(join(__dirname, "../data", filename)),
+  );
   const lessonIdByNumber = new Map(
     lessons.map((lesson) => [lesson.orderIndex, lesson.id]),
   );
@@ -256,7 +258,7 @@ async function seedConversationsFromCsv(
   }
 
   console.log(
-    `[seed] Imported ${created} conversations from conversation-n5.csv, linked ${linked} to lessons.`,
+    `[seed] Imported ${created} conversations from ${filenames.join(", ")}, linked ${linked} to lessons.`,
   );
 }
 
@@ -564,7 +566,10 @@ async function main() {
     }
   }
 
-  await seedConversationsFromCsv(admin.id, lessons);
+  await seedConversationsFromCsv(admin.id, allLessons, [
+    "conversation-n5.csv",
+    "conversation-n4.csv",
+  ]);
 
   const lesson1 = lessons.find((l) => l.orderIndex === 1);
   if (lesson1) {
