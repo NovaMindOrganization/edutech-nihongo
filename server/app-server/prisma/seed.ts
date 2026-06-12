@@ -8,6 +8,7 @@ import { PrismaClient } from "@prisma/client";
 import { N4_COURSE_TITLE, N4_LESSON_TITLES } from "../data/n4-lesson-titles.js";
 import { N5_LESSON_TITLES } from "../data/n5-lesson-titles.js";
 import { seedKanjiN5FromCsv } from "../scripts/seed-kanji-n5-from-csv.js";
+import { seedMiniTestN5 } from "../scripts/seed-minitest-n5.js";
 import {
   DEFAULT_N5_VOCAB_CSV,
   lessonNumbersFromVocabRows,
@@ -538,33 +539,12 @@ async function main() {
     `[seed] Created ${lessons.length} N5 lessons for ${course.title} and ${n4Lessons.length} N4 lessons for ${n4Course.title}`,
   );
 
-  // Mini-test questions from lesson vocabulary (3 MC per lesson)
-  for (const lesson of lessons) {
-    const vocab = await db.vocabulary.findMany({
-      where: { lessonId: lesson.id, jlptLevel: "N5" },
-      take: 3,
-    });
-    for (const v of vocab) {
-      const q = await db.question.create({
-        data: {
-          questionText: `「${v.word}」の意味は？`,
-          questionType: "multiple_choice",
-          options: [
-            { label: "A", text: v.meaning },
-            { label: "B", text: " sai" },
-            { label: "C", text: "わからない" },
-          ],
-          correctAnswer: v.meaning,
-          jlptLevel: "N5",
-          questionCategory: "文字語彙",
-          createdById: admin.id,
-        },
-      });
-      await db.lessonQuestion.create({
-        data: { lessonId: lesson.id, questionId: q.id },
-      });
-    }
-  }
+  await seedMiniTestN5({
+    db,
+    adminId: admin.id,
+    courseId: course.id,
+    replaceExisting: true,
+  });
 
   await seedConversationsFromCsv(admin.id, allLessons, [
     "conversation-n5.csv",

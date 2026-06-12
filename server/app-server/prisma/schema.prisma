@@ -298,7 +298,8 @@ model Kanji {
   readingsKun        String[] @map("readings_kun")
   meaning            String
   memoryTip          String?  @map("memory_tip")
-  memoryImageUrl     String?  @map("memory_image_url")
+  memoryImageUrl       String?   @map("memory_image_url")
+  memoryImageUpdatedAt DateTime? @map("memory_image_updated_at")
   strokeCount        Int?     @map("stroke_count")
   radical            String?
   jlptLevel          String   @map("jlpt_level")

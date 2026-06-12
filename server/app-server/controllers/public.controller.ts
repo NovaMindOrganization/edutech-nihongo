@@ -100,10 +100,24 @@ export const getStudySetAsset = asyncHandler(async (req: Request, res: Response)
 });
 
 export const getKanjiMemoryImage = asyncHandler(async (req: Request, res: Response) => {
-  const image = await kanjiMediaService.getKanjiMemoryImage(String(req.params.id));
-  res.setHeader('Content-Type', image.contentType);
+  const ifNoneMatch = req.headers['if-none-match'];
+  const image = await kanjiMediaService.getKanjiMemoryImage(
+    String(req.params.id),
+    typeof ifNoneMatch === 'string' ? ifNoneMatch : undefined,
+  );
+
   res.setHeader('Cache-Control', image.cacheControl);
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  if (image.etag) {
+    res.setHeader('ETag', image.etag);
+  }
+
+  if (image.notModified) {
+    res.status(304).end();
+    return;
+  }
+
+  res.setHeader('Content-Type', image.contentType);
   if (image.contentLength != null) {
     res.setHeader('Content-Length', String(image.contentLength));
   }

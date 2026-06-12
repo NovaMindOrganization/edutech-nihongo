@@ -21,13 +21,14 @@ const cornerBtnClass =
   'absolute z-20 flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl transition-colors hover:bg-muted/90 active:bg-muted';
 
 function FrontFace({ card }: { card: LessonVocabularyItem }) {
-  const showReading = Boolean(card.reading && card.reading !== card.word);
+  const primaryText = card.reading ?? card.word;
+  const kanjiText = card.reading ? card.word : null;
 
   return (
     <div className="flex flex-col items-center justify-center px-10 text-center">
-      <p className="font-jp text-4xl font-bold tracking-wide text-foreground sm:text-5xl">{card.word}</p>
-      {showReading && (
-        <p className="font-jp mt-4 text-xl text-muted-foreground/75 sm:text-2xl">{card.reading}</p>
+      <p className="font-jp text-4xl font-bold tracking-wide text-foreground sm:text-5xl">{primaryText}</p>
+      {kanjiText && (
+        <p className="font-jp mt-4 text-xl text-muted-foreground/75 sm:text-2xl">{kanjiText}</p>
       )}
     </div>
   );
@@ -143,7 +144,7 @@ export function FlashcardCard({
                 type="button"
                 className={cn(cornerBtnClass, 'left-3 top-3 sm:left-4 sm:top-4')}
                 disabled={speaking}
-                aria-label={`Phát âm ${card.word}`}
+                aria-label={`Phát âm ${card.reading ?? card.word}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onPlayAudio();

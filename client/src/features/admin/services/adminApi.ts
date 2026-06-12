@@ -8,6 +8,7 @@ import {
   apiAssetUrl,
   apiFetch,
   getAccessToken,
+  parseFetchJson,
 } from "@/services/httpClient";
 
 export type VocabItem = {
@@ -131,10 +132,12 @@ export type CourseDetail = CourseItem & {
 export type KanjiItem = {
   id: string;
   character: string;
+  slug: string;
   hanVietPronunciation: string | null;
   meaning: string;
   memoryTip: string | null;
   memoryImageUrl: string | null;
+  memoryImageUpdatedAt: string | null;
   jlptLevel: string;
   readingsOn: string[];
   readingsKun: string[];
@@ -315,7 +318,7 @@ export async function uploadKanjiMemoryImage(id: string, file: File) {
       body: formData,
     },
   );
-  const json = (await res.json()) as {
+  const json = await parseFetchJson<{
     success: boolean;
     data?: {
       kanji: KanjiItem;
@@ -325,14 +328,15 @@ export async function uploadKanjiMemoryImage(id: string, file: File) {
       assetUrl: string;
     };
     error?: { code: string; message: string };
-  };
+  }>(res);
 
   if (!res.ok || !json.data) {
-    throw new ApiRequestError(
-      json.error?.message ?? `HTTP ${res.status}`,
-      res.status,
-      json.error?.code,
-    );
+    const message =
+      json.error?.message ??
+      (res.status === 429
+        ? "Quá nhiều request. Vui lòng đợi vài phút rồi thử lại."
+        : `HTTP ${res.status}`);
+    throw new ApiRequestError(message, res.status, json.error?.code);
   }
 
   return json.data;

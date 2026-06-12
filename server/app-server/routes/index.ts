@@ -108,6 +108,7 @@ studentRouter.get('/lessons/:id', student.getLesson);
 studentRouter.post('/lessons/:lessonId/speaking/message', studentExt.lessonSpeakingMessage);
 studentRouter.get('/courses/:courseId/kanji', studentExt.courseKanji);
 studentRouter.get('/kanji/handbook', studentExt.handbookKanji);
+studentRouter.get('/kanji/learned-status', studentExt.kanjiLearnedStatus);
 studentRouter.get('/lessons/:lessonId/minitest', studentExt.getMiniTest);
 studentRouter.post('/lessons/:lessonId/minitest/submit', studentExt.submitMiniTest);
 studentRouter.get('/notebook/vocabulary', studentExt.notebookVocabulary);

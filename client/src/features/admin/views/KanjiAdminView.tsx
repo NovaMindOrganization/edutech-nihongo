@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { kanjiMemoryImageAssetUrl } from "@/services/httpClient";
+import { kanjiMemoryImageSrc } from "@/services/httpClient";
 
 import {
   AdminListFilters,
@@ -180,7 +180,7 @@ export function KanjiAdminView() {
     });
     setMemoryImageFile(null);
     setMemoryImagePreview(
-      item.memoryImageUrl ? kanjiMemoryImageAssetUrl(item.id) : null,
+      item.memoryImageUrl ? kanjiMemoryImageSrc(item) : null,
     );
     setOpen(true);
   }
@@ -218,7 +218,7 @@ export function KanjiAdminView() {
     setMemoryImageFile(file);
     if (!file) {
       setMemoryImagePreview(
-        editing?.memoryImageUrl ? kanjiMemoryImageAssetUrl(editing.id) : null,
+        editing?.memoryImageUrl ? kanjiMemoryImageSrc(editing) : null,
       );
       return;
     }
@@ -233,7 +233,7 @@ export function KanjiAdminView() {
     try {
       const uploaded = await uploadKanjiMemoryImage(editing.id, memoryImageFile);
       setForm((prev) => ({ ...prev, memoryImageUrl: uploaded.storagePath }));
-      setMemoryImagePreview(`${kanjiMemoryImageAssetUrl(editing.id)}?t=${Date.now()}`);
+      setMemoryImagePreview(kanjiMemoryImageSrc(uploaded.kanji));
       setMemoryImageFile(null);
       return uploaded.storagePath;
     } finally {
@@ -358,8 +358,10 @@ export function KanjiAdminView() {
                     </p>
                     {item.memoryImageUrl && (
                       <img
-                        src={kanjiMemoryImageAssetUrl(item.id)}
+                        src={kanjiMemoryImageSrc(item)}
                         alt={`Memoric ${item.character}`}
+                        loading="lazy"
+                        decoding="async"
                         className="mt-2 h-20 w-40 rounded object-contain border border-border/60 bg-muted/20 p-1"
                       />
                     )}

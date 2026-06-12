@@ -1,6 +1,7 @@
 import {
   CreateBucketCommand,
   GetObjectCommand,
+  type GetObjectCommandOutput,
   HeadBucketCommand,
   PutObjectCommand,
   S3ServiceException,
@@ -68,13 +69,16 @@ export async function uploadKanjiMemoryImage(params: {
       Key: objectKey,
       Body: webpBody,
       ContentType: "image/webp",
-      CacheControl: "public, max-age=31536000, immutable",
+      CacheControl: "public, max-age=3600, must-revalidate",
     }),
   );
 
   const updatedKanji = await db.kanji.update({
     where: { id: params.kanjiId },
-    data: { memoryImageUrl: storagePath },
+    data: {
+      memoryImageUrl: storagePath,
+      memoryImageUpdatedAt: new Date(),
+    },
     include: {
       examples: {
         orderBy: { orderIndex: "asc" },
@@ -129,7 +133,34 @@ function resolveKanjiMemoryObjectKeys(kanji: {
   return [...keys];
 }
 
-export async function getKanjiMemoryImage(identifier: string) {
+export type KanjiMemoryImageResult =
+  | { notModified: true; etag?: string; cacheControl: string }
+  | {
+      body: NonNullable<GetObjectCommandOutput["Body"]>;
+      contentType: string;
+      contentLength?: number;
+      cacheControl: string;
+      etag?: string;
+    };
+
+async function getS3ObjectBody(
+  objectKey: string,
+  ifNoneMatch?: string,
+) {
+  const s3 = getS3Client();
+  return s3.send(
+    new GetObjectCommand({
+      Bucket: KANJI_BUCKET,
+      Key: objectKey,
+      ...(ifNoneMatch ? { IfNoneMatch: ifNoneMatch } : {}),
+    }),
+  );
+}
+
+export async function getKanjiMemoryImage(
+  identifier: string,
+  ifNoneMatch?: string,
+): Promise<KanjiMemoryImageResult> {
   const kanji = await db.kanji.findFirst({
     where: { 
       OR: [
@@ -148,16 +179,18 @@ export async function getKanjiMemoryImage(identifier: string) {
     throw new AppError("Kanji memory image not found", 404, "NOT_FOUND");
   }
 
-  const s3 = getS3Client();
+  const cacheControl = "public, max-age=3600, must-revalidate";
   let lastNotFound: unknown;
   for (const objectKey of objectKeys) {
     try {
-      const object = await s3.send(
-        new GetObjectCommand({
-          Bucket: KANJI_BUCKET,
-          Key: objectKey,
-        }),
-      );
+      const object = await getS3ObjectBody(objectKey, ifNoneMatch);
+      if (object.$metadata.httpStatusCode === 304) {
+        return {
+          notModified: true,
+          etag: object.ETag,
+          cacheControl,
+        };
+      }
       if (!object.Body) {
         throw new AppError("Kanji memory image is empty", 404, "NOT_FOUND");
       }
@@ -165,7 +198,8 @@ export async function getKanjiMemoryImage(identifier: string) {
         body: object.Body,
         contentType: object.ContentType ?? "image/webp",
         contentLength: object.ContentLength,
-        cacheControl: "public, max-age=86400",
+        cacheControl,
+        etag: object.ETag,
       };
     } catch (error) {
       if (
