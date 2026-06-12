@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 import * as adminUsers from '../services/admin-users.service.js';
+import * as analyticsService from '../services/analytics.service.js';
 import * as configService from '../services/config.service.js';
 import * as llmConfigService from '../services/llm-config.service.js';
 import * as sepayConfigService from '../services/sepay-config.service.js';
@@ -31,6 +32,16 @@ export const banUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const suspendUser = asyncHandler(async (req: Request, res: Response) => {
   const data = await adminUsers.setUserSuspended(req.params.id, true);
+  res.json({ success: true, data });
+});
+
+export const unbanUser = asyncHandler(async (req: Request, res: Response) => {
+  const data = await adminUsers.setUserBanned(req.params.id, false);
+  res.json({ success: true, data });
+});
+
+export const unsuspendUser = asyncHandler(async (req: Request, res: Response) => {
+  const data = await adminUsers.setUserSuspended(req.params.id, false);
   res.json({ success: true, data });
 });
 
@@ -106,7 +117,7 @@ export const resolveReport = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const analytics = asyncHandler(async (_req: Request, res: Response) => {
-  const data = await adminUsers.getAnalytics();
+  const data = await analyticsService.getAdminAnalytics();
   res.json({ success: true, data });
 });
 

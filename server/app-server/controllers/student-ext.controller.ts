@@ -7,6 +7,7 @@ import * as dictionaryService from '../services/dictionary.service.js';
 import * as jlptService from '../services/jlpt.service.js';
 import * as mockExamService from '../services/mock-exam.service.js';
 import * as minitestService from '../services/minitest.service.js';
+import * as mistakesService from '../services/mistakes.service.js';
 import * as notebookService from '../services/notebook.service.js';
 import * as ocrNotebookService from '../services/ocr-notebook.service.js';
 import * as reviewService from '../services/review.service.js';
@@ -27,6 +28,11 @@ export const getMiniTest = asyncHandler(async (req: Request, res: Response) => {
 
 export const submitMiniTest = asyncHandler(async (req: Request, res: Response) => {
   const data = await minitestService.submitMiniTest(req.user!.id, req.params.lessonId, req.body.answers);
+  res.json({ success: true, data });
+});
+
+export const listMistakes = asyncHandler(async (req: Request, res: Response) => {
+  const data = await mistakesService.listUserMistakes(req.user!.id);
   res.json({ success: true, data });
 });
 
@@ -62,7 +68,8 @@ export const courseKanji = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const handbookKanji = asyncHandler(async (req: Request, res: Response) => {
-  const data = await kanjiStudentService.getHandbookKanji(req.user!.id);
+  const level = req.query.level ? String(req.query.level) : undefined;
+  const data = await kanjiStudentService.getHandbookKanji(req.user!.id, level);
   res.json({ success: true, data });
 });
 

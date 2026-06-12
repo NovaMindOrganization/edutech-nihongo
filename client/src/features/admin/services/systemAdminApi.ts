@@ -143,6 +143,81 @@ export function saveSepayConfig(body: SaveSepayAdminConfig) {
   });
 }
 
+export function banUser(id: string) {
+  return apiFetch(`/admin/users/${id}/ban`, { method: 'POST' });
+}
+
+export function unbanUser(id: string) {
+  return apiFetch(`/admin/users/${id}/unban`, { method: 'POST' });
+}
+
+export function suspendUser(id: string) {
+  return apiFetch(`/admin/users/${id}/suspend`, { method: 'POST' });
+}
+
+export function unsuspendUser(id: string) {
+  return apiFetch(`/admin/users/${id}/unsuspend`, { method: 'POST' });
+}
+
+export function resetUserPassword(id: string, password: string) {
+  return apiFetch(`/admin/users/${id}/reset-password`, {
+    method: 'POST',
+    body: JSON.stringify({ password }),
+  });
+}
+
+export function updateUserRole(id: string, role: string) {
+  return apiFetch(`/admin/users/${id}/role`, {
+    method: 'PUT',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export type AbuseReportRow = {
+  id: string;
+  reason: string;
+  status: string;
+  createdAt: string;
+  reporter: { email: string } | null;
+  reported: { email: string } | null;
+};
+
+export function listReports() {
+  return apiFetch<AbuseReportRow[]>('/admin/reports');
+}
+
+export function resolveReport(id: string, status: 'resolved' | 'dismissed') {
+  return apiFetch(`/admin/reports/${id}/resolve`, {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export type AdminAnalytics = {
+  dau: number;
+  enrollments: number;
+  examSessionsCompleted: number;
+  revenue: { totalPaid: number; orderCount: number; last30Days: number };
+  completionRates: Array<{
+    courseId: string;
+    title: string;
+    jlptLevel: string;
+    completionPercent: number;
+    enrolled?: number;
+  }>;
+  difficultLessons: Array<{
+    lessonId: string;
+    avgMiniTestScore: number | null;
+    stuckCount: number;
+    lesson: {
+      id: string;
+      title: string;
+      orderIndex: number;
+      course: { jlptLevel: string };
+    } | null;
+  }>;
+};
+
 export function getAnalytics() {
-  return apiFetch('/admin/analytics/dau');
+  return apiFetch<AdminAnalytics>('/admin/analytics/dau');
 }

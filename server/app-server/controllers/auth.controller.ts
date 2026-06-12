@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import { env } from '../config/env.js';
 import * as authService from '../services/auth.service.js';
+import * as passwordResetService from '../services/password-reset.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
 const REFRESH_COOKIE = 'refreshToken';
@@ -58,4 +59,19 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 export const me = asyncHandler(async (req: Request, res: Response) => {
   res.json({ success: true, data: { user: req.user } });
+});
+
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = (req.validatedBody ?? req.body) as { email: string };
+  const data = await passwordResetService.requestPasswordReset(email);
+  res.json({ success: true, data });
+});
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { token, password } = (req.validatedBody ?? req.body) as {
+    token: string;
+    password: string;
+  };
+  const data = await passwordResetService.resetPasswordWithToken(token, password);
+  res.json({ success: true, data });
 });

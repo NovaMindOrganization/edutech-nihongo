@@ -7,8 +7,14 @@ import { PrismaClient } from "@prisma/client";
 
 import { N4_COURSE_TITLE, N4_LESSON_TITLES } from "../data/n4-lesson-titles.js";
 import { N5_LESSON_TITLES } from "../data/n5-lesson-titles.js";
+import { seedKanjiN4FromCsv } from "../scripts/seed-kanji-n4-from-csv.js";
 import { seedKanjiN5FromCsv } from "../scripts/seed-kanji-n5-from-csv.js";
+import { seedMiniTestN4 } from "../scripts/seed-minitest-n4.js";
 import { seedMiniTestN5 } from "../scripts/seed-minitest-n5.js";
+import {
+  DEFAULT_N4_VOCAB_CSV,
+  seedN4VocabularyFromCsv,
+} from "../scripts/seed-vocabulary-n4-from-csv.js";
 import {
   DEFAULT_N5_VOCAB_CSV,
   lessonNumbersFromVocabRows,
@@ -532,8 +538,22 @@ async function main() {
     skipDelete: true,
   });
 
+  await db.vocabulary.deleteMany({ where: { jlptLevel: "N4" } });
+  await seedN4VocabularyFromCsv({
+    db,
+    courseId: n4Course.id,
+    adminId: admin.id,
+    csvPath: DEFAULT_N4_VOCAB_CSV,
+    skipDelete: true,
+  });
+
   // Seed Kanji from CSV and link to lessons
   await seedKanjiN5FromCsv({ db, adminId: admin.id });
+  await seedKanjiN4FromCsv({
+    db,
+    adminId: admin.id,
+    courseId: n4Course.id,
+  });
 
   console.log(
     `[seed] Created ${lessons.length} N5 lessons for ${course.title} and ${n4Lessons.length} N4 lessons for ${n4Course.title}`,
@@ -543,6 +563,13 @@ async function main() {
     db,
     adminId: admin.id,
     courseId: course.id,
+    replaceExisting: true,
+  });
+
+  await seedMiniTestN4({
+    db,
+    adminId: admin.id,
+    courseId: n4Course.id,
     replaceExisting: true,
   });
 
@@ -615,10 +642,10 @@ async function main() {
     update: {},
   });
 
-  const existingPlan = await db.pricingPlan.findFirst({
+  const existingN5Plan = await db.pricingPlan.findFirst({
     where: { name: "Gói N5 — Trọn khóa" },
   });
-  if (!existingPlan) {
+  if (!existingN5Plan) {
     await db.pricingPlan.create({
       data: {
         name: "Gói N5 — Trọn khóa",
@@ -632,12 +659,37 @@ async function main() {
           "Truy cập trọn đời",
         ],
         isActive: true,
-        isPopular: true,
+        isPopular: false,
         sortOrder: 0,
         courses: { create: [{ courseId: course.id }] },
       },
     });
     console.log("[seed] Created sample pricing plan (N5)");
+  }
+
+  const existingN4Plan = await db.pricingPlan.findFirst({
+    where: { name: "Gói N4 — Trọn khóa" },
+  });
+  if (!existingN4Plan) {
+    await db.pricingPlan.create({
+      data: {
+        name: "Gói N4 — Trọn khóa",
+        description: "Toàn bộ khóa Japanese N4 — Complete Course",
+        price: 399000,
+        durationDays: null,
+        features: [
+          "25 bài học tuần tự",
+          "MiniTest mở khóa",
+          "AI Speaking & OCR",
+          "Truy cập trọn đời",
+        ],
+        isActive: true,
+        isPopular: false,
+        sortOrder: 1,
+        courses: { create: [{ courseId: n4Course.id }] },
+      },
+    });
+    console.log("[seed] Created sample pricing plan (N4)");
   }
 
   const { enrollAndInitProgress } =

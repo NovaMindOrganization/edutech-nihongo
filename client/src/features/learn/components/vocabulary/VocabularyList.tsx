@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { useSpeech } from '@/hooks/use-speech';
+import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
 
 import { useVocabularyList } from '../../hooks/use-vocabulary-list';
@@ -44,11 +45,15 @@ export function VocabularyList({ lessonId, fallbackTitle }: VocabularyListProps)
           masteredPercent={masteredPercent}
         />
 
-        <Button asChild size="lg" className="hidden w-full text-base font-semibold shadow-md sm:flex">
-          <Link to={paths.learn.lessonVocabularyFlashcards(lessonId)}>
-            🚀 Bắt đầu học Flashcard
-          </Link>
-        </Button>
+        <Link
+          to={paths.learn.lessonVocabularyFlashcards(lessonId)}
+          className={cn(
+            buttonVariants({ size: 'lg' }),
+            'hidden w-full text-base font-semibold shadow-md sm:inline-flex',
+          )}
+        >
+          🚀 Bắt đầu học Flashcard
+        </Link>
       </div>
 
       {total === 0 ? (
@@ -74,11 +79,15 @@ export function VocabularyList({ lessonId, fallbackTitle }: VocabularyListProps)
 
       {total > 0 && (
         <div className="fixed bottom-6 left-1/2 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 sm:hidden">
-          <Button asChild size="lg" className="h-14 w-full text-base font-semibold shadow-lg">
-            <Link to={paths.learn.lessonVocabularyFlashcards(lessonId)}>
-              🚀 Bắt đầu học Flashcard
-            </Link>
-          </Button>
+          <Link
+            to={paths.learn.lessonVocabularyFlashcards(lessonId)}
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'h-14 w-full text-base font-semibold shadow-lg',
+            )}
+          >
+            🚀 Bắt đầu học Flashcard
+          </Link>
         </div>
       )}
     </div>

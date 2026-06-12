@@ -13,8 +13,10 @@ import * as payment from '../controllers/payment.controller.js';
 import { optionalAuth, requireAuth, requireRoles } from '../middlewares/auth.js';
 import {
   assignIdsSchema,
+  authForgotPasswordSchema,
   authLoginSchema,
   authRegisterSchema,
+  authResetPasswordSchema,
   conversationSchema,
   courseSchema,
   grammarSchema,
@@ -78,6 +80,8 @@ router.get('/health/ready', async (_req, res) => {
 // Auth
 router.post('/auth/register', validateBody(authRegisterSchema), auth.register);
 router.post('/auth/login', validateBody(authLoginSchema), auth.login);
+router.post('/auth/forgot-password', validateBody(authForgotPasswordSchema), auth.forgotPassword);
+router.post('/auth/reset-password', validateBody(authResetPasswordSchema), auth.resetPassword);
 router.post('/auth/refresh', auth.refresh);
 router.post('/auth/logout', auth.logout);
 router.get('/auth/me', requireAuth, auth.me);
@@ -100,6 +104,7 @@ const studentRouter = Router();
 studentRouter.use(requireAuth, requireRoles('student', 'instructor', 'admin'));
 
 studentRouter.get('/dashboard', studentExt.dashboard);
+studentRouter.get('/mistakes', studentExt.listMistakes);
 studentRouter.post('/orders', validateBody(createOrderSchema), payment.createOrder);
 studentRouter.get('/orders/:id', payment.getOrder);
 studentRouter.post('/courses/:courseId/enroll', student.enrollCourse);
@@ -294,7 +299,9 @@ sysAdminRouter.use(requireAuth, requireRoles('admin'));
 sysAdminRouter.get('/users', validateQuery(usersListQuery), systemAdmin.listUsers);
 sysAdminRouter.put('/users/:id/role', systemAdmin.updateUserRole);
 sysAdminRouter.post('/users/:id/ban', systemAdmin.banUser);
+sysAdminRouter.post('/users/:id/unban', systemAdmin.unbanUser);
 sysAdminRouter.post('/users/:id/suspend', systemAdmin.suspendUser);
+sysAdminRouter.post('/users/:id/unsuspend', systemAdmin.unsuspendUser);
 sysAdminRouter.post('/users/:id/reset-password', systemAdmin.resetPassword);
 sysAdminRouter.get('/config/llm', systemAdmin.getLlmConfig);
 sysAdminRouter.put('/config/llm', systemAdmin.saveLlmConfig);

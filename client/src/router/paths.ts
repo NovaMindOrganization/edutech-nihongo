@@ -3,13 +3,17 @@ export const paths = {
   home: "/",
   login: "/login",
   register: "/register",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
   placementTest: "/placement-test",
   pricing: "/pricing",
+  dictionary: "/dictionary",
   checkout: (orderId: string) => `/checkout/${orderId}`,
   learn: {
     hub: "/learn",
     course: (id: string) => `/learn/courses/${id}`,
     lesson: (id: string) => `/learn/lessons/${id}`,
+    lessonPreview: (id: string) => `/learn/lessons/${id}/preview`,
     lessonSpeaking: (id: string) => `/learn/lessons/${id}/speaking`,
     lessonVocabulary: (id: string) => `/learn/lessons/${id}/vocabulary`,
     lessonVocabularyFlashcards: (id: string) =>
@@ -40,8 +44,9 @@ export const paths = {
     studySetDetail: (id: string) => `/community/study-sets/${id}`,
     studySetEdit: (id: string) => `/community/study-sets/${id}/edit`,
     communityCall: "/community/call",
-    /** @deprecated use learn.kanjiHandbook */
-    notebook: "/learn/kanji/handbook",
+    notebook: "/notebook",
+    jlptHistory: "/insights/jlpt-history",
+    mistakes: "/insights/mistakes",
   },
   admin: {
     dashboard: "/admin",
@@ -62,5 +67,7 @@ export const paths = {
     users: "/admin/users",
     config: "/admin/config",
     pricing: "/admin/pricing",
+    reports: "/admin/reports",
+    analytics: "/admin/analytics",
   },
 } as const;

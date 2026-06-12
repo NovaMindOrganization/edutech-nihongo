@@ -30,21 +30,26 @@ export type ParsedKanjiExample = {
   meaning: string;
 };
 
-export type SeedKanjiN5Options = {
+export type SeedKanjiFromCsvOptions = {
   csvPath?: string;
+  jlptLevel?: string;
   adminId?: string;
   db?: PrismaClient;
   /** Ghi đè ví dụ từ CSV (mặc định: true). */
   replaceExamples?: boolean;
-  /** Gán memoryImageUrl = N5/{slug}.webp (không cần file MinIO, mặc định: true). */
+  /** Gán memoryImageUrl = {JLPT}/{slug}.webp (mặc định: true). */
   assignImagePaths?: boolean;
   /** Chỉ gắn URL khi file đã có trên MinIO (mặc định: false). */
   syncMemoryImages?: boolean;
   /** Sửa slug dạng kanji-{uuid} từ migration (mặc định: true). */
   backfillSlugs?: boolean;
-  /** Gắn kanji vào lesson N5 từ n5-kanji-by-lesson.csv (mặc định: true). */
+  /** Gắn kanji vào lesson (mặc định: true cho N5). */
   linkLessons?: boolean;
+  /** Hook gắn lesson sau khi seed kanji (N4 truyền seedKanjiLessonsN4FromCsv). */
+  lessonLink?: (db: PrismaClient) => Promise<unknown>;
 };
+
+export type SeedKanjiN5Options = SeedKanjiFromCsvOptions;
 
 /** Parse ô CSV dạng `一つ【ひとつ】một cái`. */
 export function parseKanjiExampleCell(
@@ -117,7 +122,7 @@ function parseMemoryImageFromCsv(
   return normalizeKanjiMemoryStoragePath(trimmed);
 }
 
-function mapKanjiRow(row: Record<string, string>) {
+export function mapKanjiRow(row: Record<string, string>) {
   const character = (row.Kanji || row.kanji || row.Character || "").trim();
   const meaning = (row.Meaning || "").trim();
   const jlptLevel = (row.Level || "N5").trim() || "N5";
@@ -138,20 +143,22 @@ function mapKanjiRow(row: Record<string, string>) {
   };
 }
 
-export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
+export async function seedKanjiFromCsv(options: SeedKanjiFromCsvOptions = {}) {
   const db = options.db ?? new PrismaClient();
   const ownsClient = !options.db;
+  const jlptLevel = (options.jlptLevel ?? "N5").trim() || "N5";
+  const logPrefix = `[seed:kanji-${jlptLevel.toLowerCase()}]`;
   const csvPath = options.csvPath ?? DEFAULT_N5_KANJI_CSV;
   const replaceExamples = options.replaceExamples ?? true;
   const assignImagePaths = options.assignImagePaths ?? true;
   const syncMemoryImages = options.syncMemoryImages ?? false;
   const backfillSlugs = options.backfillSlugs ?? true;
-  const linkLessons = options.linkLessons ?? true;
+  const linkLessons = options.linkLessons ?? jlptLevel === "N5";
 
   try {
     const rows = await loadCsvStream(csvPath);
     console.log(
-      `[seed:kanji-n5] Đọc ${rows.length} dòng từ ${csvPath.split(/[/\\]/).pop()}`,
+      `${logPrefix} Đọc ${rows.length} dòng từ ${csvPath.split(/[/\\]/).pop()}`,
     );
 
     let adminId = options.adminId;
@@ -184,7 +191,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       }
       if (!mapped.meaning) {
         console.warn(
-          `[seed:kanji-n5] Bỏ qua ${mapped.character}: thiếu Meaning.`,
+          `${logPrefix} Bỏ qua ${mapped.character}: thiếu Meaning.`,
         );
         skipped += 1;
         continue;
@@ -210,10 +217,11 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
         });
         created += 1;
       } else {
+        const { jlptLevel: _jlptLevel, ...kanjiUpdateData } = kanjiData;
         await db.kanji.update({
           where: { id: kanji.id },
           data: {
-            ...kanjiData,
+            ...kanjiUpdateData,
             ...(memoryImageUrl ? { memoryImageUrl } : {}),
           },
         });
@@ -236,7 +244,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
     }
 
     console.log(
-      `[seed:kanji-n5] Tạo mới ${created}, cập nhật ${updated}, ví dụ ${examplesWritten}, bỏ qua ${skipped}.`,
+      `${logPrefix} Tạo mới ${created}, cập nhật ${updated}, ví dụ ${examplesWritten}, bỏ qua ${skipped}.`,
     );
 
     let slugBackfill: Awaited<ReturnType<typeof backfillKanjiSlugs>> | undefined;
@@ -248,7 +256,7 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
     if (assignImagePaths) {
       imagePaths = await assignKanjiMemoryImagePaths({
         db,
-        jlptLevel: "N5",
+        jlptLevel,
       });
     }
 
@@ -256,13 +264,17 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
     if (syncMemoryImages) {
       imageSync = await syncKanjiMemoryImagesFromMinio({
         db,
-        jlptLevel: "N5",
+        jlptLevel,
       });
     }
 
     let lessonLinks: Awaited<ReturnType<typeof seedKanjiLessonsN5FromCsv>> | undefined;
     if (linkLessons) {
-      lessonLinks = await seedKanjiLessonsN5FromCsv({ db });
+      if (options.lessonLink) {
+        lessonLinks = (await options.lessonLink(db)) as typeof lessonLinks;
+      } else if (jlptLevel === "N5") {
+        lessonLinks = await seedKanjiLessonsN5FromCsv({ db });
+      }
     }
 
     return {
@@ -281,6 +293,10 @@ export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
       await db.$disconnect();
     }
   }
+}
+
+export async function seedKanjiN5FromCsv(options: SeedKanjiN5Options = {}) {
+  return seedKanjiFromCsv({ jlptLevel: "N5", ...options });
 }
 
 async function main() {

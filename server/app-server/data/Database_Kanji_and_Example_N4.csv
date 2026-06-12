@@ -1,0 +1,201 @@
+Id,Kanji,Han-Viet Pronunciation,Kun,On,Meaning,Word 1,Word 2,Word 3,MemoryTip,StrokeCount,Level,Image,Bộ thủ chính
+,会,Hội,"あ.う","カイ・エ",Gặp gỡ,会う【あう】gặp gỡ,会社【かいしゃ】công ty,会議【かいぎ】cuộc họp,Người (人) tụ tập lại (云) để gặp gỡ,6,N4,,人
+,歩,Bộ,"ある.く・あゆ.む","ホ・ブ・フ",Đi bộ,歩く【あるく】đi bộ,散歩【さんぽ】đi dạo,進歩【しんぽ】tiến bộ,Dừng lại (止) một chút (少) rồi đi bộ tiếp,8,N4,,止
+,急,Cấp,"いそ.ぐ","キュウ",Vội vàng,急ぐ【いそぐ】vội vàng,急行【きゅうこう】tàu tốc hành,急に【きゅうに】đột nhiên,Trái tim (心) gấp gáp như bị dao chém (⺈),9,N4,,心
+,切,Thiết,"き.る・き.れる","セツ・サイ",Cắt,切る【きる】cắt,切符【きっぷ】vé,親切【しんせつ】tốt bụng,Dùng đao (刀) cắt số bảy (七) ra làm đôi,4,N4,,刀
+,習,Tập,"なら.う","シュウ・ジュ",Học tập,習う【ならう】học,練習【れんしゅう】luyện tập,習慣【しゅうかん】thói quen,Lông chim (羽) màu trắng (白) tập bay lên,11,N4,,羽
+,歌,Ca,"うた・うた.う","カ",Bài hát,歌う【うたう】hát,歌手【かしゅ】ca sĩ,国歌【こっか】quốc ca,Anh trai (兄) khiếm khuyết (欠) đang há miệng hát,14,N4,,欠
+,終,Chung,"お.わる・お.える","シュウ",Kết thúc,終わる【おわる】kết thúc,終電【しゅうでん】chuyến tàu cuối,最終【さいしゅう】cuối cùng,Cuộn chỉ (糸) mùa đông (冬) đã kết thúc,11,N4,,糸
+,社,Xã,"やしろ","シャ・ジャ",Công ty,会社【かいしゃ】công ty,社会【しゃかい】xã hội,神社【じんじゃ】đền thờ,Cầu nguyện (示) trên đất (土) lập ra đền thờ/xã hội,7,N4,,示
+,銀,Ngân,"しろがね","ギン",Bạc,銀行【ぎんこう】ngân hàng,銀色【ぎんいろ】màu bạc,水銀【すいぎん】thủy ngân,Tiền kim loại (金) tốt (艮) chính là bạc,14,N4,,金
+,医,Y,"いやす","イ",Y học,医者【いしゃ】bác sĩ,医学【いがく】y học,歯医者【はいしゃ】nha sĩ,Bác sĩ để mũi tên (矢) trong hộp (匚) trị bệnh,7,N4,,匚
+,病,Bệnh,"やむ・やまい","ビョウ",Bệnh tật,病気【びょうき】bệnh tật,病院【びょういん】bệnh viện,急病【きゅうびょう】bệnh cấp tính,Nằm giường bệnh (疒) ở thứ ba (丙),10,N4,,疒
+,院,Viện,"","イン",Viện,病院【びょういん】bệnh viện,大学院【だいがくいん】cao học,入院【にゅういん】nhập viện,Tường (阝) bao quanh nơi hoàn thành (完) là viện,10,N4,,阜
+,国,Quốc,"くに","コク",Đất nước,国【くに】đất nước,外国【がいこく】nước ngoài,国際【こくさい】quốc tế,Biên giới (囗) bao quanh viên ngọc (玉) của vua,8,N4,,囗
+,世,Thế,"よ","セ・セイ",Thế giới,世界【せかい】thế giới,世話【せわ】sự chăm sóc,世紀【せいき】thế kỷ,Mười (十) cộng hai mươi (廿) là ba mươi thế hệ,5,N4,,一
+,界,Giới,"","カイ",Thế giới,世界【せかい】thế giới,限界【げんかい】giới hạn,境界【きょうかい】ranh giới,Ranh giới cánh đồng (田) bị kẹp giữa (介),9,N4,,田
+,教,Giáo,"おし.える・おそ.わる","キョウ",Dạy học,教える【おしえる】giảng dạy,教室【きょうしつ】phòng học,教育【きょういく】giáo dục,Đứa trẻ (子) bị đánh (攵) để học hiếu thảo (孝),11,N4,,攴
+,研,Nghiên,"と.ぐ","ケン",Nghiên cứu,研究【けんきゅう】nghiên cứu,研究者【けんきゅうしゃ】nhà nghiên cứu,研修【けんしゅう】thực tập,Dùng đá (石) mài bằng phẳng (干) để nghiên cứu,9,N4,,石
+,究,Cứu,"きわ.める","キュウ",Nghiên cứu sâu,研究【けんきゅう】nghiên cứu,究明【きゅうめい】làm rõ,探究【たんきゅう】theo đuổi,Chín (九) cái lỗ (穴) bí ẩn cần được nghiên cứu,7,N4,,穴
+,売,Mại,"う.る・う.れる","バイ",Bán,売る【うる】bán,売り場【うりば】quầy hàng,販売【はんばい】buôn bán,Sĩ (士) đội vương miện (冖) bán đôi chân (儿),7,N4,,士
+,働,Động,"はたら.く","ドウ",Làm việc,働く【はたらく】làm việc,労働【ろうどう】lao động,働きすぎ【はたらきすぎ】làm việc quá sức,Người (亻) vận động (動) là đang làm việc,13,N4,,人
+,勉,Miễn,"つと.める","ベン",Cố gắng,勉強【べんきょう】học,勤勉【きんべん】chăm chỉ,勉強家【べんきょうか】người chăm học,Cố gắng (免) dùng sức lực (力) để miễn cưỡng học,10,N4,,力
+,強,Cường,"つよ.い・つよ.まる","キョウ・ゴウ",Mạnh mẽ,強い【つよい】khỏe/mạnh mẽ,勉強【べんきょう】học,強調【きょうちょう】nhấn mạnh,Cung (弓) của côn trùng (虫) rất mạnh mẽ,11,N4,,弓
+,泳,Vịnh,"およ.ぐ","エイ",Bơi lội,泳ぐ【およぐ】bơi,水泳【すいえい】môn bơi lội,競泳【きょうえい】thi bơi,Vĩnh viễn (永) bơi dưới nước (氵),8,N4,,水
+,部,Bộ,"","ブ",Bộ phận,部屋【へや】phòng,全部【ぜんぶ】toàn bộ,部長【ぶちょう】trưởng phòng,Đứng (立) ở miệng (口) vùng đất (阝) là bộ phận,11,N4,,邑
+,屋,Ốc,"や","オク",Nhà/Cửa hàng,部屋【へや】phòng,屋上【おくじょう】tầng thượng,本屋【ほんや】hiệu sách,Thi thể (尸) đến (至) cửa hàng nằm,9,N4,,尸
+,室,Thất,"むろ","シツ",Phòng,教室【きょうしつ】phòng học,会議室【かいぎしつ】phòng họp,和室【わしつ】phòng kiểu Nhật,Đến (至) mái nhà (宀) bước vào phòng,9,N4,,宀
+,場,Trường,"ば","ジョウ",Địa điểm,場所【ばしょ】địa điểm,売り場【うりば】quầy hàng,駐車場【ちゅうしゃじょう】bãi đỗ xe,Đất (土) có mặt trời (日) chiếu sáng là quảng trường,12,N4,,土
+,所,Sở,"ところ","ショ",Nơi chốn,所【ところ】nơi/chỗ,住所【じゅうしょ】địa chỉ,事務所【じむしょ】văn phòng,Cửa (戸) bị rìu (斤) chặt là nơi chốn,8,N4,,戸
+,図,Đồ,"はか.る","ズ・ト",Bản đồ,地図【ちず】bản đồ,図書館【としょかん】thư viện,図【ず】hình minh họa,Trong vòng bao (囗) có điểm đánh dấu chéo,7,N4,,囗
+,館,Quán,"やかた","カン",Tòa nhà,図書館【としょかん】thư viện,映画館【えいがかん】rạp chiếu phim,旅館【りょかん】nhà trọ,Nơi ăn (食) của quan (官) là tòa quán,16,N4,,食
+,家,Gia,"いえ・や","カ・ケ",Nhà,家【いえ】nhà,家族【かぞく】gia đình,家賃【やちん】tiền nhà,Con lợn (豕) nằm dưới mái nhà (宀) là gia đình,10,N4,,宀
+,族,Tộc,"","ゾク",Gia tộc,家族【かぞく】gia đình,民族【みんぞく】dân tộc,水族館【すいぞくかん】thủy cung,Dưới cờ (方) bắn mũi tên (矢) bảo vệ gia tộc,11,N4,,方
+,毎,Mỗi,"ごと","マイ",Mỗi,毎日【まいにち】mỗi ngày,毎朝【まいあさ】mỗi sáng,毎月【まいつき】mỗi tháng,Mẹ (母) mỗi ngày đều đội chiếc nón (𠂉),6,N4,,母
+,朝,Triều,"あさ","チョウ",Buổi sáng,朝【あさ】buổi sáng,朝ごはん【あさごはん】bữa sáng,今朝【けさ】sáng nay,Mặt trăng (月) lặn nhường chỗ cho mặt trời (日) mọc,12,N4,,月
+,昼,Trú,"ひる","チュウ",Buổi trưa,昼【ひる】buổi trưa,昼休み【ひるやすみ】nghỉ trưa,昼食【ちゅうしょく】bữa trưa,Thước (尺) đo mặt trời (日) lúc buổi trưa,9,N4,,日
+,晩,Vãn,"くれ","バン",Buổi tối,晩【ばん】buổi tối,今晩【こんばん】tối nay,毎晩【まいばん】mỗi tối,Mặt trời (日) thoát (免) khỏi bầu trời là buổi tối,12,N4,,日
+,夜,Dạ,"よる・よ","ヤ",Ban đêm,夜【よる】buổi đêm,今夜【こんや】đêm nay,夜行バス【やこうバス】xe buýt chạy đêm,Con người (亻) và mặt trăng (夕) ban đêm,8,N4,,夕
+,午,Ngọ,"","ゴ",Buổi trưa (Ngọ),午前【ごぜん】buổi sáng,午後【ごご】buổi chiều,正午【しょうご】giữa trưa,Con trâu (牛) bị cụt đầu lúc giữa trưa,4,N4,,十
+,後,Hậu,"あと・うし.ろ","ゴ・コウ",Phía sau,後ろ【うしろ】phía sau,午後【ごご】buổi chiều,最後【さいご】cuối cùng,Đi lùi (彳) từng bước (幺) về phía sau (夂),9,N4,,彳
+,前,Tiền,"まえ","ゼン",Phía trước,前【まえ】phía trước,午前【ごぜん】buổi sáng,名前【なまえ】tên,Cầm dao (刂) đi lên trước mặt trăng (月),9,N4,,刀
+,週,Chu,"","シュウ",Tuần,先週【せんしゅう】tuần trước,今週【こんしゅう】tuần này,来週【らいしゅう】tuần sau,Chu vi (周) đường đi (辶) của 1 tuần,11,N4,,辵
+,試,Thí,"こころ.みる・ため.す","シ",Thử nghiệm,試験【しけん】kỳ thi,試合【しあい】trận đấu,試食【ししょく】ăn thử,Dùng lời nói (言) và mô hình (式) để thử nghiệm,13,N4,,言
+,験,Nghiệm,"ため.す","ケン・ゲン",Kiểm tra,試験【しけん】kỳ thi,経験【けいけん】kinh nghiệm,実験【じっけん】thí nghiệm,Ngựa (馬) cùng nhau (合) kiểm tra độ bền,18,N4,,馬
+,映,Ánh,"うつ.る・うつ.す","エイ",Chiếu sáng,映画【えいが】bộ phim,映画館【えいがかん】rạp chiếu phim,反映【はんえい】phản ánh,Mặt trời (日) ở trung tâm (央) chiếu sáng,9,N4,,日
+,画,Họa,"えが.く","ガ・カク",Bức tranh,映画【えいが】bộ phim,計画【けいかく】kế hoạch,画家【がか】họa sĩ,Khuôn khổ (田) để vẽ nên bức tranh,8,N4,,田
+,宿,Túc,"やど・やど.る","シュク",Nhà trọ,宿題【しゅくだい】bài tập về nhà,宿泊【しゅくはく】ngủ lại/trọ lại,宿【やど】chỗ trọ,Người (亻) mang một trăm (百) tới nhà (宀) trọ,11,N4,,宀
+,持,Trì,"も.つ","ジ",Cầm/Mang,持つ【もつ】mang/cầm,持っていく【もっていく】mang đi,気持ち【きもち】cảm xúc,Tay (扌) cầm đồ đem đến nộp cho chùa (寺),9,N4,,手
+,使,Sử,"つか.う","シ",Sử dụng,使う【つかう】sử dụng,使用禁止【しようきんし】cấm sử dụng,使用中【しようちゅう】đang sử dụng,Người (亻) được phái đi làm quan lại (吏),8,N4,,人
+,止,Chỉ,"と.まる・と.める","シ",Dừng lại,止まる【とまる】dừng lại,中止【ちゅうし】hủy bỏ,立入禁止【たちいりきんし】cấm vào,Chân đạp lên đất để dừng lại,4,N4,,止
+,住,Trú,"す.む・す.まう","ジュウ",Sinh sống,住む【すむ】sống,住所【じゅうしょ】địa chỉ,住宅【じゅうたく】nhà ở,Người (亻) làm chủ (主) nơi mình sinh sống,7,N4,,人
+,降,Giáng,"お.りる・ふ.る","コウ",Rơi/Xuống,降る【ふる】rơi (mưa),降りる【おりる】xuống xe,降ろす【おろす】rút tiền/thả xuống,Bước chân (歩) đi xuống vùng đất (阝) thấp,10,N4,,阜
+,私,Tư,"わたし・わたくし","シ",Tôi,私【わたし】tôi,私的【してき】mang tính cá nhân,私物【しぶつ】đồ riêng,Cây lúa (禾) của riêng tư (厶) cá nhân,7,N4,,禾
+,夫,Phu,"おっと","フ・フウ",Chồng,夫【おっと】chồng (mình),大丈夫【だいじょうぶ】không sao đâu,夫婦【ふうふ】vợ chồng,Người đàn ông lớn (大) đội mũ (一) là người chồng,4,N4,,大
+,主,Chủ,"おも・ぬし","シュ・ス",Chủ nhân,ご主人【ごしゅじん】chồng (người khác),主人公【しゅじんこう】nhân vật chính,主に【おもに】chủ yếu,Dấu chấm (丶) của vua (王) định đoạt làm chủ,5,N4,,丶
+,題,Đề,"","ダイ",Vấn đề,問題【もんだい】vấn đề,宿題【しゅくだい】bài tập về nhà,話題【わだい】chủ đề,Phải (是) dùng đầu (頁) để giải quyết vấn đề,18,N4,,頁
+,紙,Chỉ,"かみ","シ",Giấy,紙【かみ】giấy,手紙【てがみ】bức thư,折り紙【おりがみ】nghệ thuật gấp giấy,Giấy làm từ tơ chỉ (糸) của dòng dõi (氏) quý tộc,10,N4,,糸
+,英,Anh,"","エイ",Tiếng Anh,英語【えいご】tiếng Anh,英国【えいこく】nước Anh,英雄【えいゆう】anh hùng,Cây cỏ (艹) mọc vươn lên ở giữa trung tâm (央),8,N4,,艸
+,語,Ngữ,"かた.る・かた.らう","ゴ",Ngôn ngữ,日本語【にほんご】tiếng Nhật,外国語【がいこくご】tiếng nước ngoài,単語【たんご】từ vựng,Lời nói (言) truyền đạt cho năm (五) người (口),14,N4,,言
+,待,Đãi,"ま.つ","タイ",Chờ đợi,待つ【まつ】đợi,招待【しょうたい】chiêu đãi/mời,期待【きたい】kỳ vọng,Người (彳) đứng mỏi mòn chờ đợi ở chùa (寺),9,N4,,彳
+,開,Khai,"あ.く・ひら.く","カイ",Mở,開く【あく】mở ra,開ける【あける】mở (cửa),開発【かいはつ】phát triển,Hai tay nâng thanh chắn ngang cổng (門) để mở,12,N4,,門
+,閉,Bế,"し.める・し.まる","ヘイ",Đóng lại,閉める【しめる】đóng lại,閉まる【しまる】bị đóng,閉じる【とじる】nhắm (mắt)/gập,Người có tài (才) đứng canh đóng cổng (門),11,N4,,門
+,奥,Áo,"おく","オウ・イク",Bên trong,奥さん【おくさん】vợ (người khác),奥様【おくさま】quý phu nhân,奥行き【おくゆき】chiều sâu,Người (大) đi sâu vào bên trong nhà (宀),12,N4,,大
+,妻,Thê,"つま","サイ",Vợ,妻【つま】vợ (mình),夫妻【ふさい】vợ chồng,愛妻【あいさい】vợ yêu,Người phụ nữ (女) cầm chổi dọn dẹp là người vợ,8,N4,,女
+,兄,Huynh,"あに","ケイ・キョウ",Anh trai,兄【あに】anh trai (mình),お兄さん【おにいさん】anh trai (người khác),兄弟【きょうだい】anh em,Anh trai là người (儿) có quyền đứng nói (口),5,N4,,儿
+,弟,Đệ,"おとうと","テイ・ダイ",Em trai,弟【おとうと】em trai (mình),兄弟【きょうだい】anh em,弟子【でし】đệ tử,Cây cung (弓) bị quấn (丿) bởi người em trêu đùa,7,N4,,弓
+,姉,Tỷ,"あね","シ",Chị gái,姉【あね】chị gái (mình),お姉さん【おねえさん】chị gái (người khác),姉妹【しまい】chị em gái,Người phụ nữ (女) đi chợ (市) là người chị,8,N4,,女
+,妹,Muội,"いもうと","マイ",Em gái,妹【いもうと】em gái (mình),姉妹【しまい】chị em gái,妹さん【いもうとさん】em gái (người khác),Người phụ nữ (女) mà chưa lớn (未) là em gái,8,N4,,女
+,春,Xuân,"はる","シュン",Mùa xuân,春【はる】mùa xuân,青春【せいしゅん】thanh xuân,春夏秋冬【しゅんかしゅうとう】xuân hạ thu đông,Ba (三) người (人) ra ngắm mặt trời (日) mùa xuân,9,N4,,日
+,夏,Hạ,"なつ","カ",Mùa hè,夏【なつ】mùa hè,夏休み【なつやすみ】nghỉ hè,真夏【まなつ】giữa hè,Bước đi (夂) dưới nắng hè nên che mắt (目) lại,10,N4,,夂
+,秋,Thu,"あき","シュウ",Mùa thu,秋【あき】mùa thu,秋晴れ【あきばれ】nắng thu,晩秋【ばんしゅう】cuối thu,Cây lúa (禾) bị cháy khô (火) vào mùa thu,9,N4,,禾
+,冬,Đông,"ふゆ","トウ",Mùa đông,冬【ふゆ】mùa đông,真冬【まふゆ】giữa mùa đông,冬休み【ふゆやすみ】nghỉ đông,Bước đi (夂) trên hai tảng băng (冫) mùa đông,5,N4,,冫
+,雪,Tuyết,"ゆき","セツ",Tuyết,雪【ゆき】tuyết,大雪【おおゆき】tuyết rơi dày,初雪【はつゆき】tuyết đầu mùa,Tuyết giống như cơn mưa (雨) rơi trên chiếc chổi (ヨ),11,N4,,雨
+,海,Hải,"うみ","カイ",Biển,海【うみ】biển,海外【かいがい】nước ngoài,海岸【かいがん】bờ biển,Mỗi (毎) giọt nước (氵) gom lại thành vùng biển,9,N4,,水
+,天,Thiên,"あまつ","テン",Bầu trời,天気【てんき】thời tiết,天気予報【てんきよほう】dự báo thời tiết,天才【てんさい】thiên tài,Người lớn (大) chỉ ngón tay (一) lên trời,4,N4,,大
+,空,Không,"そら・から・あ.く","クウ",Bầu trời,空【そら】bầu trời,空港【くうこう】sân bay,空気【くうき】không khí,Cái hang (穴) dưới kỹ thuật (工) đào bị trống không,8,N4,,穴
+,暑,Thử,"あつ.い","ショ",Nóng,暑い【あつい】nóng,猛暑【もうしょ】nóng gay gắt,避暑【ひしょ】tránh nóng,Mặt trời (日) chiếu trên người (者) gây nóng bức,12,N4,,日
+,寒,Hàn,"さむ.い","カン",Lạnh,寒い【さむい】lạnh,寒気【さむけ】cảm giác ớn lạnh,防寒【ぼうかん】chống rét,Mái nhà (宀) rơm (艹) vẫn lạnh run dưới băng (冫),12,N4,,宀
+,早,Tảo,"はや.い","ソウ",Sớm,早い【はやい】sớm,早起き【はやおき】dậy sớm,早退【そうたい】về sớm,Mặt trời (日) mọc chéo trên thập giá (十) rất sớm,6,N4,,日
+,速,Tốc,"はや.い","ソク",Nhanh,速い【はやい】nhanh chóng,早速【さっそく】ngay lập tức,速度【そくど】tốc độ,Đi bộ (辶) mà như bị buộc (束) lại bắt chạy nhanh,10,N4,,辵
+,遅,Trì,"おそ.い・おく.れる","チ",Muộn,遅い【おそい】muộn,遅れる【おくれる】chậm trễ,遅刻【ちこく】đến muộn,Con cừu (羊) bị thương thi thể (尸) nên đi (辶) muộn,12,N4,,辵
+,重,Trọng,"おも.い・かさ.ねる","ジュウ・チョウ",Nặng,重い【おもい】nặng,重さ【おもさ】sức nặng,貴重【きちょう】quý trọng,Chiếc xe (車) chở một nghìn (千) kg thì rất nặng,9,N4,,里
+,軽,Khinh,"かる.い","ケイ",Nhẹ,軽い【かるい】nhẹ,軽食【けいしょく】bữa ăn nhẹ,手軽【てがる】nhẹ nhàng/đơn giản,Xe (車) chỉ chở toàn sợi tơ (又 trên 土) thì rất nhẹ,12,N4,,車
+,近,Cận,"ちか.い","キン・コン",Gần,近い【ちかい】gần,最近【さいきん】gần đây,近所【きんじょ】hàng xóm,Cầm cái rìu (斤) đi bộ (辶) đến những nơi gần,7,N4,,辵
+,遠,Viễn,"とお.い","エン・オン",Xa,遠い【とおい】xa,遠足【えんそく】dã ngoại,永遠【えいえん】vĩnh viễn,Đường (辶) quá xa nên phải đi quấn vòng (袁),13,N4,,辵
+,質,Chất,"","シツ",Chất lượng,質問【しつもん】câu hỏi,品質【ひんしつ】chất lượng,性質【せいしつ】tính chất,Dùng 2 cây rìu (斤) chặt vỏ sò (貝) kiểm tra chất,15,N4,,貝
+,問,Vấn,"と.う","モン",Hỏi,問題【もんだい】vấn đề,質問【しつもん】hỏi,学問【がくもん】học vấn,Mở miệng (口) đứng trước cửa (門) để cất tiếng hỏi,11,N4,,門
+,答,Đáp,"こた.える・こた.え","トウ",Trả lời,答える【こたえる】trả lời,答え【こたえ】câu trả lời,回答【かいとう】hồi đáp,Lấy các thanh trúc (竹) hợp (合) lại làm bảng trả lời,12,N4,,竹
+,作,Tác,"つく.る","サク・サ",Làm,作る【つくる】làm/chế biến,作文【さくぶん】bài văn,操作【そうさ】thao tác,Người (亻) đột nhiên (乍) làm việc tạo ra tác phẩm,7,N4,,人
+,思,Tư,"おも.う","シ",Suy nghĩ,思う【おもう】nghĩ,思い出す【おもいだす】nhớ lại,不思議【ふしぎ】kỳ lạ,Trái tim (心) ẩn dưới ruộng (田) để suy tư,9,N4,,心
+,始,Thủy,"はじ.める・はじ.まる","シ",Bắt đầu,始める【はじめる】bắt đầu,始まる【はじまる】bắt đầu,開始【かいし】sự bắt đầu,Người phụ nữ (女) bước lên bục (台) để bắt đầu,8,N4,,女
+,着,Trứ,"き.る・つ.く","チャク",Mặc,着る【きる】mặc,上着【うわぎ】áo khoác,到着【とうちゃく】đến nơi,Con dê (羊) che mắt (目) đang mặc đồ,12,N4,,羊
+,集,Tập,"あつ.める・あつ.まる","シュウ",Tập hợp,集める【あつめる】thu thập,集まる【あつまる】tập trung,集中【しゅうちゅう】tập trung,Những con chim (隹) đậu trên cây (木) để tập hợp,12,N4,,隹
+,練,Luyện,"ね.る","レン",Luyện tập,練習【れんしゅう】luyện tập,訓練【くんれん】huấn luyện,洗練【せんれん】trau chuốt,Cuộn chỉ (糸) ở phía đông (東) cần được luyện tập,14,N4,,糸
+,晴,Tình,"は.れる・は.れ","セイ",Nắng,晴れる【はれる】nắng/quang đãng,晴天【せいてん】trời trong xanh,素晴らしい【すばらしい】tuyệt vời,Mặt trời (日) chiếu làm bầu trời xanh (青) và trong,12,N4,,日
+,星,Tinh,"ほし","セイ",Ngôi sao,星【ほし】sao,星占い【ほしうらない】bói tử vi,流れ星【ながれぼし】sao băng,Mặt trời (日) sinh (生) ra những vì sao lấp lánh,9,N4,,日
+,風,Phong,"かぜ・かざ","フウ・フ",Gió,風【かぜ】gió,台風【たいふう】cơn bão,洋風【ようふ】kiểu Tây,Côn trùng (虫) ẩn nấp trong cánh buồm (凡) chắn gió,9,N4,,風
+,然,Nhiên,"","ゼン・ネン",Tự nhiên,全然【ぜんぜん】hoàn toàn,自然【しぜん】tự nhiên,天然【てんねん】thiên nhiên,Chó (犬) ăn thịt (月) nướng lửa (灬) là lẽ tự nhiên,12,N4,,火
+,油,Du,"あぶら","ユ・ユウ",Dầu,油【あぶら】dầu,石油【せきゆ】dầu mỏ,しょう油【しょうゆ】nước tương,Nước (氵) chiết xuất từ lý do (由) làm ra dầu,8,N4,,水
+,原,Nguyên,"はら","ゲン",Nguyên bản,原料【げんりょう】nguyên liệu,原因【げんいん】nguyên nhân,野原【のはら】cánh đồng,Dòng suối (泉) chảy dưới vách đá (厂) nguyên bản,10,N4,,厂
+,皿,Mãnh,"さら","ベツ",Cái đĩa,お皿【おさら】cái đĩa,灰皿【はいざら】gạt tàn,紙皿【かみざら】đĩa giấy,Hình ảnh tượng hình của một chiếc đĩa có viền cong,5,N4,,皿
+,建,Kiến,"た.てる・た.つ","ケン・コン",Xây dựng,建てる【たてる】xây dựng,建物【たてもの】tòa nhà,建設【けんせつ】kiến thiết,Cầm cây bút (聿) vẽ đường (廴) xây dựng,9,N4,,廴
+,物,Vật,"もの","ブツ・モツ",Vật/Đồ vật,買い物【かいもの】mua sắm,動物【どうぶつ】động vật,荷物【にもつ】hành lý,Con bò (牛) đang mang theo đồ vật (勿),8,N4,,牛
+,発,Phát,"た.つ","ハツ・ホツ",Khởi hành/Phát ra,出発【しゅっぱつ】xuất phát,発見【はっけん】phát hiện,発明【はつめい】phát minh,Hai chân đạp lên cung (弓) lao đi phát ra,9,N4,,癶
+,業,Nghiệp,"わざ","ギョウ・ゴウ",Nghiệp vụ,授業【じゅぎょう】tiết học,卒業【そつぎょう】tốt nghiệp,工業【こうぎょう】công nghiệp,Người nông dân đội mũ làm nông nghiệp,13,N4,,木
+,意,Ý,"","イ",Ý nghĩa/Ý nghĩ,意味【いみ】ý nghĩa,意見【いけん】ý kiến,注意【ちゅうい】chú ý,Âm thanh (音) phát ra từ trái tim (心) là ý nghĩ,13,N4,,心
+,味,Vị,"あじ・あじ.わう","ミ",Mùi vị,味【あじ】vị,意味【いみ】ý nghĩa,趣味【しゅみ】sở thích,Cái miệng (口) chưa (未) nếm thử mùi vị,8,N4,,口
+,運,Vận,"はこ.ぶ","ウン",Vận chuyển/Vận mệnh,運ぶ【はこぶ】vận chuyển,運動【うんどう】vận động,運転【うんてん】lái xe,Quân đội (軍) đi (辶) vận chuyển hàng,12,N4,,辵
+,転,Chuyển,"ころ.ぶ・ころ.がる","テン",Lăn/Chuyển,転ぶ【ころぶ】ngã,運転【うんてん】lái xe,自転車【じてんしゃ】xe đạp,Bánh xe (車) lăn vòng (云) chuyển động,11,N4,,車
+,品,Phẩm,"しな","ヒン",Sản phẩm,品物【しなもの】hàng hóa,作品【さくひん】tác phẩm,部品【ぶひん】linh kiện,Ba cái miệng (口) cùng đánh giá sản phẩm,9,N4,,口
+,洗,Tẩy,"あら.う","セン",Rửa,洗う【あらう】rửa,洗濯【せんたく】giặt giũ,お手洗い【おてあらい】nhà vệ sinh,Dùng nước (氵) rửa sạch bùn đất trước (先),9,N4,,水
+,悪,Ác,"わる.い","アク・オ",Xấu/Ác,悪い【わるい】xấu,悪口【わるぐち】nói xấu,最悪【さいあく】tồi tệ nhất,Trái tim (心) bị nén xuống (亜) trở nên xấu xa,11,N4,,心
+,理,Lý,"ことわり","リ",Lý lẽ,理由【りゆう】lý do,料理【りょうり】nấu ăn,無理【むり】vô lý,Vua (王) dùng ngôi làng (里) để quản lý,11,N4,,玉
+,料,Liệu,"","リョウ",Tài liệu/Phí,料理【りょうり】nấu ăn,料金【りょうきん】phí,給料【きゅうりょう】tiền lương,Cân (斗) gạo (米) để tính phí tài liệu,10,N4,,斗
+,起,Khởi,"お.きる・お.こす","キ",Thức dậy,起きる【おきる】thức dậy,起こす【おこす】đánh thức,早起き【はやおき】dậy sớm,Kỷ (己) đi bộ (走) từ lúc thức dậy,10,N4,,走
+,寝,Tẩm,"ね.る・ね.かす","シン",Ngủ,寝る【ねる】ngủ,昼寝【ひるね】ngủ trưa,寝室【しんしつ】phòng ngủ,Dưới mái nhà (宀) có chiếc giường để ngủ,13,N4,,宀
+,乗,Thừa,"の.る・の.せる","ジョウ",Lên xe,乗る【のる】lên xe,乗り物【のりもの】phương tiện,乗客【じょうきゃく】hành khách,Người chắp tay đứng lên cây (木) để lên xe,9,N4,,丿
+,便,Tiện,"たよ.り","ベン・ビン",Tiện lợi/Thư tín,便利【べんり】tiện lợi,郵便局【ゆうびんきょく】bưu điện,便所【べんじょ】nhà vệ sinh,Người (亻) sửa đổi (更) cho tiện lợi hơn,9,N4,,人
+,利,Lợi,"き.く","リ",Lợi ích,便利【べんり】tiện lợi,利用【りよう】sử dụng,利益【りえき】lợi nhuận,Dùng dao (刂) gặt lúa (禾) thu lợi ích,7,N4,,刀
+,不,Bất,"","フ・ブ",Không,不便【ふべん】bất tiện,不安【ふあん】bất an,不足【ふそく】thiếu thốn,Chữ Nhất (一) bị gạch chéo đi xuống là Không,4,N4,,一
+,有,Hữu,"あ.る","ユウ・ウ",Có,有名【ゆうめい】nổi tiếng,有料【ゆうりょう】có phí,所有【しょゆう】s sở hữu,Tay cầm mặt trăng (月) là có,6,N4,,月
+,特,Đặc,"","トク",Đặc biệt,特別【とくべつ】đặc biệt,特急【とっきゅう】tàu tốc hành,特徴【とくちょう】đặc trưng,Con bò (牛) ở chùa (寺) rất đặc biệt,10,N4,,牛
+,別,Biệt,"わか.れる","ベツ",Phân biệt,別れる【わかれる】chia tay,特別【とくべつ】đặc biệt,別に【べつに】không có gì đặc biệt,Dùng dao (刂) hớt cái miệng (口) để phân biệt,7,N4,,刀
+,借,Tá,"か.りる","シャク",Mượn,借りる【かりる】mượn,借金【しゃっきん】tiền nợ,借家【しゃくや】nhà thuê,Người (亻) mượn tiền ngày xưa (昔),10,N4,,人
+,貸,Thải,"か.す","タイ",Cho mượn,貸す【かす】cho mượn,貸し出し【かしだし】cho mượn sách,賃貸【ちんたい】cho thuê,Thay thế (代) tiền (貝) để cho mượn,12,N4,,貝
+,返,Phản,"かえ.す・かえ.る","ヘン",Trả lại,返す【かえす】trả lại,返事【へんじ】hồi âm,返信【へんしん】trả lời tin nhắn,Đi bộ (辶) ngược (反) lại để trả đồ,7,N4,,辵
+,代,Đại,"か.わる・か.える","ダイ・タイ",Thay thế/Thời đại,代わる【かわる】thay thế,時代【じだい】thời đại,交代【こうたい】giao ca,Người (亻) cầm cái cọc thay thế người khác,5,N4,,人
+,送,Tống,"おく.る","ソウ",Gửi đi,送る【おくる】gửi,見送る【みおくる】tiễn,送信【そうしん】gửi tin nhắn,Đốt lửa tống tiễn (辶) người đi,9,N4,,辵
+,走,Tẩu,"はし.る","ソウ",Chạy,走る【はしる】chạy,ごちそう【ごちそう】bữa ăn ngon,競争【きょうそう】cạnh tranh,Chạy trên đất (土) bằng đôi chân,7,N4,,走
+,考,Khảo,"かんが.える","コウ",Suy nghĩ,考える【かんがえる】suy nghĩ,思考【しこう】tư duy,参考【さんこう】tham khảo,Ông lão (老) đang dùng suy nghĩ,6,N4,,老
+,決,Quyết,"き.める・き.まる","ケツ",Quyết định,決める【きめる】quyết định,決して【けっして】tuyệt đối không,決定【けってい】quyết định,Nước (氵) chảy cắt ngang là quyết định,7,N4,,水
+,知,Tri,"し.る","チ",Biết,知る【しる】biết,知らせる【しらせる】thông báo,知識【ちしき】kiến thức,Miệng (口) nói nhanh như mũi tên (矢) vì biết,8,N4,,矢
+,存,Tồn,"","ソン・ゾン",Tồn tại,ご存知【ごぞんじ】biết (kính ngữ),存在【そんざい】tồn tại,保存【ほぞん】bảo quản,Trẻ em (子) dưới sự bảo vệ để tồn tại,6,N4,,子
+,申,Thân,"もう.す","シン",Xưng tên/Nói,申す【もうす】nói (khiêm nhường),申し上げる【もうしあげる】nói (kính ngữ),申請【しんせい】xin/đăng ký,Thanh gỗ xuyên thẳng qua ruộng (田) để xưng tên,5,N4,,田
+,御,Ngự,"お・おん","ギョ・ゴ",Ngự (Kính ngữ),ご飯【ごはん】cơm,御手洗い【おてあらい】nhà vệ sinh,御中【おんちゅう】kính gửi,Người (彳) điều khiển ngựa để ngự giá,12,N4,,彳
+,服,Phục,"","フク",Quần áo,服【ふく】quần áo,洋服【ようふく】Âu phục,制服【せいふく】đồng phục,Cơ thể (月) người mặc quần áo,8,N4,,月
+,痛,Thống,"いた.い・いた.む","ツウ",Đau,痛い【いたい】đau,痛み【いたみ】nỗi đau,頭痛【ずつう】đau đầu,Bệnh tật (疒) đi qua cơ thể gây đau,12,N4,,疒
+,信,Tín,"","シン",Tin tưởng,信じる【しんじる】tin tưởng,信号【しんごう】đèn giao thông,自信【じしん】tự tin,Người (亻) nói lời (言) đáng tin cậy,9,N4,,人
+,記,Ký,"しる.す","キ",Ghi nhớ,日記【にっき】nhật ký,記事【きじ】bài báo,記入【きにゅう】điền vào,Dùng lời nói (言) ghi lại vào bản kỷ (己),10,N4,,言
+,短,Đoản,"みじか.い","タン",Ngắn,短い【みじかい】ngắn,短所【たんしょ】sở đoản,短期【たんき】ngắn hạn,Mũi tên (矢) bắn trúng hạt đậu ở cự ly ngắn,12,N4,,矢
+,低,Đê,"ひく.い","テイ",Thấp,低い【ひくい】thấp,低下【ていか】suy giảm,最低【さいてい】tồi tệ nhất,Người (亻) cúi xuống rất thấp,7,N4,,人
+,引,Dẫn,"ひ.く・ひ.ける","イン",Kéo,引く【ひく】kéo,引き出し【ひきだし】ngăn kéo,割引【わりびき】giảm giá,Kéo căng cây cung (弓) bằng một nét thẳng,4,N4,,弓
+,声,Thanh,"こえ","セイ・ショウ",Giọng nói,声【こえ】giọng nói,大声【おおごえ】giọng to,音声【おんせい】âm thanh,Sĩ (士) cầm gậy đánh phát ra âm thanh,7,N4,,士
+,薬,Dược,"くすり","ヤク",Thuốc,薬【くすり】thuốc,薬局【やっきょく】hiệu thuốc,目薬【めぐすり】thuốc nhỏ mắt,Cỏ (艹) mang lại niềm vui (楽) là thuốc,16,N4,,艸
+,局,Cục,"","キョク",Cục/Trạm,薬局【やっきょく】hiệu thuốc,郵便局【ゆうびんきょく】bưu điện,結局【けっきょく】kết cục,Thi thể (尸) được bọc gọn trong câu cú (句),7,N4,,尸
+,洋,Dương,"","ヨウ",Đại dương/Tây,洋服【ようふく】Âu phục,西洋【せいよう】phương Tây,洋食【ようしょく】món ăn Tây,Con cừu (羊) bơi qua vùng nước (氵) đại dương,9,N4,,水
+,和,Hòa,"やわ.らぐ・なご.む","ワ・オ",Hòa bình/Nhật Bản,和室【わしつ】phòng Nhật,平和【へいわ】hòa bình,和食【わしょく】món ăn Nhật,Mọi người chia nhau (口) hạt lúa (禾) sống hòa bình,8,N4,,口
+,堂,Đường,"","ドウ",Hội trường,食堂【しょくどう】nhà ăn,公会堂【こうかいどう】tòa thị chính,堂々【どうどう】đường hoàng,Ngôi nhà cao xây trên đất (土) là hội trường,11,N4,,土
+,産,Sản,"う.む・う.まれる","サン",Sản xuất,生産【せいさん】sản xuất,お土産【おみやげ】đặc sản,産業【さんぎょう】công nghiệp,Đứng (立) trên sườn núi sinh (生) ra sản phẩm,11,N4,,生
+,死,Tử,"し.ぬ","シ",Chết,死ぬ【しぬ】chết,死体【したい】thi thể,必死【ひっし】quyết tâm,Xương cốt (歹) bị chôn vùi khi chết,6,N4,,歹
+,亡,Vong,"な.くなる・な.い","ボウ・モウ",Mất/Tử vong,亡くなる【なくなる】mất/chết,死亡【しぼう】tử vong,亡命【ぼうめい】lưu vong,Người ẩn nấp (乚) dưới nắp đã mất tích,3,N4,,亠
+,忙,Mang,"いそが.しい","ボウ",Bận rộn,忙しい【いそがしい】bận rộn,多忙【たぼう】rất bận rộn,大忙し【おおいそがし】vô cùng bận,Trái tim (忄) bận rộn đến mức quên mất (亡),6,N4,,心
+,忘,Vong,"わす.れる","ボウ",Quên,忘れる【わすれる】quên,忘れ物【わすれもの】đồ bỏ quên,忘年会【ぼうねんかい】tiệc tất niên,Trái tim (心) làm mất (亡) trí nhớ nên quên,7,N4,,心
+,悲,Bi,"かな.しい・かな.しむ","ヒ",Buồn,悲しい【かなしい】buồn,悲鳴【ひめい】tiếng la hét,悲劇【ひげき】bi kịch,Trái tim (心) bị chia cắt (非) sinh ra buồn bã,12,N4,,心
+,泣,Khấp,"な.く","キュウ",Khóc,泣く【なく】khóc,号泣【ごうきゅう】khóc nức nở,泣き声【なきごえ】tiếng khóc,Nước (氵) mắt rơi khi đứng (立) khóc,8,N4,,水
+,笑,Tiếu,"わら.う・え.む","ショウ",Cười,笑う【わらう】cười,笑顔【えがお】khuôn mặt tươi cười,爆笑【ばくしょう】cười phá lên,Gió thổi qua bụi trúc (竹) giống như tiếng cười,10,N4,,竹
+,怒,Nộ,"いか.る・おこ.る","ド・ヌ",Tức giận,怒る【おこる】tức giận,怒り【いかり】cơn giận,激怒【げきど】nổi trận lôi đình,Trái tim (心) nô lệ nổi giận,9,N4,,心
+,覚,Giác,"おぼ.える・さ.める","カク",Nhớ/Thức giấc,覚える【おぼえる】nhớ,目を覚ます【めをさます】thức giấc,感覚【かんかく】cảm giác,Mở to mắt (見) học tập (学) để ghi nhớ,12,N4,,見
+,育,Dục,"そだ.つ・そだ.てる","イク",Nuôi dưỡng,育てる【そだてる】nuôi dưỡng,教育【きょういく】giáo dục,体育【たいいく】thể dục,Trẻ em được sinh ra từ bụng (月) để nuôi lớn,8,N4,,肉
+,若,Nhược,"わか.い・もしくわ","ジャク・ニャク",Trẻ,若い【わかい】trẻ,若者【わかもの】người trẻ,若葉【わかば】lá non,Tay (右) hái cỏ (艹) non mọc lên rất trẻ trung,8,N4,,艸
+,老,Lão,"お.いる・ふ.ける","ロウ",Già,老人【ろうじん】người già,老後【ろうご】tuổi già,敬老【けいろう】kính lão,Người chống gậy và dùng thìa (匕) là người già,6,N4,,老
+,頭,Đầu,"あたま・かしら","トウ・ズ",Cái đầu,頭【あたま】đầu,頭痛【ずつう】đau đầu,先頭【せんとう】dẫn đầu,Hạt đậu (豆) nằm trên đầu (頁),16,N4,,頁
+,顔,Nhan,"かお","ガン",Khuôn mặt,顔【かお】khuôn mặt,笑顔【えがお】khuôn mặt tươi cười,洗顔【せんがん】rửa mặt,Đầu (頁) có nhiều nếp nhăn trên mặt,18,N4,,頁
+,首,Thủ,"くび","シュ",Cái cổ,首【くび】cổ,手首【てくび】cổ tay,首都【しゅと】thủ đô,Mắt (目) gắn với tóc vươn lên trên cổ,9,N4,,首
+,心,Tâm,"こころ","シン",Trái tim,心【こころ】trái tim,安心【あんしん】an tâm,心配【しんぱい】lo lắng,Hình ảnh tượng hình của trái tim có 3 cuống,4,N4,,心
+,注,Chú,"そそ.ぐ","チュウ",Rót/Chú ý,注意【ちゅうい】chú ý,注文【ちゅうもん】gọi món,注射【ちゅうしゃ】tiêm,Nước (氵) rót từ đồ vật của chủ nhân (主),8,N4,,水
+,文,Văn,"ふみ","ブン・モン",Văn bản,作文【さくぶん】bài văn,文学【ぶんがく】văn học,文字【もじ】chữ cái,Đường nét hoa văn được khắc trên bề mặt,4,N4,,文
+,字,Tự,"","ジ",Chữ,漢字【かんじ】chữ Hán,文字【もじ】chữ cái,赤字【あかじ】chữ đỏ/lỗ,Đứa trẻ (子) dưới mái nhà (宀) đang học chữ,6,N4,,子
+,以,Dĩ,"もっ.て","イ",Lấy làm mốc,以上【いじょう】trở lên,以下【いか】trở xuống,以外【いがい】ngoài ra,Cày cấy bằng cày để lấy (以) mốc,5,N4,,人
+,内,Nội,"うち","ナイ・ダイ",Bên trong,内【うち】bên trong,家内【かない】vợ,案内【あんない】hướng dẫn,Người (人) đi vào trong biên giới (冂),4,N4,,冂
+,台,Đài,"","ダイ・タイ",Cái bục/Cỗ,台風【たいふう】bão,台所【だいどころ】nhà bếp,一台【いちだい】một chiếc (xe),Cái miệng (口) đặt trên bục (厶) cao,5,N4,,口
+,去,Khứ,"さ.る","キョ・コ",Quá khứ/Rời đi,去年【きょねん】năm ngoái,過去【かこ】quá khứ,去る【さる】rời đi,Bỏ miếng đất (土) riêng tư (厶) rời đi,5,N4,,厶
+,色,Sắc,"いろ","ショク・シキ",Màu sắc,色【いろ】màu sắc,景色【けしき】phong cảnh,特色【とくしょく】đặc sắc,Hai người dựa vào nhau khoe sắc màu,6,N4,,色
+,黄,Hoàng,"き・こ","コウ・オウ",Màu vàng,黄色【きいろ】màu vàng,黄金【おうごん】vàng bạc,黄身【きみ】lòng đỏ trứng,Mũi tên bắn xuyên cánh đồng (田) cỏ vàng,11,N4,,黄
+,黒,Hắc,"くろ・くろ.い","コク",Màu đen,黒い【くろい】đen,真っ黒【まっくろ】đen thui,黒板【こくばん】bảng đen,Ngôi làng (里) bị lửa (灬) đốt thành tro đen,11,N4,,黒
+,青,Thanh,"あお・あお.い","セイ・ショウ",Màu xanh,青い【あおい】xanh,青年【せいねん】thanh niên,真っ青【まっさお】xanh lè,Mặt trăng (月) chiếu lên giếng nước xanh,8,N4,,青
+,赤,Xích,"あか・あか.い","セキ・シャク",Màu đỏ,赤い【あかい】đỏ,赤ちゃん【あかちゃん】em bé,真っ赤【まっか】đỏ chót,Lửa (灬) đốt vùng đất (土) trở nên đỏ rực,7,N4,,赤
+,白,Bạch,"しろ・しろ.い","ハク・ビャク",Màu trắng,白い【しろい】trắng,真っ白【まっしろ】trắng toát,白鳥【はくちょう】thiên nga,Mặt trời (日) mọc ló lên một vạch sáng trắng,5,N4,,白
+,飯,Phạn,"めし","ハン",Cơm/Bữa ăn,ご飯【ごはん】cơm,夕飯【ゆうはん】bữa tối,昼飯【ひるめし】bữa trưa,Ăn (食) phản (反) lại cơm,12,N4,,食
+,肉,Nhục,"にく","ニク",Thịt,肉【にく】thịt,牛肉【ぎゅうにく】thịt bò,豚肉【ぶたにく】thịt lợn,Hai người (人) trong cửa (冂) ăn thịt,6,N4,,肉
+,客,Khách,"","キャク・カク",Hành khách,お客様【おきゃくさま】quý khách,乗客【じょうきゃく】hành khách,客室【きゃくしつ】phòng khách,Mỗi (各) người dưới mái nhà (宀) là khách,9,N4,,宀
+,仕,Sĩ,"つか.える","シ・ジ",Phục vụ/Công việc,仕事【しごと】công việc,仕方【しかた】cách làm,仕える【つかえる】phục vụ,Người (亻) phục vụ như một kẻ sĩ (士),5,N4,,人
+,事,Sự,"こと","ジ・ズ",Sự việc,仕事【しごと】công việc,食事【しょくじ】bữa ăn,火事【かじ】hỏa hoạn,Cắm cây cờ (亅) vào miệng (口) tuyên bố sự việc,8,N4,,亅
+,者,Giả,"もの","シャ",Người,医者【いしゃ】bác sĩ,若者【わかもの】người trẻ,学者【がくしゃ】học giả,Ông lão (老) dạy (日) cho người trẻ,8,N4,,老
+,商,Thương,"あきな.う","ショウ",Thương mại,商業【しょうぎょう】thương nghiệp,商品【しょうひん】sản phẩm,商店【しょうてん】cửa hàng,Đứng (立) nói (口) trên bục (冂) để bán hàng,11,N4,,口
+,動,Động,"うご.く・うご.かす","ドウ",Vận động,動物【どうぶつ】động vật,運動【うんどう】vận động,自動車【じどうしゃ】ô tô,Dùng sức lực (力) làm cái bao nặng chuyển động,11,N4,,力
+,公,Công,"おおやけ","コウ",Công cộng,公園【こうえん】công viên,公務員【こうむいん】viên chức,公共【こうきょう】công cộng,Chia đều (八) đồ tư (厶) làm đồ công,4,N4,,八
+,園,Viên,"その","エン",Công viên/Vườn,公園【こうえん】công viên,動物園【どうぶつえん】sở thú,遊園地【ゆうえんち】khu vui chơi,Khu vực (囗) mặc quần áo (衣) dài dạo vườn,13,N4,,囗
+,市,Thị,"いち","シ",Thành phố/Chợ,市民【しみん】người dân,市場【いちば】chợ,市長【しちょう】thị trưởng,Mũ (亠) và khăn (巾) được đem bán ở chợ,5,N4,,巾
+,村,Thôn,"むら","ソン",Thôn làng,村【むら】thôn làng,村長【そんちょう】trưởng thôn,農村【のうそん】nông thôn,Cây (木) đo bằng thốn (寸) để xây làng,7,N4,,木
+,区,Khu,"","ク",Khu vực,区役所【くやくしょ】ủy ban quận,区分【くぶん】phân loại,地区【ちく】khu vực,Đánh dấu X phân chia khu vực (匚),4,N4,,匚
+,県,Huyện,"","ケン",Huyện/Tỉnh,県知事【けんちじ】tỉnh trưởng,県庁【けんちょう】ủy ban tỉnh,都道府県【とどうふけん】các tỉnh,Mắt (目) nhìn cái cây tơ (糸) treo ở huyện nhỏ,9,N4,,糸
+,京,Kinh,"","キョウ・ケイ",Kinh đô,東京【とうきょう】Tokyo,上京【じょうきょう】lên Tokyo,京都市【きょうとし】thành phố Kyoto,Mái nhà (亠) cao ở trung tâm (口) kinh đô,8,N4,,亠
+,都,Đô,"みやこ","ト・ツ",Thủ đô,都市【とし】đô thị,首都【しゅと】thủ đô,都合【つごう】thuận tiện,Người đứng (者) ở vùng đất (阝) thủ đô,11,N4,,邑
+,府,Phủ,"","フ",Phủ/Cơ quan,政府【せいふ】chính phủ,大阪府【おおさかふ】phủ Osaka,京都府【きょうとふ】phủ Kyoto,Mái nhà (广) có trao đồ (付) là cơ quan phủ,8,N4,,广
+,道,Đạo,"みち","ドウ・ト",Con đường,道【みち】con đường,水道【すいどう】nước máy,道路【どうろ】đường sá,Cái đầu (首) nhìn về phía đường đi (辶),12,N4,,辵
+,通,Thông,"とお.る・かよ.う","ツウ",Đi qua/Thông qua,通る【とおる】đi qua,通う【かよう】lui tới,交通【こうつう】giao thông,Dùng sức lực (甬) đi (辶) xuyên qua,10,N4,,辵
+,交,Giao,"まじ.わる・ま.ざる","コウ",Giao nhau,交通【こうつう】giao thông,交番【こうばん】bốt cảnh sát,外交【がいこう】ngoại giao,Bố (父) đội mũ (亠) đi giao lưu,6,N4,,亠
+,疲,Bì,"つか.れる","ヒ",Mệt mỏi,疲れる【つかれる】mệt mỏi,疲れ【つかれ】sự mệt mỏi,疲労【ひろう】mệt nhọc,Bệnh (疒) làm tổn thương da (皮) gây mệt mỏi,10,N4,,疒
+,弱,Nhược,"よわ.い・よわ.まる","ジャク・ニャク",Yếu,弱い【よわい】yếu,弱点【じゃくてん】điểm yếu,弱虫【よわむし】kẻ nhu nhược,Cây cung (弓) bị đóng băng (冫) thì yếu đi,10,N4,,弓
+,広,Quảng,"ひろ.い・ひろ.まる","コウ",Rộng,広い【ひろい】rộng,広場【ひろば】quảng trường,広告【こうこく】quảng cáo,Mái nhà (广) riêng tư (厶) rất rộng rãi,5,N4,,广

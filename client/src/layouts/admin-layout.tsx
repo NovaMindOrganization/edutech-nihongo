@@ -44,6 +44,8 @@ const mainNav: NavItem[] = [
   { to: paths.admin.questions, label: "Câu hỏi", icon: HelpCircle },
   { to: paths.admin.studySets, label: "Study sets", icon: Languages },
   { to: paths.admin.users, label: "Người dùng", icon: Users },
+  { to: paths.admin.reports, label: "Báo cáo", icon: MessageSquare },
+  { to: paths.admin.analytics, label: "Thống kê", icon: LayoutDashboard },
   { to: paths.admin.config, label: "Cấu hình", icon: Settings },
 ];
 

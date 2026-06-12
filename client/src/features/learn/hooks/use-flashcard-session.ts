@@ -17,13 +17,13 @@ export function useFlashcardSession(lessonId: string) {
   const [flipped, setFlipped] = useState(false);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>(null);
   const [loading, setLoading] = useState(true);
-  const progressQueue = useRef(Promise.resolve());
+  const progressQueue = useRef<Promise<void>>(Promise.resolve());
 
   const current = cards[index] ?? null;
   const finished = cards.length > 0 && index >= cards.length;
 
   const enqueueProgress = useCallback(
-    (task: () => Promise<unknown>) => {
+    (task: () => Promise<void>) => {
       progressQueue.current = progressQueue.current.then(task).catch(() => {});
     },
     [],
@@ -100,12 +100,12 @@ export function useFlashcardSession(lessonId: string) {
   const toggleStar = useCallback(
     (vocabularyId: string, nextStarred: boolean) => {
       updateLocalCard(vocabularyId, { isStarred: nextStarred });
-      enqueueProgress(() =>
-        patchVocabularyProgress({ vocabularyId, isStarred: nextStarred }).catch((e) => {
+      enqueueProgress(async () => {
+        await patchVocabularyProgress({ vocabularyId, isStarred: nextStarred }).catch((e) => {
           updateLocalCard(vocabularyId, { isStarred: !nextStarred });
           toast.error(e instanceof Error ? e.message : 'Không cập nhật được sao');
-        }),
-      );
+        });
+      });
     },
     [enqueueProgress, updateLocalCard],
   );
@@ -115,11 +115,11 @@ export function useFlashcardSession(lessonId: string) {
       if (!current) return;
       const vocabularyId = current.id;
       updateLocalCard(vocabularyId, { status });
-      enqueueProgress(() =>
-        patchVocabularyProgress({ vocabularyId, status }).catch((e) => {
+      enqueueProgress(async () => {
+        await patchVocabularyProgress({ vocabularyId, status }).catch((e) => {
           toast.error(e instanceof Error ? e.message : 'Không lưu tiến độ');
-        }),
-      );
+        });
+      });
       advance();
     },
     [advance, current, enqueueProgress, updateLocalCard],

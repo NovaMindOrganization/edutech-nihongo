@@ -11,7 +11,7 @@ import { PricingSection } from '@/features/pricing';
 import { paths } from '@/router/paths';
 
 const features = [
-  { icon: BookOpen, title: 'Lộ trình JLPT', desc: 'N5→N1, học tuần tự có khóa bài' },
+  { icon: BookOpen, title: 'Lộ trình JLPT', desc: 'N5→N4, học tuần tự có khóa bài' },
   { icon: Brain, title: 'AI & OCR', desc: 'Speaking mentor, tra cứu ngữ nghĩa' },
   { icon: Users, title: 'Cộng đồng', desc: 'Flashcard sets, luyện nói peer-to-peer' },
 ];
@@ -48,9 +48,6 @@ export function HomeView() {
                     <p className="font-display text-xl font-semibold">
                       {user.displayName?.trim() || user.email}
                     </p>
-                    {user.displayName?.trim() && (
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
-                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Link to={paths.student.dashboard}>
@@ -81,7 +78,7 @@ export function HomeView() {
             </p>
             <h1 className="font-display mt-4 max-w-3xl text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
               Học tiếng Nhật có lộ trình,
-              <span className="text-primary"> từ N5 đến N1</span>
+              <span className="text-primary"> từ N5 đến N4</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
               Nền tảng kết hợp phong cách giáo dục Nhật Bản và trải nghiệm học thân thiện với người Việt — từ
@@ -113,6 +110,11 @@ export function HomeView() {
                   Placement Test
                 </Button>
               </Link>
+              <Link to={paths.dictionary}>
+                <Button size="lg" variant="outline">
+                  Từ điển
+                </Button>
+              </Link>
               {!user && (
                 <Link to={paths.learn.hub}>
                   <Button size="lg" variant="outline">
@@ -140,8 +142,6 @@ export function HomeView() {
           </div>
 
           <PricingSection />
-
-          <p className="font-jp mt-16 text-center text-2xl text-primary/30">がんばって</p>
         </section>
       </div>
     </div>

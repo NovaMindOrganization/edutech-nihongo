@@ -49,9 +49,28 @@ export const getCourseOutline = asyncHandler(async (req: Request, res: Response)
 
 export const getLessonPreview = asyncHandler(async (req: Request, res: Response) => {
   const lesson = await db.lesson.findFirst({
-    where: { id: String(req.params.id), orderIndex: 1 },
+    where: {
+      id: String(req.params.id),
+      course: { isPublished: true },
+    },
     include: {
-      vocabulary: { take: 5, include: { vocabulary: { select: { word: true, reading: true, meaning: true } } } },
+      course: { select: { id: true, title: true, jlptLevel: true } },
+      vocabulary: {
+        take: 8,
+        include: {
+          vocabulary: {
+            select: { word: true, reading: true, meaning: true },
+          },
+        },
+      },
+      grammar: {
+        take: 3,
+        include: {
+          grammar: {
+            select: { title: true, pattern: true, meaningVi: true },
+          },
+        },
+      },
     },
   });
   res.json({ success: true, data: lesson });

@@ -1,6 +1,45 @@
 import { db } from '../config/db.js';
 
+import { enrollAndInitProgress } from './lesson.service.js';
+
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
+
+export type PlacementRoadmap = {
+  courseId: string;
+  courseTitle: string;
+  jlptLevel: string;
+  startLessonId: string | null;
+  startLessonTitle: string | null;
+  startLessonOrderIndex: number | null;
+};
+
+async function buildRoadmap(level: string): Promise<PlacementRoadmap | null> {
+  const course = await db.course.findFirst({
+    where: { jlptLevel: level, isPublished: true },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      title: true,
+      jlptLevel: true,
+      lessons: {
+        where: { isBonus: false },
+        orderBy: { orderIndex: 'asc' },
+        take: 1,
+        select: { id: true, title: true, orderIndex: true },
+      },
+    },
+  });
+  if (!course) return null;
+  const start = course.lessons[0] ?? null;
+  return {
+    courseId: course.id,
+    courseTitle: course.title,
+    jlptLevel: course.jlptLevel,
+    startLessonId: start?.id ?? null,
+    startLessonTitle: start?.title ?? null,
+    startLessonOrderIndex: start?.orderIndex ?? null,
+  };
+}
 
 export async function startPlacementTest() {
   const links = await db.placementQuestion.findMany({
@@ -64,11 +103,28 @@ export async function submitPlacementTest(
     }
   }
 
+  const roadmap = await buildRoadmap(recommendedLevel);
+
+  let enrolled = false;
   if (userId) {
     await db.placementResult.create({
       data: { userId, recommendedLevel, scoresByLevel },
     });
+    if (roadmap?.courseId) {
+      try {
+        await enrollAndInitProgress(userId, roadmap.courseId);
+        enrolled = true;
+      } catch {
+        enrolled = false;
+      }
+    }
   }
 
-  return { recommendedLevel, scoresByLevel, requiresLogin: !userId };
+  return {
+    recommendedLevel,
+    scoresByLevel,
+    roadmap,
+    enrolled,
+    requiresLogin: !userId,
+  };
 }

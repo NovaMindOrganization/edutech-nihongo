@@ -54,6 +54,31 @@ export function listPublicCourses() {
   return apiFetch<PublicCourse[]>("/public/courses");
 }
 
+export function getPublicCourseOutline(courseId: string) {
+  return apiFetch<{
+    id: string;
+    title: string;
+    jlptLevel: string;
+    description: string | null;
+    lessons: Array<{ id: string; title: string; orderIndex: number }>;
+  }>(`/public/courses/${courseId}/outline`);
+}
+
+export function getPublicLessonPreview(lessonId: string) {
+  return apiFetch<{
+    id: string;
+    title: string;
+    orderIndex: number;
+    course: { id: string; title: string; jlptLevel: string };
+    vocabulary: Array<{
+      vocabulary: { word: string; reading: string | null; meaning: string };
+    }>;
+    grammar: Array<{
+      grammar: { title: string; pattern: string; meaningVi: string };
+    }>;
+  }>(`/public/lessons/${lessonId}/preview`);
+}
+
 export function getLanding() {
   return apiFetch<{
     tagline: string;
@@ -74,6 +99,16 @@ export function submitPlacementTest(
   return apiFetch<{
     recommendedLevel: string;
     scoresByLevel: Record<string, unknown>;
+    roadmap: {
+      courseId: string;
+      courseTitle: string;
+      jlptLevel: string;
+      startLessonId: string | null;
+      startLessonTitle: string | null;
+      startLessonOrderIndex: number | null;
+    } | null;
+    enrolled: boolean;
+    requiresLogin: boolean;
   }>("/public/placement-test/submit", {
     method: "POST",
     body: JSON.stringify({ answers }),
@@ -227,7 +262,8 @@ export function getKanjiLearnedStatus(kanjiIds: string[]) {
   return apiFetch<{ learnedIds: string[] }>(`/student/kanji/learned-status?${q}`);
 }
 
-export function getHandbookKanji() {
+export function getHandbookKanji(level?: string) {
+  const q = level ? `?level=${encodeURIComponent(level)}` : "";
   return apiFetch<{
     items: Array<{
       id: string;
@@ -256,7 +292,7 @@ export function getHandbookKanji() {
         }>;
       };
     }>;
-  }>("/student/kanji/handbook");
+  }>(`/student/kanji/handbook${q}`);
 }
 
 export function getMiniTest(lessonId: string) {
@@ -458,6 +494,19 @@ export type JlptHistoryItem = {
 
 export function getJlptHistory() {
   return apiFetch<JlptHistoryItem[]>("/student/jlpt-sim/history");
+}
+
+export type MistakeRow = {
+  id: string;
+  source: string;
+  userAnswer: string | null;
+  correctAnswer: string | null;
+  createdAt: string;
+  lesson: { id: string; title: string; orderIndex: number } | null;
+};
+
+export function getMistakes() {
+  return apiFetch<MistakeRow[]>("/student/mistakes");
 }
 
 export type OcrMeta = {

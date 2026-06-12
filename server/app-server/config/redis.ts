@@ -45,33 +45,48 @@ function createRedisFallback(): RedisLike {
 }
 
 function createRedisClient(): RedisLike {
-  const client = new Redis(env.redisUrl, {
-    maxRetriesPerRequest: 3,
-    lazyConnect: true,
-  });
-
+  const fallback = createRedisFallback();
   let disabled = false;
   let warned = false;
 
-  const warnOnce = () => {
-    if (warned) return;
-    warned = true;
-    console.warn(
-      `[redis] Redis unavailable at ${env.redisUrl}; running without cache/rate-limit in dev.`,
-    );
+  const client = new Redis(env.redisUrl, {
+    maxRetriesPerRequest: 1,
+    lazyConnect: true,
+    enableOfflineQueue: false,
+    retryStrategy: (times) => {
+      if (env.nodeEnv !== "production") {
+        return null;
+      }
+      if (times > 10) return null;
+      return Math.min(times * 200, 3000);
+    },
+  });
+
+  const disable = (reason?: string) => {
+    if (disabled) return;
+    disabled = true;
+    if (!warned) {
+      warned = true;
+      const detail = reason?.trim() || "connection failed";
+      console.warn(
+        `[redis] Redis unavailable at ${env.redisUrl} (${detail}); running without cache/rate-limit in dev.`,
+      );
+    }
+    client.disconnect(false);
   };
 
-  client.on("error", (error) => {
-    disabled = true;
-    warnOnce();
-    console.warn("[redis] Connection error:", error.message);
+  client.on("error", (error: NodeJS.ErrnoException) => {
+    disable(error.message || error.code || "unknown error");
   });
 
   const wrap = <T>(action: () => Promise<T>, fallbackValue: T) => {
     if (disabled) return Promise.resolve(fallbackValue);
-    return action().catch(() => {
-      disabled = true;
-      warnOnce();
+    return action().catch((error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.message || error.name
+          : String(error);
+      disable(message);
       return fallbackValue;
     });
   };
