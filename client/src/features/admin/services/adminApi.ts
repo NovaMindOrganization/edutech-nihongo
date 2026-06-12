@@ -62,48 +62,48 @@ export type ConversationItem = {
 
 export function listVocabulary(params?: Record<string, string | number>) {
   const q = new URLSearchParams(params as Record<string, string>).toString();
-  return apiFetch<Paginated<VocabItem>>(`/admin/vocabulary?${q}`);
+  return apiFetch<Paginated<VocabItem>>(`/instructor/vocabulary?${q}`);
 }
 
 export function createVocabulary(body: Partial<VocabItem>) {
-  return apiFetch<VocabItem>("/admin/vocabulary", {
+  return apiFetch<VocabItem>("/instructor/vocabulary", {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
 
 export function updateVocabulary(id: string, body: Partial<VocabItem>) {
-  return apiFetch<VocabItem>(`/admin/vocabulary/${id}`, {
+  return apiFetch<VocabItem>(`/instructor/vocabulary/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteVocabulary(id: string) {
-  return apiFetch<null>(`/admin/vocabulary/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/vocabulary/${id}`, { method: "DELETE" });
 }
 
 export function listGrammar(params?: Record<string, string | number>) {
   const q = new URLSearchParams(params as Record<string, string>).toString();
-  return apiFetch<Paginated<GrammarItem>>(`/admin/grammar?${q}`);
+  return apiFetch<Paginated<GrammarItem>>(`/instructor/grammar?${q}`);
 }
 
 export function createGrammar(body: Partial<GrammarItem>) {
-  return apiFetch<GrammarItem>("/admin/grammar", {
+  return apiFetch<GrammarItem>("/instructor/grammar", {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
 
 export function updateGrammar(id: string, body: Partial<GrammarItem>) {
-  return apiFetch<GrammarItem>(`/admin/grammar/${id}`, {
+  return apiFetch<GrammarItem>(`/instructor/grammar/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteGrammar(id: string) {
-  return apiFetch<null>(`/admin/grammar/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/grammar/${id}`, { method: "DELETE" });
 }
 
 export type CourseItem = {
@@ -181,22 +181,22 @@ export type LessonDetail = LessonSummary & {
 };
 
 export function assignLessonVocabulary(lessonId: string, ids: string[]) {
-  return apiFetch(`/admin/lessons/${lessonId}/assign/vocabulary`, {
+  return apiFetch(`/instructor/lessons/${lessonId}/assign/vocabulary`, {
     method: "POST",
     body: JSON.stringify({ ids }),
   });
 }
 
 export function listCourses() {
-  return apiFetch<CourseItem[]>("/admin/courses");
+  return apiFetch<CourseItem[]>("/instructor/courses");
 }
 
 export function listCoursesWithLessons() {
-  return apiFetch<CourseDetail[]>("/admin/courses-with-lessons");
+  return apiFetch<CourseDetail[]>("/instructor/courses-with-lessons");
 }
 
 export function getCourse(id: string) {
-  return apiFetch<CourseDetail>(`/admin/courses/${id}`);
+  return apiFetch<CourseDetail>(`/instructor/courses/${id}`);
 }
 
 export function createCourse(body: {
@@ -205,7 +205,7 @@ export function createCourse(body: {
   description?: string;
   isPublished?: boolean;
 }) {
-  return apiFetch<CourseItem>("/admin/courses", {
+  return apiFetch<CourseItem>("/instructor/courses", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -220,18 +220,18 @@ export function updateCourse(
     isPublished: boolean;
   }>,
 ) {
-  return apiFetch<CourseItem>(`/admin/courses/${id}`, {
+  return apiFetch<CourseItem>(`/instructor/courses/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteCourse(id: string) {
-  return apiFetch<null>(`/admin/courses/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/courses/${id}`, { method: "DELETE" });
 }
 
 export function getLesson(id: string) {
-  return apiFetch<LessonDetail>(`/admin/lessons/${id}`);
+  return apiFetch<LessonDetail>(`/instructor/lessons/${id}`);
 }
 
 export function createLesson(body: {
@@ -242,7 +242,7 @@ export function createLesson(body: {
   isBonus?: boolean;
   speakingPrompt?: string | null;
 }) {
-  return apiFetch<LessonSummary>("/admin/lessons", {
+  return apiFetch<LessonSummary>("/instructor/lessons", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -258,25 +258,25 @@ export function updateLesson(
     speakingPrompt: string | null;
   }>,
 ) {
-  return apiFetch<LessonSummary>(`/admin/lessons/${id}`, {
+  return apiFetch<LessonSummary>(`/instructor/lessons/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteLesson(id: string) {
-  return apiFetch<null>(`/admin/lessons/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/lessons/${id}`, { method: "DELETE" });
 }
 
 export function assignLessonGrammar(lessonId: string, ids: string[]) {
-  return apiFetch(`/admin/lessons/${lessonId}/assign/grammar`, {
+  return apiFetch(`/instructor/lessons/${lessonId}/assign/grammar`, {
     method: "POST",
     body: JSON.stringify({ ids }),
   });
 }
 
 export function assignLessonKanji(lessonId: string, ids: string[]) {
-  return apiFetch(`/admin/lessons/${lessonId}/assign/kanji`, {
+  return apiFetch(`/instructor/lessons/${lessonId}/assign/kanji`, {
     method: "POST",
     body: JSON.stringify({ ids }),
   });
@@ -284,18 +284,18 @@ export function assignLessonKanji(lessonId: string, ids: string[]) {
 
 export function listKanji(params?: Record<string, string | number>) {
   const q = new URLSearchParams(params as Record<string, string>).toString();
-  return apiFetch<Paginated<KanjiItem>>(`/admin/kanji?${q}`);
+  return apiFetch<Paginated<KanjiItem>>(`/instructor/kanji?${q}`);
 }
 
 export function createKanji(body: KanjiUpsertBody) {
-  return apiFetch<KanjiItem>("/admin/kanji", {
+  return apiFetch<KanjiItem>("/instructor/kanji", {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
 
 export function updateKanji(id: string, body: Partial<KanjiUpsertBody>) {
-  return apiFetch<KanjiItem>(`/admin/kanji/${id}`, {
+  return apiFetch<KanjiItem>(`/instructor/kanji/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
@@ -310,7 +310,7 @@ export async function uploadKanjiMemoryImage(id: string, file: File) {
   formData.append("image", file);
 
   const res = await fetch(
-    apiAssetUrl(`/api/admin/kanji/${encodeURIComponent(id)}/memory-image`),
+    apiAssetUrl(`/api/instructor/kanji/${encodeURIComponent(id)}/memory-image`),
     {
       method: "POST",
       credentials: "include",
@@ -343,7 +343,7 @@ export async function uploadKanjiMemoryImage(id: string, file: File) {
 }
 
 export function deleteKanji(id: string) {
-  return apiFetch<null>(`/admin/kanji/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/kanji/${id}`, { method: "DELETE" });
 }
 
 export type RadicalItem = {
@@ -365,25 +365,25 @@ export type RadicalUpsertBody = {
 
 export function listRadicals(params?: Record<string, string | number>) {
   const q = new URLSearchParams(params as Record<string, string>).toString();
-  return apiFetch<Paginated<RadicalItem>>(`/admin/radicals?${q}`);
+  return apiFetch<Paginated<RadicalItem>>(`/instructor/radicals?${q}`);
 }
 
 export function createRadical(body: RadicalUpsertBody) {
-  return apiFetch<RadicalItem>("/admin/radicals", {
+  return apiFetch<RadicalItem>("/instructor/radicals", {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
 
 export function updateRadical(id: string, body: Partial<RadicalUpsertBody>) {
-  return apiFetch<RadicalItem>(`/admin/radicals/${id}`, {
+  return apiFetch<RadicalItem>(`/instructor/radicals/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteRadical(id: string) {
-  return apiFetch<null>(`/admin/radicals/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/radicals/${id}`, { method: "DELETE" });
 }
 
 export function updateConversation(
@@ -399,19 +399,19 @@ export function updateConversation(
     jlptLevel?: string;
   },
 ) {
-  return apiFetch<ConversationItem>(`/admin/conversations/${id}`, {
+  return apiFetch<ConversationItem>(`/instructor/conversations/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteConversation(id: string) {
-  return apiFetch<null>(`/admin/conversations/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/conversations/${id}`, { method: "DELETE" });
 }
 
 export function listConversations(params?: Record<string, string>) {
   const q = new URLSearchParams(params).toString();
-  return apiFetch<Paginated<ConversationItem>>(`/admin/conversations?${q}`);
+  return apiFetch<Paginated<ConversationItem>>(`/instructor/conversations?${q}`);
 }
 
 export function createConversation(body: {
@@ -424,14 +424,14 @@ export function createConversation(body: {
   }>;
   jlptLevel?: string;
 }) {
-  return apiFetch<ConversationItem>("/admin/conversations", {
+  return apiFetch<ConversationItem>("/instructor/conversations", {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
 
 export function assignLessonConversations(lessonId: string, ids: string[]) {
-  return apiFetch(`/admin/lessons/${lessonId}/assign/conversations`, {
+  return apiFetch(`/instructor/lessons/${lessonId}/assign/conversations`, {
     method: "POST",
     body: JSON.stringify({ ids }),
   });
@@ -446,7 +446,7 @@ export type QuestionItem = {
 
 export function listQuestions(params?: Record<string, string | number>) {
   const q = new URLSearchParams(params as Record<string, string>).toString();
-  return apiFetch<Paginated<QuestionItem>>(`/admin/questions?${q}`);
+  return apiFetch<Paginated<QuestionItem>>(`/instructor/questions?${q}`);
 }
 
 export function createQuestion(body: {
@@ -458,14 +458,14 @@ export function createQuestion(body: {
   explanation?: string;
   options?: unknown;
 }) {
-  return apiFetch<QuestionItem>("/admin/questions", {
+  return apiFetch<QuestionItem>("/instructor/questions", {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteQuestion(id: string) {
-  return apiFetch<null>(`/admin/questions/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/questions/${id}`, { method: "DELETE" });
 }
 
 export type MockExamListItem = {
@@ -518,11 +518,11 @@ export type ImportQuestionBody = {
 
 export function listMockExams(params?: Record<string, string | number>) {
   const q = new URLSearchParams(params as Record<string, string>).toString();
-  return apiFetch<Paginated<MockExamListItem>>(`/admin/mock-exams?${q}`);
+  return apiFetch<Paginated<MockExamListItem>>(`/instructor/mock-exams?${q}`);
 }
 
 export function getMockExam(id: string) {
-  return apiFetch<MockExamDetail>(`/admin/mock-exams/${id}`);
+  return apiFetch<MockExamDetail>(`/instructor/mock-exams/${id}`);
 }
 
 export function createMockExam(body: {
@@ -531,7 +531,7 @@ export function createMockExam(body: {
   durationMinutes: number;
   maxAttempts?: number;
 }) {
-  return apiFetch<MockExamListItem>("/admin/mock-exams", {
+  return apiFetch<MockExamListItem>("/instructor/mock-exams", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -546,14 +546,14 @@ export function updateMockExam(
     maxAttempts: number;
   }>,
 ) {
-  return apiFetch<MockExamListItem>(`/admin/mock-exams/${id}`, {
+  return apiFetch<MockExamListItem>(`/instructor/mock-exams/${id}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
 export function deleteMockExam(id: string) {
-  return apiFetch<null>(`/admin/mock-exams/${id}`, { method: "DELETE" });
+  return apiFetch<null>(`/instructor/mock-exams/${id}`, { method: "DELETE" });
 }
 
 export function importMockExamQuestions(
@@ -561,7 +561,7 @@ export function importMockExamQuestions(
   questions: ImportQuestionBody[],
 ) {
   return apiFetch<{ imported: number; questionIds: string[] }>(
-    `/admin/mock-exams/${examId}/import`,
+    `/instructor/mock-exams/${examId}/import`,
     {
       method: "POST",
       body: JSON.stringify({ questions }),
@@ -570,7 +570,7 @@ export function importMockExamQuestions(
 }
 
 export function removeMockExamQuestion(examId: string, questionId: string) {
-  return apiFetch<null>(`/admin/mock-exams/${examId}/questions/${questionId}`, {
+  return apiFetch<null>(`/instructor/mock-exams/${examId}/questions/${questionId}`, {
     method: "DELETE",
   });
 }
@@ -586,7 +586,7 @@ export function listAdminStudySets(params?: {
   if (params?.search) q.set("search", params.search);
   const qs = q.toString();
   return apiFetch<StudySetListRow[]>(
-    `/admin/studysets/pending${qs ? `?${qs}` : ""}`,
+    `/instructor/studysets/pending${qs ? `?${qs}` : ""}`,
   );
 }
 
@@ -596,7 +596,7 @@ export function listPendingStudySets() {
 }
 
 export function getStudySetAdmin(id: string) {
-  return apiFetch<StudySetAdminDetail>(`/admin/studysets/${id}`);
+  return apiFetch<StudySetAdminDetail>(`/instructor/studysets/${id}`);
 }
 
 export function moderateStudySet(
@@ -604,7 +604,7 @@ export function moderateStudySet(
   status: "approved" | "rejected",
   options?: { moderationNote?: string; quizQuestionCount?: number },
 ) {
-  return apiFetch(`/admin/studysets/${id}/moderate`, {
+  return apiFetch(`/instructor/studysets/${id}/moderate`, {
     method: "POST",
     body: JSON.stringify({
       status,
@@ -612,74 +612,4 @@ export function moderateStudySet(
       quizQuestionCount: options?.quizQuestionCount,
     }),
   });
-}
-
-export type PricingPlanCourseRef = {
-  id: string;
-  title: string;
-  jlptLevel: string;
-  isPublished: boolean;
-};
-
-export type PricingPlanItem = {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  durationDays: number | null;
-  features: string[];
-  isActive: boolean;
-  isPopular: boolean;
-  sortOrder: number;
-  createdAt: string;
-  courses: PricingPlanCourseRef[];
-};
-
-export function listPricingPlans() {
-  return apiFetch<PricingPlanItem[]>("/admin/pricing-plans");
-}
-
-export function getPricingPlan(id: string) {
-  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`);
-}
-
-export function createPricingPlan(body: {
-  name: string;
-  description?: string | null;
-  price: number;
-  durationDays?: number | null;
-  features: string[];
-  isActive?: boolean;
-  isPopular?: boolean;
-  sortOrder?: number;
-  courseIds: string[];
-}) {
-  return apiFetch<PricingPlanItem>("/admin/pricing-plans", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
-
-export function updatePricingPlan(
-  id: string,
-  body: Partial<{
-    name: string;
-    description: string | null;
-    price: number;
-    durationDays: number | null;
-    features: string[];
-    isActive: boolean;
-    isPopular: boolean;
-    sortOrder: number;
-    courseIds: string[];
-  }>,
-) {
-  return apiFetch<PricingPlanItem>(`/admin/pricing-plans/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(body),
-  });
-}
-
-export function deletePricingPlan(id: string) {
-  return apiFetch<null>(`/admin/pricing-plans/${id}`, { method: "DELETE" });
 }

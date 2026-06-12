@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { errors, jwtVerify } from 'jose';
 
 import { env } from '../config/env.js';
+import { assertActiveAuthUser, loadActiveAuthUser } from '../services/session.service.js';
 import { AppError } from '../utils/app-error.js';
 import type { UserRole } from '@prisma/client';
 
@@ -24,6 +25,12 @@ declare global {
 
 const accessSecret = new TextEncoder().encode(env.jwtAccessSecret);
 
+async function userFromAccessToken(token: string): Promise<AuthUser> {
+  const { payload } = await jwtVerify(token, accessSecret);
+  const userId = String(payload.sub);
+  return assertActiveAuthUser(userId);
+}
+
 export async function requireAuth(req: Request, _res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
@@ -32,14 +39,12 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
 
   try {
     const token = header.slice(7);
-    const { payload } = await jwtVerify(token, accessSecret);
-    req.user = {
-      id: String(payload.sub),
-      email: String(payload.email),
-      role: payload.role as UserRole,
-    };
+    req.user = await userFromAccessToken(token);
     return next();
   } catch (err) {
+    if (err instanceof AppError) {
+      return next(err);
+    }
     if (err instanceof errors.JWTExpired) {
       return next(new AppError('Token expired', 401, 'TOKEN_EXPIRED'));
     }
@@ -53,11 +58,8 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
   try {
     const token = header.slice(7);
     const { payload } = await jwtVerify(token, accessSecret);
-    req.user = {
-      id: String(payload.sub),
-      email: String(payload.email),
-      role: payload.role as UserRole,
-    };
+    const user = await loadActiveAuthUser(String(payload.sub));
+    if (user) req.user = user;
   } catch {
     /* guest */
   }

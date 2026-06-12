@@ -6,12 +6,21 @@ import { PrismaClient } from "@prisma/client";
 
 import { N4_COURSE_TITLE } from "../data/n4-lesson-titles.js";
 import { N5_COURSE_TITLE } from "../data/n5-lesson-titles.js";
+import { buildMcqOptions, minHalfCount } from "../utils/minitest-options.js";
 import {
-  buildMcqOptions,
-  isLongJapanesePhrase,
-  minHalfCount,
-  shuffle,
-} from "../utils/minitest-options.js";
+  buildKanjiQuestionDrafts,
+  buildVocabQuestionDrafts,
+  MINITEST_KANJI_CATEGORY,
+  MINITEST_VOCAB_CATEGORY,
+  MINITEST_VOCAB_PHRASE_CATEGORY,
+  vocabMiniTestPrompt,
+} from "../utils/minitest-generator.js";
+
+export {
+  buildKanjiQuestionDrafts,
+  buildVocabQuestionDrafts,
+  vocabMiniTestPrompt,
+} from "../utils/minitest-generator.js";
 import { loadCsvStream } from "./seed-vocabulary-n5-from-csv.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -20,10 +29,6 @@ export const DEFAULT_N5_MINITEST_CSV = join(
   __dirname,
   "../data/n5-minitest-questions.csv",
 );
-
-export const MINITEST_VOCAB_CATEGORY = "mini_test_vocab";
-export const MINITEST_VOCAB_PHRASE_CATEGORY = "mini_test_vocab_phrase";
-export const MINITEST_KANJI_CATEGORY = "mini_test_kanji";
 
 const MINITEST_CATEGORIES = [
   MINITEST_VOCAB_CATEGORY,
@@ -55,7 +60,14 @@ export type MiniTestCsvRow = {
   explanation?: string;
 };
 
-type VocabRow = { id: string; lessonId: string | null; word: string; meaning: string };
+type VocabRow = {
+  id: string;
+  lessonId: string | null;
+  word: string;
+  reading: string | null;
+  meaning: string;
+};
+
 type KanjiRow = {
   character: string;
   meaning: string;
@@ -92,74 +104,6 @@ export function groupMiniTestCsvByLesson(
     map.set(lessonNumber, list);
   }
   return map;
-}
-
-export function buildVocabQuestionDrafts(
-  lessonVocab: VocabRow[],
-  courseVocab: VocabRow[],
-): QuestionDraft[] {
-  const count = minHalfCount(lessonVocab.length);
-  if (count === 0) return [];
-
-  const picked = shuffle(lessonVocab).slice(0, count);
-  const lessonMeanings = lessonVocab.map((v) => v.meaning.trim()).filter(Boolean);
-  const courseMeanings = courseVocab.map((v) => v.meaning.trim()).filter(Boolean);
-  const lessonWords = lessonVocab.map((v) => v.word.trim()).filter(Boolean);
-  const courseWords = courseVocab.map((v) => v.word.trim()).filter(Boolean);
-
-  return picked.map((v) => {
-    const word = v.word.trim();
-    const meaning = v.meaning.trim();
-
-    if (isLongJapanesePhrase(word)) {
-      const sameLessonWords = lessonVocab
-        .filter((item) => item.id !== v.id)
-        .map((item) => item.word.trim());
-      return {
-        questionText: `次の意味に合う日本語の表現はどれですか。\n（${meaning}）`,
-        correctAnswer: word,
-        distractorPool: [...sameLessonWords, ...courseWords],
-        targetLength: word.length,
-        questionCategory: MINITEST_VOCAB_PHRASE_CATEGORY,
-      };
-    }
-
-    const sameLessonMeanings = lessonVocab
-      .filter((item) => item.id !== v.id)
-      .map((item) => item.meaning.trim());
-
-    return {
-      questionText: `「${word}」の意味は？`,
-      correctAnswer: meaning,
-      distractorPool: [...sameLessonMeanings, ...lessonMeanings, ...courseMeanings],
-      targetLength: meaning.length,
-      questionCategory: MINITEST_VOCAB_CATEGORY,
-    };
-  });
-}
-
-export function buildKanjiQuestionDrafts(lessonKanji: KanjiRow[]): QuestionDraft[] {
-  if (lessonKanji.length === 0) return [];
-
-  return lessonKanji.map((kanji) => {
-    const meaning = kanji.meaning.trim();
-    const others = lessonKanji.filter((k) => k.character !== kanji.character);
-
-    const distractorPool = [
-      ...others.map((k) => k.meaning.trim()),
-      ...others
-        .map((k) => k.hanVietPronunciation?.trim())
-        .filter((v): v is string => Boolean(v)),
-    ];
-
-    return {
-      questionText: `「${kanji.character}」の意味は？`,
-      correctAnswer: meaning,
-      distractorPool,
-      targetLength: meaning.length,
-      questionCategory: MINITEST_KANJI_CATEGORY,
-    };
-  });
 }
 
 async function resolveAdminId(db: PrismaClient, adminId?: string) {
@@ -290,7 +234,7 @@ export async function seedMiniTestN5(options: SeedMiniTestN5Options = {}) {
 
     const allVocab = await db.vocabulary.findMany({
       where: { lesson: { courseId }, jlptLevel },
-      select: { id: true, lessonId: true, word: true, meaning: true },
+      select: { id: true, lessonId: true, word: true, reading: true, meaning: true },
     });
 
     const allKanjiLinks = await db.lessonKanji.findMany({

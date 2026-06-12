@@ -179,11 +179,8 @@ export function AppRouter() {
               <Route path="grammar" element={<LessonGrammarView />} />
               <Route path="dialogue" element={<LessonDialogueView />} />
               <Route path="kanji" element={<LessonKanjiView />} />
+              <Route path="mini-test" element={<MiniTestView />} />
             </Route>
-            <Route
-              path="/learn/lessons/:lessonId/mini-test"
-              element={<MiniTestView />}
-            />
           </Route>
         </Route>
 

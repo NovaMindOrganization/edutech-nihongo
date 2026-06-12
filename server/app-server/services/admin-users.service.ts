@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import { db } from '../config/db.js';
+import { revokeAllUserRefreshTokens } from './session.service.js';
 import { AppError } from '../utils/app-error.js';
 import type { UserRole } from '@prisma/client';
 
@@ -53,20 +54,28 @@ export async function listUsers(params: {
 }
 
 export async function updateUserRole(id: string, role: UserRole) {
-  return db.user.update({ where: { id }, data: { role } });
+  const user = await db.user.update({ where: { id }, data: { role } });
+  await revokeAllUserRefreshTokens(id);
+  return user;
 }
 
 export async function setUserBanned(id: string, isBanned: boolean) {
-  return db.user.update({ where: { id }, data: { isBanned } });
+  const user = await db.user.update({ where: { id }, data: { isBanned } });
+  if (isBanned) await revokeAllUserRefreshTokens(id);
+  return user;
 }
 
 export async function setUserSuspended(id: string, isSuspended: boolean) {
-  return db.user.update({ where: { id }, data: { isSuspended } });
+  const user = await db.user.update({ where: { id }, data: { isSuspended } });
+  if (isSuspended) await revokeAllUserRefreshTokens(id);
+  return user;
 }
 
 export async function resetUserPassword(id: string, password: string) {
   const hash = await bcrypt.hash(password, 12);
-  return db.user.update({ where: { id }, data: { passwordHash: hash } });
+  const user = await db.user.update({ where: { id }, data: { passwordHash: hash } });
+  await revokeAllUserRefreshTokens(id);
+  return user;
 }
 
 export async function listReports() {

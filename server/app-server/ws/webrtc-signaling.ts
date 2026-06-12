@@ -2,6 +2,7 @@ import type { IncomingMessage } from 'node:http';
 import type { Server } from 'node:http';
 import { WebSocketServer, type WebSocket } from 'ws';
 
+import { loadActiveAuthUser } from '../services/session.service.js';
 import { verifyAccessToken } from '../utils/jwt.js';
 import * as webrtcService from '../services/webrtc.service.js';
 
@@ -23,7 +24,8 @@ async function authenticate(req: IncomingMessage): Promise<string | null> {
   if (!token) return null;
   try {
     const payload = await verifyAccessToken(token);
-    return payload.sub;
+    const user = await loadActiveAuthUser(payload.sub);
+    return user?.id ?? null;
   } catch {
     return null;
   }

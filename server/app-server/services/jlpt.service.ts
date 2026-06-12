@@ -1,5 +1,6 @@
 import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
+import { buildJlptExamQuestions } from '../utils/jlpt-exam-options.js';
 
 const SNAPSHOT_KIND = 'snapshot' as const;
 const DEFAULT_MAX_ATTEMPTS = 3;
@@ -46,34 +47,51 @@ async function loadMockExam(mockExamId: string | undefined, level: string) {
   return mockExam;
 }
 
+async function loadLevelAnswerPool(level: string, excludeIds: string[]) {
+  const rows = await db.question.findMany({
+    where: {
+      jlptLevel: level,
+      ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
+    },
+    select: { correctAnswer: true },
+    take: 200,
+  });
+  return rows.map((r) => r.correctAnswer);
+}
+
 async function loadExamQuestions(mockExamId: string, level: string): Promise<ExamQuestionPayload[]> {
   const links = await db.mockExamQuestion.findMany({
     where: { mockExamId },
     include: { question: true },
   });
 
-  let questions = links.map((l) => ({
+  let sources = links.map((l) => ({
     id: l.question.id,
     questionText: l.question.questionText,
     questionType: l.question.questionType,
-    options: l.question.options,
+    correctAnswer: l.question.correctAnswer,
     section: l.section,
     audioUrl: l.question.audioUrl,
   }));
 
-  if (questions.length === 0) {
+  if (sources.length === 0) {
     const pool = await db.question.findMany({ where: { jlptLevel: level }, take: 30 });
-    questions = pool.map((q) => ({
+    sources = pool.map((q) => ({
       id: q.id,
       questionText: q.questionText,
       questionType: q.questionType,
-      options: q.options,
+      correctAnswer: q.correctAnswer,
       section: q.questionCategory,
       audioUrl: q.audioUrl,
     }));
   }
 
-  return questions.sort(() => Math.random() - 0.5);
+  const extraAnswers = await loadLevelAnswerPool(
+    level,
+    sources.map((q) => q.id),
+  );
+
+  return buildJlptExamQuestions(sources, extraAnswers, 4);
 }
 
 async function countSubmittedAttempts(userId: string, mockExamId: string) {

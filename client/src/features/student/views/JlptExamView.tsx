@@ -1,11 +1,16 @@
 import { AlertTriangle, ArrowLeft, Clock } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { ApiRequestError } from '@/services/httpClient';
 import { paths } from '@/router/paths';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
+import { examChrome } from '@/features/student/components/exam-shell-theme';
+import {
+  McqExamShell,
+  EXAM_ROOT,
+} from '@/features/student/components/mcq-exam-shell';
 import {
   getActiveJlptSession,
   getJlptSession,
@@ -21,29 +26,12 @@ import {
 
 type Phase = 'intro' | 'exam' | 'results';
 
-const EXAM_ROOT = 'flex h-full min-h-0 w-full flex-col';
-
 function formatCountdown(ms: number) {
   const totalSec = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function groupBySection(questions: ApiQuestion[]) {
-  const map = new Map<string, ApiQuestion[]>();
-  for (const q of questions) {
-    const key = q.section?.trim() || 'Tổng hợp';
-    const list = map.get(key) ?? [];
-    list.push(q);
-    map.set(key, list);
-  }
-  return [...map.entries()];
-}
-
-function questionDomId(index: number) {
-  return `jlpt-q-${index + 1}`;
 }
 
 function draftStorageKey(examId: string) {
@@ -100,12 +88,6 @@ export function JlptExamView() {
   const [activeSession, setActiveSession] = useState<JlptSessionPayload | null>(null);
   const autoSubmittedRef = useRef(false);
 
-  const questionIndexById = useMemo(() => {
-    const map = new Map<string, number>();
-    questions.forEach((q, i) => map.set(q.id, i));
-    return map;
-  }, [questions]);
-
   useEffect(() => {
     if (!examId || phase !== 'intro') return;
     listJlptExams()
@@ -147,7 +129,6 @@ export function JlptExamView() {
     [examId],
   );
 
-  const sections = useMemo(() => groupBySection(questions), [questions]);
   const answeredCount = questions.filter((q) => Boolean(answers[q.id])).length;
   const allAnswered = questions.length > 0 && answeredCount === questions.length;
   const isTimeUp = remainingMs <= 0;
@@ -277,27 +258,19 @@ export function JlptExamView() {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   }
 
-  function scrollToQuestion(index: number) {
-    setHighlightIndex(index);
-    document.getElementById(questionDomId(index))?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }
-
   if (!examMeta) {
     return (
-      <div className={cn(EXAM_ROOT, 'items-center justify-center bg-slate-100 dark:bg-zinc-950')}>
-        <p className="text-sm tracking-wide text-slate-500">Đang tải đề thi…</p>
+      <div className={cn(EXAM_ROOT, 'items-center justify-center bg-background')}>
+        <p className="text-sm tracking-wide text-muted-foreground">Đang tải đề thi…</p>
       </div>
     );
   }
 
   if (phase === 'intro') {
     return (
-      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-slate-100 dark:bg-zinc-950')}>
-        <div className="border-b border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 md:px-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-muted/40')}>
+        <div className={cn('px-4 py-3 md:px-8', examChrome.header)}>
+          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.2em]', examChrome.eyebrow)}>
             Thi thử JLPT
           </p>
           <h1 className="mt-1 font-display text-lg font-semibold tracking-tight md:text-xl">
@@ -308,39 +281,39 @@ export function JlptExamView() {
         <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 md:px-6">
           <Link
             to={paths.student.jlptSim}
-            className="mb-8 inline-flex items-center text-xs font-medium uppercase tracking-wider text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+            className="mb-8 inline-flex items-center text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
             Thoát — danh sách đề
           </Link>
 
-          <div className="border border-slate-300 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-            <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/80">
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+          <div className="border border-border bg-card shadow-sm">
+            <div className="border-b border-border bg-muted/50 px-6 py-4">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Thông tin đề thi
               </p>
               <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <dt className="text-slate-500">Cấp độ</dt>
-                  <dd className="font-semibold text-slate-900 dark:text-slate-100">
+                  <dt className="text-muted-foreground">Cấp độ</dt>
+                  <dd className="font-semibold text-foreground">
                     {examMeta.jlptLevel}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Thời gian</dt>
-                  <dd className="font-semibold text-slate-900 dark:text-slate-100">
+                  <dt className="text-muted-foreground">Thời gian</dt>
+                  <dd className="font-semibold text-foreground">
                     {examMeta.durationMinutes} phút
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Số câu</dt>
-                  <dd className="font-semibold text-slate-900 dark:text-slate-100">
+                  <dt className="text-muted-foreground">Số câu</dt>
+                  <dd className="font-semibold text-foreground">
                     {examMeta.questionCount}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Lượt thi</dt>
-                  <dd className="font-semibold text-slate-900 dark:text-slate-100">
+                  <dt className="text-muted-foreground">Lượt thi</dt>
+                  <dd className="font-semibold text-foreground">
                     {examMeta.myAttemptCount}/{examMeta.maxAttempts}
                     {examMeta.attemptsRemaining > 0
                       ? ` (còn ${examMeta.attemptsRemaining})`
@@ -350,9 +323,9 @@ export function JlptExamView() {
               </dl>
             </div>
 
-            <div className="space-y-4 px-6 py-6 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-              <p className="font-medium text-slate-800 dark:text-slate-200">Quy chế làm bài</p>
-              <ul className="list-inside list-decimal space-y-2 marker:text-slate-400">
+            <div className="space-y-4 px-6 py-6 text-sm leading-relaxed text-muted-foreground">
+              <p className="font-medium text-foreground">Quy chế làm bài</p>
+              <ul className="list-inside list-decimal space-y-2 marker:text-muted-foreground">
                 <li>Toàn bộ câu hỏi hiển thị trên một trang — cuộn để làm bài.</li>
                 <li>Đồng hồ đếm ngược; hết giờ hệ thống tự nộp bài.</li>
                 <li>Chọn một đáp án cho mỗi câu; dùng bảng số bên trái để nhảy nhanh.</li>
@@ -376,12 +349,12 @@ export function JlptExamView() {
             )}
 
             {!examMeta.canStart && !(activeSession && activeSession.remainingMs > 0) && (
-              <div className="mx-6 border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-slate-300">
+              <div className="mx-6 border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
                 Bạn đã dùng hết {examMeta.maxAttempts} lượt thi cho đề này.
               </div>
             )}
 
-            <div className="border-t border-slate-200 bg-slate-50 px-6 py-5 dark:border-zinc-700 dark:bg-zinc-800/50">
+            <div className="border-t border-border bg-muted/50 px-6 py-5">
               <button
                 type="button"
                 disabled={
@@ -391,8 +364,9 @@ export function JlptExamView() {
                 }
                 onClick={handleStart}
                 className={cn(
-                  'w-full border border-slate-900 bg-slate-900 py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition-colors',
-                  'hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40',
+                  'w-full py-3.5 text-sm font-semibold uppercase tracking-wider',
+                  examChrome.btnSolid,
+                  'disabled:cursor-not-allowed disabled:opacity-40',
                 )}
               >
                 {activeSession && activeSession.remainingMs > 0
@@ -408,13 +382,13 @@ export function JlptExamView() {
 
   if (phase === 'results' && score) {
     return (
-      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-slate-100 dark:bg-zinc-950')}>
-        <div className="border-b border-slate-800 bg-slate-900 px-4 py-4 text-center text-slate-100 md:px-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-muted/40')}>
+        <div className={cn('px-4 py-4 text-center md:px-8', examChrome.header)}>
+          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.2em]', examChrome.eyebrow)}>
             Kết quả bài thi
           </p>
           <p className="mt-3 font-mono text-5xl font-bold tabular-nums">{score.total}</p>
-          <p className="mt-1 text-sm text-slate-400">điểm tổng (thang 100)</p>
+          <p className={cn('mt-1 text-sm', examChrome.fgMuted)}>điểm tổng (thang 100)</p>
           <p className="mt-2 text-base font-medium">{examTitle}</p>
         </div>
 
@@ -429,27 +403,27 @@ export function JlptExamView() {
                 setSessionId(null);
                 autoSubmittedRef.current = false;
               }}
-              className="border border-slate-800 bg-slate-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+              className={cn('px-5 py-2.5 text-sm font-semibold', examChrome.btnSolid)}
             >
               Thi lại
             </button>
             <Link
               to={paths.student.jlptSim}
-              className="inline-flex items-center border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-slate-300"
+              className="inline-flex items-center rounded-md border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
             >
               Danh sách đề
             </Link>
           </div>
 
-          <div className="border border-slate-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-            <div className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:border-zinc-700 dark:bg-zinc-800">
+          <div className="border border-border bg-card">
+            <div className="border-b border-border bg-muted/50 px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Phân tích theo phần
             </div>
-            <div className="divide-y divide-slate-200 dark:divide-zinc-700">
+            <div className="divide-y divide-border">
               {Object.entries(score.bySection).map(([section, pct]) => (
                 <div key={section} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                  <span className="font-medium text-slate-800 dark:text-slate-200">{section}</span>
-                  <span className="font-mono font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                  <span className="font-medium text-foreground">{section}</span>
+                  <span className="font-mono font-semibold tabular-nums text-foreground">
                     {pct}%
                   </span>
                 </div>
@@ -458,24 +432,24 @@ export function JlptExamView() {
           </div>
 
           {details.length > 0 && (
-            <div className="border border-slate-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-              <div className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:border-zinc-700 dark:bg-zinc-800">
+            <div className="border border-border bg-card">
+              <div className="border-b border-border bg-muted/50 px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Chi tiết từng câu
               </div>
-              <div className="divide-y divide-slate-100 dark:divide-zinc-800">
+              <div className="divide-y divide-border">
                 {details.map((d, i) => (
                   <div key={d.questionId} className="px-4 py-3 text-sm">
-                    <span className="font-mono text-slate-500">#{i + 1}</span>
+                    <span className="font-mono text-muted-foreground">#{i + 1}</span>
                     <span
                       className={cn(
                         'ml-3 font-semibold uppercase tracking-wide',
-                        d.isCorrect ? 'text-emerald-700' : 'text-red-700',
+                        d.isCorrect ? 'text-emerald-700' : 'text-destructive',
                       )}
                     >
                       {d.isCorrect ? 'Đúng' : 'Sai'}
                     </span>
                     {!d.isCorrect && d.explanation && (
-                      <p className="mt-2 border-l-2 border-slate-300 pl-3 text-slate-600 dark:text-slate-400">
+                      <p className="mt-2 border-l-2 border-primary/30 pl-3 text-muted-foreground">
                         {d.explanation}
                       </p>
                     )}
@@ -489,203 +463,60 @@ export function JlptExamView() {
     );
   }
 
-  let globalIndex = 0;
-
   return (
-    <div className={cn(EXAM_ROOT, 'bg-slate-200 dark:bg-zinc-900')}>
-      {/* Top exam bar */}
-      <header className="shrink-0 border-b border-slate-700 bg-slate-900 text-slate-100">
-        <div className="flex flex-wrap items-center gap-4 px-4 py-3 md:px-6 lg:px-8">
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Đang làm bài · {examMeta.jlptLevel}
-            </p>
-            <h1 className="truncate font-display text-sm font-semibold md:text-base">{examTitle}</h1>
+    <McqExamShell
+      idPrefix="jlpt"
+      eyebrow={`Đang làm bài · ${examMeta.jlptLevel}`}
+      title={examTitle}
+      questions={questions}
+      answers={answers}
+      onSelectAnswer={selectAnswer}
+      highlightIndex={highlightIndex}
+      onHighlightIndex={setHighlightIndex}
+      disabled={isTimeUp || loading}
+      topBanner={
+        isTimeUp ? (
+          <div className="border-b border-amber-600 bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-950">
+            Đã hết giờ — đang nộp bài…
           </div>
-
+        ) : undefined
+      }
+      headerExtra={
+        <>
           <div
             className={cn(
-              'flex items-center gap-2 border px-4 py-2 font-mono text-lg font-bold tabular-nums tracking-wider',
+              'flex items-center gap-2 rounded-md border px-4 py-2 font-mono text-lg font-bold tabular-nums tracking-wider',
               timerUrgent
-                ? 'border-amber-500 bg-amber-950 text-amber-300'
-                : 'border-slate-600 bg-slate-950 text-slate-100',
+                ? 'border-amber-300 bg-amber-600 text-white'
+                : examChrome.timer,
             )}
           >
             <Clock className="h-4 w-4 shrink-0 opacity-80" />
             {formatCountdown(remainingMs)}
           </div>
-
-          <div className="text-right text-xs text-slate-400">
+          <div className={cn('text-right text-xs', examChrome.fgMuted)}>
             <p>{durationMinutes} phút</p>
             <p className="mt-0.5 font-mono tabular-nums">
               {answeredCount}/{questions.length} đã trả lời
             </p>
           </div>
-        </div>
-      </header>
-
-      <div className="flex min-h-0 flex-1">
-        {/* Sidebar */}
-        <aside className="hidden min-h-0 w-52 shrink-0 flex-col border-r border-slate-300 bg-slate-100 lg:flex xl:w-56 dark:border-zinc-700 dark:bg-zinc-900">
-          <div className="min-h-0 flex-1 overflow-y-auto py-4 pl-3 pr-2">
-            <p className="mb-3 px-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-              Điều hướng
-            </p>
-            {sections.map(([sectionName, sectionQs], sectionIdx) => (
-              <div key={sectionName} className="mb-4">
-                <p className="mb-2 truncate px-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  {sectionName}
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {sectionQs.map((q) => {
-                    const idx = questionIndexById.get(q.id) ?? 0;
-                    const answered = Boolean(answers[q.id]);
-                    const isHighlight = idx === highlightIndex;
-                    return (
-                      <button
-                        key={q.id}
-                        type="button"
-                        onClick={() => scrollToQuestion(idx)}
-                        className={cn(
-                          'flex h-8 w-8 items-center justify-center border text-xs font-semibold tabular-nums transition-colors',
-                          isHighlight && 'ring-2 ring-slate-900 ring-offset-1 dark:ring-slate-300',
-                          answered
-                            ? 'border-slate-800 bg-slate-800 text-white'
-                            : 'border-slate-300 bg-white text-slate-600 hover:border-slate-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-slate-300',
-                        )}
-                        title={`Câu ${idx + 1}`}
-                      >
-                        {idx + 1}
-                      </button>
-                    );
-                  })}
-                </div>
-                {sectionIdx < sections.length - 1 && (
-                  <div className="mt-3 border-b border-slate-200 dark:border-zinc-700" />
-                )}
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        {/* Question paper */}
-        <main className="min-w-0 flex-1 overflow-y-auto scroll-smooth bg-white dark:bg-zinc-950">
-          {isTimeUp && (
-            <div className="border-b border-amber-600 bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-950">
-              Đã hết giờ — đang nộp bài…
-            </div>
-          )}
-          <div className="border-b border-slate-200 bg-slate-50 px-4 py-2 lg:hidden dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex max-h-20 flex-wrap gap-1 overflow-y-auto">
-              {questions.map((q, idx) => (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => scrollToQuestion(idx)}
-                  className={cn(
-                    'flex h-7 min-w-7 items-center justify-center border text-[10px] font-semibold tabular-nums',
-                    answers[q.id]
-                      ? 'border-slate-800 bg-slate-800 text-white'
-                      : 'border-slate-300 bg-white text-slate-600',
-                  )}
-                >
-                  {idx + 1}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="px-4 py-6 md:px-8 md:py-8 lg:px-10">
-            {sections.map(([sectionName, sectionQs]) => (
-              <section key={sectionName} className="mb-10">
-                <div className="border-l-4 border-slate-700 bg-slate-700 px-4 py-3 text-slate-100">
-                  <h2 className="font-jp text-sm font-medium leading-snug md:text-base">
-                    {sectionName}
-                  </h2>
-                </div>
-
-                <div className="border border-t-0 border-slate-200 dark:border-zinc-700">
-                  {sectionQs.map((q, qIdx) => {
-                    const idx = globalIndex;
-                    globalIndex += 1;
-                    const opts = (q.options as Array<{ label: string; text: string }>) ?? [];
-                    const selected = answers[q.id];
-
-                    return (
-                      <article
-                        key={q.id}
-                        id={questionDomId(idx)}
-                        className={cn(
-                          'scroll-mt-28 border-b border-slate-200 px-4 py-5 last:border-b-0 dark:border-zinc-800',
-                          qIdx % 2 === 1 && 'bg-slate-50/80 dark:bg-zinc-900/50',
-                        )}
-                      >
-                        <div className="mb-4 flex gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center bg-slate-800 text-[11px] font-bold text-white">
-                            {idx + 1}
-                          </span>
-                          <p className="min-w-0 flex-1 font-jp text-[15px] leading-relaxed text-slate-900 md:text-base dark:text-slate-100">
-                            {q.questionText}
-                          </p>
-                        </div>
-
-                        <div className="ml-9 space-y-1">
-                          {opts.map((opt) => (
-                            <label
-                              key={opt.label}
-                              className={cn(
-                                'flex items-start gap-3 border px-3 py-2.5 transition-colors',
-                                isTimeUp || loading
-                                  ? 'cursor-not-allowed opacity-60'
-                                  : 'cursor-pointer',
-                                selected === opt.text
-                                  ? 'border-slate-800 bg-slate-100 dark:border-slate-400 dark:bg-zinc-800'
-                                  : 'border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-zinc-700 dark:hover:bg-zinc-900',
-                              )}
-                            >
-                              <input
-                                type="radio"
-                                name={`q-${q.id}`}
-                                disabled={isTimeUp || loading}
-                                className="mt-1 h-3.5 w-3.5 shrink-0 border-slate-400 accent-slate-800"
-                                checked={selected === opt.text}
-                                onChange={() => selectAnswer(q.id, opt.text)}
-                              />
-                              <span className="font-jp text-sm leading-relaxed text-slate-800 dark:text-slate-200">
-                                <span className="mr-2 inline-block min-w-[1.25rem] font-mono text-xs font-bold text-slate-500">
-                                  {opt.label}
-                                </span>
-                                {opt.text}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
-
-          <div className="h-20" aria-hidden />
-        </main>
-      </div>
-
-      {/* Submit bar */}
-      <footer className="shrink-0 border-t border-slate-700 bg-slate-900 text-slate-100">
+        </>
+      }
+      footer={
         <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-8">
           <div className="flex items-start gap-2 text-sm">
             {!allAnswered && (
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
             )}
-            <p className="text-slate-300">
-              <span className="font-mono font-semibold text-white">{answeredCount}</span>
-              <span className="text-slate-500"> / </span>
+            <p className={examChrome.fgSoft}>
+              <span className={cn('font-mono font-semibold', examChrome.fg)}>
+                {answeredCount}
+              </span>
+              <span className={examChrome.fgMuted}> / </span>
               <span className="font-mono">{questions.length}</span>
               <span className="ml-1">câu đã chọn</span>
               {!allAnswered && (
-                <span className="ml-2 text-amber-400/90">
+                <span className="ml-2 text-amber-200">
                   — còn {questions.length - answeredCount} câu
                 </span>
               )}
@@ -696,16 +527,14 @@ export function JlptExamView() {
             disabled={loading || !allAnswered || isTimeUp}
             onClick={handleSubmitClick}
             className={cn(
-              'min-w-[10rem] border px-6 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors',
-              allAnswered
-                ? 'border-white bg-white text-slate-900 hover:bg-slate-100'
-                : 'cursor-not-allowed border-slate-600 bg-slate-800 text-slate-500',
+              'min-w-[10rem] rounded-md border px-6 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors',
+              allAnswered ? examChrome.btnOnChrome : examChrome.btnOnChromeDisabled,
             )}
           >
             Nộp bài
           </button>
         </div>
-      </footer>
-    </div>
+      }
+    />
   );
 }

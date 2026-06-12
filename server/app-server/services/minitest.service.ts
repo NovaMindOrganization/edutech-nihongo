@@ -1,72 +1,167 @@
 import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
+import {
+  buildLessonMiniTestMcqs,
+  toClientMiniTestQuestion,
+  type MiniTestKanjiRow,
+  type MiniTestVocabRow,
+} from '../utils/minitest-generator.js';
 import { touchStreak } from './dashboard.service.js';
 import { getConfigValue } from './config.service.js';
+import { loadLessonVocabulary } from './lesson.service.js';
+import {
+  consumeMiniTestSession,
+  createMiniTestSession,
+} from './minitest-session.store.js';
 
-export async function getMiniTestQuestions(userId: string, lessonId: string) {
+async function assertLessonUnlocked(userId: string, lessonId: string) {
   const progress = await db.userLessonProgress.findUnique({
     where: { userId_lessonId: { userId, lessonId } },
   });
   if (!progress || progress.status === 'locked') {
     throw new AppError('Lesson is locked', 403, 'LESSON_LOCKED');
   }
+  return progress;
+}
 
-  const links = await db.lessonQuestion.findMany({
+async function loadMiniTestSource(lessonId: string) {
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    select: {
+      id: true,
+      courseId: true,
+      orderIndex: true,
+      passThreshold: true,
+      course: { select: { jlptLevel: true } },
+    },
+  });
+  if (!lesson) {
+    throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  }
+
+  const vocabularyRows = await loadLessonVocabulary(lessonId);
+  const lessonVocab: MiniTestVocabRow[] = vocabularyRows.map((v) => ({
+    id: v.id,
+    lessonId: v.lessonId,
+    word: v.word,
+    reading: v.reading,
+    meaning: v.meaning,
+  }));
+
+  const courseVocab = await db.vocabulary.findMany({
+    where: {
+      lesson: { courseId: lesson.courseId },
+      jlptLevel: lesson.course.jlptLevel,
+    },
+    select: {
+      id: true,
+      lessonId: true,
+      word: true,
+      reading: true,
+      meaning: true,
+    },
+  });
+
+  const kanjiLinks = await db.lessonKanji.findMany({
     where: { lessonId },
     include: {
-      question: {
+      kanji: {
         select: {
-          id: true,
-          questionText: true,
-          questionType: true,
-          options: true,
-          audioUrl: true,
-          questionCategory: true,
+          character: true,
+          meaning: true,
+          hanVietPronunciation: true,
         },
       },
     },
   });
 
-  return links.map((l) => l.question);
+  const lessonKanji: MiniTestKanjiRow[] = kanjiLinks.map((link) => link.kanji);
+
+  return { lesson, lessonVocab, courseVocab, lessonKanji };
+}
+
+export async function startMiniTest(userId: string, lessonId: string) {
+  await assertLessonUnlocked(userId, lessonId);
+
+  const { lessonVocab, courseVocab, lessonKanji } = await loadMiniTestSource(lessonId);
+
+  const questions = buildLessonMiniTestMcqs({
+    lessonVocab,
+    courseVocab,
+    lessonKanji,
+  });
+
+  if (questions.length === 0) {
+    throw new AppError('No mini-test content for this lesson', 404, 'NO_QUESTIONS');
+  }
+
+  const sessionId = await createMiniTestSession({
+    userId,
+    lessonId,
+    questions,
+  });
+
+  return {
+    sessionId,
+    questions: questions.map(toClientMiniTestQuestion),
+  };
+}
+
+/** @deprecated Use startMiniTest — kept for route naming compatibility. */
+export async function getMiniTestQuestions(userId: string, lessonId: string) {
+  return startMiniTest(userId, lessonId);
 }
 
 export async function submitMiniTest(
   userId: string,
   lessonId: string,
-  answers: Array<{ questionId: string; answer: string }>,
+  input: {
+    sessionId: string;
+    answers: Array<{ questionId: string; answer: string }>;
+  },
 ) {
   const progress = await db.userLessonProgress.findUnique({
     where: { userId_lessonId: { userId, lessonId } },
-    include: { lesson: { include: { course: { include: { lessons: { where: { isBonus: false }, orderBy: { orderIndex: 'asc' } } } } } } },
+    include: {
+      lesson: {
+        include: {
+          course: {
+            include: {
+              lessons: {
+                where: { isBonus: false },
+                orderBy: { orderIndex: 'asc' },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!progress || progress.status === 'locked') {
     throw new AppError('Lesson is locked', 403, 'LESSON_LOCKED');
   }
 
-  const questions = await db.lessonQuestion.findMany({
-    where: { lessonId },
-    include: { question: true },
-  });
-
-  if (questions.length === 0) {
-    throw new AppError('No mini-test questions for this lesson', 404, 'NO_QUESTIONS');
+  const questions = await consumeMiniTestSession(input.sessionId, userId, lessonId);
+  if (!questions?.length) {
+    throw new AppError('MiniTest session expired or invalid', 400, 'INVALID_SESSION');
   }
 
-  const answerMap = new Map(answers.map((a) => [a.questionId, a.answer]));
+  const answerMap = new Map(input.answers.map((a) => [a.questionId, a.answer]));
   let correct = 0;
 
-  for (const lq of questions) {
-    const userAnswer = answerMap.get(lq.questionId)?.trim();
-    if (userAnswer && userAnswer === lq.question.correctAnswer.trim()) {
+  for (const q of questions) {
+    const userAnswer = answerMap.get(q.id)?.trim();
+    if (userAnswer && userAnswer === q.correctAnswer.trim()) {
       correct += 1;
     } else if (userAnswer) {
       await db.userErrorLog.create({
         data: {
           userId,
           source: 'mini_test',
+          questionText: q.questionText,
           originalText: userAnswer,
-          correction: lq.question.correctAnswer,
+          correction: q.correctAnswer,
           lessonId,
         },
       });
@@ -83,9 +178,7 @@ export async function submitMiniTest(
     data: {
       miniTestScore: score,
       attempts: { increment: 1 },
-      ...(passed
-        ? { status: 'completed', completedAt: new Date() }
-        : {}),
+      ...(passed ? { status: 'completed', completedAt: new Date() } : {}),
     },
   });
 
@@ -112,7 +205,9 @@ export async function submitMiniTest(
     correct,
     total: questions.length,
     unlockedNext: passed
-      ? progress.lesson.course.lessons.find((l) => l.orderIndex === progress.lesson.orderIndex + 1)?.id ?? null
+      ? progress.lesson.course.lessons.find(
+          (l) => l.orderIndex === progress.lesson.orderIndex + 1,
+        )?.id ?? null
       : null,
   };
 }

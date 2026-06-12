@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { paths } from '@/router/paths';
 
 import { useAuthStore } from '@/features/auth';
+import { ApiRequestError } from '@/services/httpClient';
 import {
   enrollCourse,
   getCourseLessons,
@@ -31,26 +32,35 @@ export function CourseDetailView() {
   const [enrolled, setEnrolled] = useState(false);
 
   async function load() {
+    let outlineLessons: LessonRow[] = [];
+
+    try {
+      const outline = await getPublicCourseOutline(courseId);
+      setCourseTitle(outline.title);
+      setJlptLevel(outline.jlptLevel);
+      outlineLessons = outline.lessons.map((l) => ({
+        id: l.id,
+        title: l.title,
+        orderIndex: l.orderIndex,
+      }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Không tải khóa học');
+      return;
+    }
+
     try {
       const data = await getCourseLessons(courseId);
       setLessons(data);
       setEnrolled(true);
-    } catch {
-      setEnrolled(false);
-      try {
-        const outline = await getPublicCourseOutline(courseId);
-        setCourseTitle(outline.title);
-        setJlptLevel(outline.jlptLevel);
-        setLessons(
-          outline.lessons.map((l) => ({
-            id: l.id,
-            title: l.title,
-            orderIndex: l.orderIndex,
-          })),
-        );
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Không tải khóa học');
+    } catch (err) {
+      const notEnrolled =
+        err instanceof ApiRequestError &&
+        (err.code === 'NOT_ENROLLED' || err.status === 403);
+      if (!notEnrolled && err instanceof Error) {
+        toast.error(err.message);
       }
+      setLessons(outlineLessons);
+      setEnrolled(false);
     }
   }
 
@@ -61,7 +71,7 @@ export function CourseDetailView() {
   async function handleEnroll() {
     try {
       await enrollCourse(courseId);
-      toast.success('Đã ghi danh — Bài 1 đã mở khóa');
+      toast.success('Đã ghi danh — Bài đầu tiên đã mở khóa');
       load();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Ghi danh thất bại — hãy đăng nhập');

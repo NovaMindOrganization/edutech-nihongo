@@ -61,6 +61,7 @@ export function ConfigAdminView() {
   const [config, setConfig] = useState<Record<string, string>>({});
   const [threshold, setThreshold] = useState('70');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [n4FreeAccess, setN4FreeAccess] = useState(false);
 
   const [llmProvider, setLlmProvider] = useState<LlmProvider>('gemini');
   const [geminiModel, setGeminiModel] = useState('gemini-2.5-flash');
@@ -105,6 +106,7 @@ export function ConfigAdminView() {
         setConfig(c);
         setThreshold(c.default_pass_threshold ?? '70');
         setMaintenanceMode(c.maintenance_mode === 'true');
+        setN4FreeAccess(c.n4_free_access === 'true');
         setLlmProvider(llm.provider);
         setGeminiModel(llm.geminiModel);
         setGeminiApiKeyPreview(llm.geminiApiKeyPreview);
@@ -146,6 +148,20 @@ export function ConfigAdminView() {
       await setSystemConfig('maintenance_mode', enabled ? 'true' : 'false');
       setMaintenanceMode(enabled);
       toast.success(enabled ? 'Đã bật chế độ bảo trì' : 'Đã tắt bảo trì');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Lỗi');
+    }
+  }
+
+  async function saveN4FreeAccess(enabled: boolean) {
+    try {
+      await setSystemConfig('n4_free_access', enabled ? 'true' : 'false');
+      setN4FreeAccess(enabled);
+      toast.success(
+        enabled
+          ? 'Đã mở ghi danh N4 miễn phí (tạm thời)'
+          : 'Đã yêu cầu thanh toán để học N4',
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Lỗi');
     }
@@ -269,6 +285,22 @@ export function ConfigAdminView() {
         <label className="text-sm font-medium">Pass threshold (%)</label>
         <Input value={threshold} onChange={(e) => setThreshold(e.target.value)} />
         <Button onClick={saveThreshold}>Lưu</Button>
+      </section>
+
+      <section className="mt-8 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
+        <h2 className="text-lg font-semibold">Khóa học N4</h2>
+        <p className="text-sm text-muted-foreground">
+          Bật để học viên ghi danh N4 không cần mua gói (dùng tạm khi QA). Tắt lại khi bán chính
+          thức.
+        </p>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={n4FreeAccess}
+            onChange={(e) => void saveN4FreeAccess(e.target.checked)}
+          />
+          Mở ghi danh N4 miễn phí (tạm thời)
+        </label>
       </section>
 
       <section className="mt-8 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">

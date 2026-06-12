@@ -1,7 +1,9 @@
 import { createServer } from 'node:http';
 
 import { createApp } from './app.js';
-import { env } from './config/env.js';
+import { assertProductionEnv, env } from './config/env.js';
+
+assertProductionEnv();
 import { attachWebRtcSignaling } from './ws/webrtc-signaling.js';
 
 const port = env.port;

@@ -9,6 +9,7 @@ import { paths } from '@/router/paths';
 
 import { register } from '../services/authApi';
 import { useAuthStore } from '../store/authStore';
+import { defaultAppPath } from '../utils/auth-routes';
 
 export function RegisterView() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function RegisterView() {
       const data = await register(email, password, displayName || undefined);
       setSession(data.user, data.accessToken);
       toast.success('Đăng ký thành công');
-      navigate(paths.placementTest);
+      navigate(defaultAppPath(data.user), { replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Đăng ký thất bại');
     } finally {
@@ -42,7 +43,7 @@ export function RegisterView() {
     >
       <p className="font-display text-sm tracking-widest text-primary uppercase">NihongoCoach</p>
       <h1 className="font-display mt-2 text-2xl font-bold">Đăng ký</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Tạo tài khoản học viên — sau đó làm Placement Test</p>
+      <p className="mt-1 text-sm text-muted-foreground">Tạo tài khoản học viên và bắt đầu học ngay</p>
 
       {currentUser && (
         <p className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100">

@@ -36,7 +36,7 @@ export function AppHeader({ showNav = false, nav }: AppHeaderProps) {
       <div className="flex w-full flex-col gap-3 px-4 py-3 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
         <div className="flex items-center justify-between gap-4">
           <Link
-            to={paths.home}
+            to={user ? defaultAppPath(user) : paths.home}
             className="font-display shrink-0 text-sm font-bold tracking-wide text-primary"
           >
             日本語 Coach
@@ -59,7 +59,7 @@ export function AppHeader({ showNav = false, nav }: AppHeaderProps) {
               )}
               <Link to={defaultAppPath(user)}>
                 <Button size="sm" variant="outline" className="hidden sm:inline-flex">
-                  Vào học
+                  Dashboard
                 </Button>
               </Link>
               <Button variant="ghost" size="sm" onClick={() => void handleLogout()}>
