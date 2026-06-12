@@ -1,9 +1,7 @@
 import { Check } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/utils/cn';
 
 import type { PricingPlan } from '../types/pricing.types';
 
@@ -32,15 +30,7 @@ export function PricingCard({ plan, onSelect, disabled }: PricingCardProps) {
   const isFree = plan.price <= 0;
 
   return (
-    <Card
-      className={cn(
-        'relative flex h-full flex-col border-border/70 bg-card/90 backdrop-blur',
-        plan.isPopular && 'border-primary shadow-lg shadow-primary/10',
-      )}
-    >
-      {plan.isPopular && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Phổ biến</Badge>
-      )}
+    <Card className="relative flex h-full flex-col border-border/70 bg-card/90 backdrop-blur">
       <CardHeader>
         <CardTitle className="font-display text-xl">{plan.name}</CardTitle>
         {plan.description && (
@@ -70,7 +60,6 @@ export function PricingCard({ plan, onSelect, disabled }: PricingCardProps) {
         </ul>
         <Button
           className="mt-6 w-full"
-          variant={plan.isPopular ? 'default' : 'outline'}
           disabled={disabled || isFree}
           onClick={() => onSelect(plan)}
         >

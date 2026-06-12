@@ -76,7 +76,7 @@ function normalizeKanji(value: string | undefined): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
-function mapVocabularyRow(
+export function mapVocabularyRow(
   row: Record<string, string>,
   lessonId: string,
   courseId: string,

@@ -191,6 +191,12 @@ export function DashboardView() {
         <Link to={paths.student.practice}>
           <Button variant="outline">Luyện đề</Button>
         </Link>
+        <Link to={paths.student.jlptHistory}>
+          <Button variant="outline">Lịch sử thi JLPT</Button>
+        </Link>
+        <Link to={paths.student.mistakes}>
+          <Button variant="outline">Lỗi hay mắc</Button>
+        </Link>
       </div>
     </PageShell>
   );

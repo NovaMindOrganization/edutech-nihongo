@@ -23,7 +23,9 @@ export function PlacementTestView() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [resultOpen, setResultOpen] = useState(false);
-  const [result, setResult] = useState<{ recommendedLevel: string } | null>(null);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof submitPlacementTest>> | null>(
+    null,
+  );
 
   useEffect(() => {
     startPlacementTest()
@@ -42,7 +44,7 @@ export function PlacementTestView() {
         answer: answers[q.id] ?? '',
       }));
       const data = await submitPlacementTest(payload);
-      setResult({ recommendedLevel: data.recommendedLevel });
+      setResult(data);
       setResultOpen(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Nộp bài thất bại');
@@ -137,15 +139,37 @@ export function PlacementTestView() {
         {result && (
           <div className="space-y-4">
             <p className="font-display text-2xl font-bold text-primary">{result.recommendedLevel}</p>
-            <p className="text-sm text-muted-foreground">Gợi ý lộ trình bắt đầu</p>
+            {result.roadmap ? (
+              <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-sm">
+                <p className="font-medium">{result.roadmap.courseTitle}</p>
+                {result.roadmap.startLessonTitle && (
+                  <p className="mt-1 text-muted-foreground">
+                    Bắt đầu: {result.roadmap.startLessonTitle}
+                  </p>
+                )}
+                {user && result.enrolled && (
+                  <p className="mt-2 text-emerald-600">Đã ghi danh khóa phù hợp.</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Chưa có khóa {result.recommendedLevel} — xem danh sách khóa hiện có.
+              </p>
+            )}
             <Button
               className="w-full"
               onClick={() => {
                 setResultOpen(false);
-                navigate(paths.learn.hub);
+                if (result.roadmap?.startLessonId) {
+                  navigate(paths.learn.lesson(result.roadmap.startLessonId));
+                } else if (result.roadmap?.courseId) {
+                  navigate(paths.learn.course(result.roadmap.courseId));
+                } else {
+                  navigate(paths.learn.hub);
+                }
               }}
             >
-              Xem khóa học
+              {result.roadmap?.startLessonId ? 'Bắt đầu học' : 'Xem khóa học'}
             </Button>
           </div>
         )}

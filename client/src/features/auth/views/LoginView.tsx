@@ -57,7 +57,12 @@ export function LoginView() {
             <Input className="mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
-            <label className="text-sm font-medium">Mật khẩu</label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Mật khẩu</label>
+              <Link to={paths.forgotPassword} className="text-xs text-primary hover:underline">
+                Quên mật khẩu?
+              </Link>
+            </div>
             <Input
               className="mt-1"
               type="password"

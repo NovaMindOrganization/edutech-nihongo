@@ -97,7 +97,7 @@ export async function getKanjiLearnedStatus(userId: string, itemIds: string[]) {
   return { learnedIds: rows.map((row) => row.itemId) };
 }
 
-export async function getHandbookKanji(userId: string) {
+export async function getHandbookKanji(userId: string, level?: string) {
   const mastery = await db.userMasteryItem.findMany({
     where: { userId, itemType: "kanji" },
   });
@@ -105,7 +105,10 @@ export async function getHandbookKanji(userId: string) {
   if (ids.length === 0) return { items: [], mastery: [] };
 
   const kanji = await db.kanji.findMany({
-    where: { id: { in: ids } },
+    where: {
+      id: { in: ids },
+      ...(level ? { jlptLevel: level } : {}),
+    },
     select: {
       id: true,
       character: true,

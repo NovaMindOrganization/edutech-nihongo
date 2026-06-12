@@ -1,5 +1,6 @@
 export { LearnHubView } from './views/LearnHubView';
 export { CourseDetailView } from './views/CourseDetailView';
+export { LessonPreviewView } from './views/LessonPreviewView';
 export { LessonShellView } from './views/LessonShellView';
 export { LessonSpeakingView } from './views/LessonSpeakingView';
 export { LessonVocabularyView } from './views/LessonVocabularyView';

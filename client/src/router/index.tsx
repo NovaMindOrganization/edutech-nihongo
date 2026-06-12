@@ -18,10 +18,12 @@ import {
   VocabularyAdminView,
   RadicalsAdminView,
   PricingAdminView,
+  ReportsAdminView,
+  AnalyticsAdminView,
 } from "@/features/admin";
 import { RedirectIfAuthenticated } from "@/features/auth/components/redirect-if-authenticated";
 import { RequireAuth } from "@/features/auth/components/require-auth";
-import { LoginView, RegisterView } from "@/features/auth";
+import { ForgotPasswordView, LoginView, RegisterView, ResetPasswordView } from "@/features/auth";
 import {
   CourseDetailView,
   KanjiCourseView,
@@ -31,16 +33,19 @@ import {
   LessonDialogueView,
   LessonGrammarView,
   LessonKanjiView,
+  LessonPreviewView,
   LessonVocabularyView,
   VocabularyFlashcardView,
   LessonShellView,
   LessonSpeakingView,
 } from "@/features/learn";
+import { DictionaryView } from "@/features/dictionary";
 import { PlacementTestView } from "@/features/placement";
 import {
   AiSpeakingView,
   CommunityCallView,
   CommunityHubView,
+  NotebookHubView,
   DashboardView,
   JlptSimView,
   JlptExamView,
@@ -53,6 +58,8 @@ import {
   StudySetDetailView,
   StudySetsView,
   KanaQuizView,
+  JlptHistoryView,
+  MistakesReviewView,
 } from "@/features/student";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { AuthLayout } from "@/layouts/auth-layout";
@@ -70,11 +77,14 @@ export function AppRouter() {
       <Routes>
         <Route path={paths.home} element={<HomePage />} />
         <Route path={paths.pricing} element={<PricingPage />} />
+        <Route path={paths.dictionary} element={<DictionaryView />} />
 
         <Route element={<AuthLayout />}>
           <Route element={<RedirectIfAuthenticated />}>
             <Route path={paths.login} element={<LoginView />} />
             <Route path={paths.register} element={<RegisterView />} />
+            <Route path={paths.forgotPassword} element={<ForgotPasswordView />} />
+            <Route path={paths.resetPassword} element={<ResetPasswordView />} />
           </Route>
         </Route>
 
@@ -86,10 +96,15 @@ export function AppRouter() {
 
         <Route element={<LearnLayout />}>
           <Route path={paths.learn.hub} element={<LearnHubView />} />
+          <Route path={paths.placementTest} element={<PlacementTestView />} />
+          <Route path="/learn/courses/:courseId" element={<CourseDetailView />} />
+          <Route
+            path="/learn/lessons/:lessonId/preview"
+            element={<LessonPreviewView />}
+          />
 
           <Route element={<RequireAuth />}>
             <Route path="/checkout/:orderId" element={<CheckoutPage />} />
-            <Route path={paths.placementTest} element={<PlacementTestView />} />
 
             <Route path={paths.student.dashboard} element={<DashboardView />} />
             <Route path={paths.student.review} element={<ReviewHubView />} />
@@ -115,6 +130,8 @@ export function AppRouter() {
             />
             <Route path={paths.student.jlptSim} element={<JlptSimView />} />
             <Route path={paths.student.ocr} element={<OcrView />} />
+            <Route path={paths.student.jlptHistory} element={<JlptHistoryView />} />
+            <Route path={paths.student.mistakes} element={<MistakesReviewView />} />
             <Route
               path={paths.student.community}
               element={<CommunityHubView />}
@@ -136,10 +153,7 @@ export function AppRouter() {
               path={paths.student.communityCall}
               element={<CommunityCallView />}
             />
-            <Route
-              path={paths.student.notebook}
-              element={<Navigate to={paths.learn.kanjiHandbook} replace />}
-            />
+            <Route path={paths.student.notebook} element={<NotebookHubView />} />
 
             <Route path={paths.learn.kanjiHub} element={<KanjiHubView />} />
             <Route
@@ -151,10 +165,6 @@ export function AppRouter() {
               element={<KanjiHandbookView />}
             />
             <Route path={paths.learn.kanaQuiz} element={<KanaQuizView />} />
-            <Route
-              path="/learn/courses/:courseId"
-              element={<CourseDetailView />}
-            />
             <Route
               path="/learn/lessons/:lessonId"
               element={<LessonShellView />}
@@ -201,6 +211,8 @@ export function AppRouter() {
           <Route path="users" element={<UsersAdminView />} />
           <Route path="config" element={<ConfigAdminView />} />
           <Route path="pricing" element={<PricingAdminView />} />
+          <Route path="reports" element={<ReportsAdminView />} />
+          <Route path="analytics" element={<AnalyticsAdminView />} />
         </Route>
 
         <Route path="*" element={<Navigate to={paths.home} replace />} />

@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { PrismaClient } from "@prisma/client";
 
+import { N4_COURSE_TITLE } from "../data/n4-lesson-titles.js";
 import { N5_COURSE_TITLE } from "../data/n5-lesson-titles.js";
 import {
   buildMcqOptions,
@@ -37,6 +38,9 @@ export type SeedMiniTestN5Options = {
   csvPath?: string;
   optionCount?: number;
   replaceExisting?: boolean;
+  jlptLevel?: string;
+  courseTitle?: string;
+  logPrefix?: string;
 };
 
 export type MiniTestCsvRow = {
@@ -168,13 +172,18 @@ async function resolveAdminId(db: PrismaClient, adminId?: string) {
   return admin.id;
 }
 
-async function resolveN5CourseId(db: PrismaClient, courseId?: string) {
+async function resolveCourseId(
+  db: PrismaClient,
+  jlptLevel: string,
+  courseTitle: string,
+  courseId?: string,
+) {
   if (courseId) return courseId;
   const course = await db.course.findFirst({
-    where: { jlptLevel: "N5", title: N5_COURSE_TITLE },
+    where: { jlptLevel, title: courseTitle },
     select: { id: true },
   });
-  if (!course) throw new Error(`Không tìm thấy khóa N5: ${N5_COURSE_TITLE}`);
+  if (!course) throw new Error(`Không tìm thấy khóa ${jlptLevel}: ${courseTitle}`);
   return course.id;
 }
 
@@ -221,6 +230,7 @@ async function persistQuestionDrafts(
   adminId: string,
   drafts: QuestionDraft[],
   optionCount: number,
+  jlptLevel: string,
 ) {
   let created = 0;
   for (const draft of drafts) {
@@ -238,7 +248,7 @@ async function persistQuestionDrafts(
         options,
         correctAnswer,
         explanation: draft.explanation,
-        jlptLevel: "N5",
+        jlptLevel,
         questionCategory: draft.questionCategory,
         createdById: adminId,
       },
@@ -257,10 +267,20 @@ export async function seedMiniTestN5(options: SeedMiniTestN5Options = {}) {
   const ownsDb = !options.db;
   const replaceExisting = options.replaceExisting ?? true;
   const optionCount = options.optionCount ?? 4;
+  const jlptLevel = options.jlptLevel ?? "N5";
+  const courseTitle =
+    options.courseTitle ??
+    (jlptLevel === "N4" ? N4_COURSE_TITLE : N5_COURSE_TITLE);
+  const logPrefix = options.logPrefix ?? `[seed:minitest-${jlptLevel.toLowerCase()}]`;
 
   try {
     const adminId = await resolveAdminId(db, options.adminId);
-    const courseId = await resolveN5CourseId(db, options.courseId);
+    const courseId = await resolveCourseId(
+      db,
+      jlptLevel,
+      courseTitle,
+      options.courseId,
+    );
 
     const lessons = await db.lesson.findMany({
       where: { courseId, isBonus: false },
@@ -269,7 +289,7 @@ export async function seedMiniTestN5(options: SeedMiniTestN5Options = {}) {
     });
 
     const allVocab = await db.vocabulary.findMany({
-      where: { lesson: { courseId }, jlptLevel: "N5" },
+      where: { lesson: { courseId }, jlptLevel },
       select: { id: true, lessonId: true, word: true, meaning: true },
     });
 
@@ -341,12 +361,13 @@ export async function seedMiniTestN5(options: SeedMiniTestN5Options = {}) {
         adminId,
         drafts,
         optionCount,
+        jlptLevel,
       );
       totalQuestions += created;
 
       const vocabCount = csvRows.length > 0 ? 0 : minHalfCount(lessonVocab.length);
       console.log(
-        `[seed:minitest-n5] Bài ${lesson.orderIndex} (${lesson.title}): ${created} câu` +
+        `${logPrefix} Bài ${lesson.orderIndex} (${lesson.title}): ${created} câu` +
           (csvRows.length === 0
             ? ` (từ vựng ~${vocabCount}, kanji ${lessonKanji.length})`
             : " (từ CSV)"),
@@ -354,7 +375,7 @@ export async function seedMiniTestN5(options: SeedMiniTestN5Options = {}) {
     }
 
     console.log(
-      `[seed:minitest-n5] Hoàn tất: ${totalQuestions} câu mới, đã xóa ${cleared} câu cũ.`,
+      `${logPrefix} Hoàn tất: ${totalQuestions} câu mới, đã xóa ${cleared} câu cũ.`,
     );
 
     return { totalQuestions, cleared, lessonCount: lessons.length };

@@ -7,7 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { paths } from '@/router/paths';
 
+import type { JapaneseSegment } from '@/features/student/services/studentApi';
+
 import { getLesson } from '../services/learnApi';
+
+function exampleJapanese(segments: JapaneseSegment[] = []) {
+  return segments.map((segment) => ('kanji' in segment ? segment.kanji : segment.text)).join('');
+}
 
 export function LessonView() {
   const { lessonId = '' } = useParams();
@@ -73,7 +79,7 @@ export function LessonView() {
                 <div className="mt-2 space-y-1 text-sm">
                   {g.examples.map((ex, idx) => (
                     <div key={`${g.id}-ex-${idx}`}>
-                      <p className="font-jp">{ex.jp}</p>
+                      <p className="font-jp">{exampleJapanese(ex.segments)}</p>
                       <p className="text-muted-foreground">{ex.vi}</p>
                     </div>
                   ))}

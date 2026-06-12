@@ -60,6 +60,7 @@ function LlmTestResultPanel({
 export function ConfigAdminView() {
   const [config, setConfig] = useState<Record<string, string>>({});
   const [threshold, setThreshold] = useState('70');
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
   const [llmProvider, setLlmProvider] = useState<LlmProvider>('gemini');
   const [geminiModel, setGeminiModel] = useState('gemini-2.5-flash');
@@ -103,6 +104,7 @@ export function ConfigAdminView() {
       .then(([c, llm, sepay]) => {
         setConfig(c);
         setThreshold(c.default_pass_threshold ?? '70');
+        setMaintenanceMode(c.maintenance_mode === 'true');
         setLlmProvider(llm.provider);
         setGeminiModel(llm.geminiModel);
         setGeminiApiKeyPreview(llm.geminiApiKeyPreview);
@@ -134,6 +136,16 @@ export function ConfigAdminView() {
     try {
       await setSystemConfig('default_pass_threshold', threshold);
       toast.success('Đã lưu');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Lỗi');
+    }
+  }
+
+  async function saveMaintenance(enabled: boolean) {
+    try {
+      await setSystemConfig('maintenance_mode', enabled ? 'true' : 'false');
+      setMaintenanceMode(enabled);
+      toast.success(enabled ? 'Đã bật chế độ bảo trì' : 'Đã tắt bảo trì');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Lỗi');
     }
@@ -257,6 +269,21 @@ export function ConfigAdminView() {
         <label className="text-sm font-medium">Pass threshold (%)</label>
         <Input value={threshold} onChange={(e) => setThreshold(e.target.value)} />
         <Button onClick={saveThreshold}>Lưu</Button>
+      </section>
+
+      <section className="mt-8 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
+        <h2 className="text-lg font-semibold">Bảo trì</h2>
+        <p className="text-sm text-muted-foreground">
+          Khi bật, API trả 503 cho học viên (admin và đăng nhập vẫn hoạt động).
+        </p>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={maintenanceMode}
+            onChange={(e) => void saveMaintenance(e.target.checked)}
+          />
+          Chế độ bảo trì
+        </label>
       </section>
 
       <section className="mt-10 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">

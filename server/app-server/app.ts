@@ -10,6 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/error-handler.js';
+import { maintenanceGuard } from './middlewares/maintenance.js';
 import { apiRateLimiter } from './middlewares/rate-limit.js';
 import { sePayWebhook } from './controllers/payment.controller.js';
 import { apiRouter } from './routes/index.js';
@@ -36,6 +37,7 @@ export function createApp() {
     sePayWebhook,
   );
   app.use(express.json({ limit: '2mb' }));
+  app.use('/api', maintenanceGuard);
   app.use(apiRateLimiter);
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

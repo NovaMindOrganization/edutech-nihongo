@@ -26,7 +26,7 @@ export const studentNavTree: NavEntry[] = [
     children: [
       { label: 'Khóa học', to: paths.learn.hub },
       { label: 'Kanji — khóa đang học', to: paths.learn.kanjiHub },
-      { label: 'Sổ tay kanji', to: paths.learn.kanjiHandbook },
+      { label: 'Sổ tay', to: paths.student.notebook },
       { label: 'Luyện kana', to: paths.learn.kanaQuiz },
     ],
   },
@@ -62,6 +62,9 @@ function pathMatches(pathname: string, to: string) {
   }
   if (to === paths.learn.kanjiHub) {
     return pathname === to || pathname.startsWith('/learn/kanji/course');
+  }
+  if (to === paths.student.notebook) {
+    return pathname === paths.student.notebook;
   }
   if (to === paths.student.reviewKanji || to === paths.student.reviewVocabulary || to === paths.student.reviewGrammar) {
     return pathname.startsWith('/review');
