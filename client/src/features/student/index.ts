@@ -1,3 +1,4 @@
+export { NotebookHubView, NotebookShellView } from './notebook';
 export { DashboardView } from './views/DashboardView';
 export { MiniTestView } from './views/MiniTestView';
 export { ReviewHubView } from './views/ReviewHubView';
@@ -11,9 +12,7 @@ export { KanaQuizView } from './views/KanaQuizView';
 export { StudySetsView } from './views/StudySetsView';
 export { StudySetDetailView } from './views/StudySetDetailView';
 export { StudySetCreateView } from './views/StudySetCreateView';
-export { CommunityHubView } from './views/CommunityHubView';
 export { CommunityCallView } from './views/CommunityCallView';
-export { NotebookHubView } from './views/NotebookHubView';
 export { JlptHistoryView } from './views/JlptHistoryView';
 export { MistakesReviewView } from './views/MistakesReviewView';
 export { useWebRtcCall } from './hooks/use-webrtc-call';

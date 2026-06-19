@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { LoadingState } from '@/components/usable/loading-state';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { useAuthStore } from '@/features/auth';
@@ -64,7 +65,7 @@ export function PlacementTestView() {
   }
 
   if (questions.length === 0) {
-    return <p className="text-muted-foreground">Đang tải câu hỏi…</p>;
+    return <LoadingState label="Đang tải câu hỏi placement…" tone="exam" variant="page" />;
   }
 
   return (

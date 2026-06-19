@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { paths } from '@/router/paths';
 
+import { AuthCard, AuthField } from '../components/auth-card';
 import { login } from '../services/authApi';
 import { useAuthStore } from '../store/authStore';
 import { defaultAppPath } from '../utils/auth-routes';
@@ -36,56 +36,51 @@ export function LoginView() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md rounded-2xl border border-border/60 bg-card/90 p-8 shadow-xl backdrop-blur"
-    >
-        <p className="font-display text-sm tracking-widest text-primary uppercase">NihongoCoach</p>
-        <h1 className="font-display mt-2 text-2xl font-bold">Đăng nhập</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Học tiếng Nhật — lộ trình JLPT N5→N1</p>
-
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          <div>
-            <label className="text-sm font-medium">Email</label>
-            <Input
-              className="mt-1"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@example.com"
-              autoComplete="email"
-              required
-            />
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Mật khẩu</label>
-              <Link to={paths.forgotPassword} className="text-xs text-primary hover:underline">
-                Quên mật khẩu?
-              </Link>
-            </div>
-            <Input
-              className="mt-1"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="current-password"
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Đang xử lý...' : 'Đăng nhập'}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+    <AuthCard
+      title="Chào mừng trở lại!"
+      description="Tiếp tục lộ trình JLPT, giữ streak và mở khóa bài học tiếp theo."
+      accent="pink"
+      footer={
+        <>
           Chưa có tài khoản?{' '}
-          <Link to={paths.register} className="text-primary hover:underline">
-            Đăng ký
+          <Link to={paths.register} className="font-extrabold text-primary hover:underline">
+            Đăng ký miễn phí
           </Link>
-        </p>
-      </motion.div>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <AuthField label="Email">
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email@example.com"
+            autoComplete="email"
+            required
+          />
+        </AuthField>
+        <AuthField
+          label="Mật khẩu"
+          action={
+            <Link to={paths.forgotPassword} className="text-xs font-extrabold text-primary hover:underline">
+              Quên mật khẩu?
+            </Link>
+          }
+        >
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            required
+          />
+        </AuthField>
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

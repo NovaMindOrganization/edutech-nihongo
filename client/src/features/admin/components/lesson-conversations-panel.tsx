@@ -141,13 +141,13 @@ export function LessonConversationsPanel({ lessonId, jlptLevel, items, onUpdated
                 </p>
               </div>
               <div className="flex gap-1">
-                <Button size="icon-sm" variant="ghost" onClick={() => openEdit(item)}>
+                <Button size="icon-sm" variant="ghost" onClick={() => openEdit(item)} aria-label={`Sửa hội thoại ${item.title ?? item.id}`}>
                   <Pencil className="size-4" />
                 </Button>
-                <Button size="icon-sm" variant="ghost" onClick={() => handleUnlink(item.id)}>
+                <Button size="sm" variant="ghost" onClick={() => handleUnlink(item.id)}>
                   Gỡ
                 </Button>
-                <Button size="icon-sm" variant="ghost" onClick={() => handleDeleteGlobal(item.id)}>
+                <Button size="icon-sm" variant="ghost" onClick={() => handleDeleteGlobal(item.id)} aria-label={`Xóa hội thoại ${item.title ?? item.id}`}>
                   <Trash2 className="size-4 text-destructive" />
                 </Button>
               </div>
@@ -171,9 +171,9 @@ export function LessonConversationsPanel({ lessonId, jlptLevel, items, onUpdated
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen} title="Gán hội thoại có sẵn">
         <div className="max-h-[50vh] space-y-2 overflow-y-auto">
           {pool.map((c) => (
-            <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
-              <span>{c.title ?? c.id}</span>
-              <Button size="sm" onClick={() => handleAddFromPool(c.id)}>
+            <div key={c.id} className="flex flex-col items-stretch gap-2 rounded-lg border px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <span className="min-w-0 break-words [overflow-wrap:anywhere]">{c.title ?? c.id}</span>
+              <Button size="sm" className="sm:shrink-0" onClick={() => handleAddFromPool(c.id)}>
                 Gán
               </Button>
             </div>

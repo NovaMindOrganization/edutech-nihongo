@@ -1,6 +1,5 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import {
-  Check,
   CircleHelp,
   Home,
   Keyboard,
@@ -18,6 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { PageShell, pageContentClass } from '@/components/usable/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,7 +34,7 @@ import {
   type KanaGroupId,
   type QuizCard,
 } from '@/features/student/data/kana-quiz-data';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
 
 type Phase = 'setup' | 'quiz' | 'results';
@@ -53,70 +53,9 @@ const GROUP_LABEL_VI: Record<KanaGroupId, string> = {
   combination: 'Kana ghép',
 };
 
-const PHASES: { id: Phase; label: string }[] = [
-  { id: 'setup', label: 'Chọn bài' },
-  { id: 'quiz', label: 'Làm bài' },
-  { id: 'results', label: 'Kết quả' },
-];
-
 function pct(correct: number, total: number): string {
   if (total === 0) return '0%';
   return `${((correct / total) * 100).toFixed(1)}%`;
-}
-
-function PageHeader({
-  phase,
-  title,
-  description,
-}: {
-  phase: Phase;
-  title: string;
-  description: string;
-}) {
-  const phaseIndex = PHASES.findIndex((p) => p.id === phase);
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <p className="font-display text-sm tracking-widest text-primary uppercase">
-        Học → Luyện kana
-      </p>
-      <h1 className="font-display text-3xl font-bold">{title}</h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">{description}</p>
-
-      <nav
-        className="mt-6 flex flex-wrap gap-2"
-        aria-label="Tiến trình quiz"
-      >
-        {PHASES.map((p, i) => {
-          const done = i < phaseIndex;
-          const active = p.id === phase;
-          return (
-            <div
-              key={p.id}
-              className={cn(
-                'flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors',
-                active && 'border-primary bg-primary/10 font-medium text-primary',
-                done && !active && 'border-primary/30 bg-primary/5 text-primary',
-                !active && !done && 'border-border text-muted-foreground',
-              )}
-            >
-              <span
-                className={cn(
-                  'flex size-6 items-center justify-center rounded-full text-xs font-semibold',
-                  active && 'bg-primary text-primary-foreground',
-                  done && !active && 'bg-primary/20 text-primary',
-                  !active && !done && 'bg-muted text-muted-foreground',
-                )}
-              >
-                {done && !active ? <Check className="size-3.5" /> : i + 1}
-              </span>
-              {p.label}
-            </div>
-          );
-        })}
-      </nav>
-    </motion.div>
-  );
 }
 
 function ScriptToggle({
@@ -128,7 +67,7 @@ function ScriptToggle({
 }) {
   return (
     <div
-      className="inline-flex rounded-lg border border-border bg-muted/60 p-1"
+      className="inline-flex rounded-lg border border-border bg-surface-paper p-1 shadow-premium card-lift"
       role="group"
       aria-label="Bảng chữ"
     >
@@ -143,9 +82,9 @@ function ScriptToggle({
           type="button"
           onClick={() => onChange(opt.id)}
           className={cn(
-            'rounded-md px-4 py-2 text-sm font-medium transition-all',
+            'inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-extrabold transition-colors',
             script === opt.id
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'bg-brand text-white'
               : 'text-muted-foreground hover:text-foreground',
           )}
         >
@@ -174,15 +113,15 @@ function RowToggle({
       type="button"
       onClick={onChange}
       className={cn(
-        'flex w-full flex-col items-stretch rounded-xl border-2 px-2 py-2.5 text-center transition-all',
+        'flex w-full flex-col items-stretch rounded-xl border px-2 py-2.5 text-center transition-all',
         checked
-          ? 'border-primary bg-primary/10 shadow-sm'
+          ? 'border-primary bg-primary/10 shadow-premium card-lift'
           : 'border-border bg-card hover:border-primary/40 hover:bg-muted/40',
       )}
     >
       <div
         className={cn(
-          'flex w-full overflow-hidden rounded-lg border',
+          'flex w-full overflow-hidden rounded-2xl border-2',
           checked ? 'border-primary/25 bg-background/60' : 'border-border/80 bg-muted/30',
         )}
         aria-hidden
@@ -247,7 +186,7 @@ function SetupPhase({
   }, [groups, selectedRows]);
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="space-y-6">
       <Card className="border-primary/15 overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-primary/10 via-transparent to-accent/5">
           <CardTitle className="font-display text-lg">Cài đặt</CardTitle>
@@ -266,7 +205,7 @@ function SetupPhase({
               value={fontKey}
               onChange={(e) => setFontKey(e.target.value)}
               className={cn(
-                'flex h-9 w-full max-w-xs rounded-lg border border-input bg-background px-3 text-sm',
+                'flex min-h-11 w-full max-w-xs rounded-2xl border border-input bg-surface-paper px-3 text-sm font-semibold shadow-premium card-lift',
                 'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30',
               )}
             >
@@ -338,7 +277,7 @@ function SetupPhase({
         })}
       </div>
 
-      <div className="sticky bottom-4 z-10 flex flex-col gap-3 rounded-2xl border border-primary/20 bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky bottom-4 z-10 flex flex-col gap-3 rounded-xl border border-border bg-surface-paper/95 p-4 shadow-premium card-lift backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm">
           <span className="font-medium text-foreground">
             Đã chọn {selectedCount} hàng
@@ -422,7 +361,7 @@ function QuizPhase({
   };
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="space-y-6">
       <Card className="border-primary/15">
         <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center">
           <div className="min-w-0 flex-1">
@@ -467,7 +406,7 @@ function QuizPhase({
             <div
               key={card.id}
               className={cn(
-                'flex min-h-[112px] flex-col rounded-xl border-2 p-2 transition-all',
+                'flex min-h-[112px] flex-col rounded-xl border p-2 transition-all',
                 isCorrect &&
                   'border-emerald-500/60 bg-emerald-50 dark:bg-emerald-950/25',
                 !isCorrect &&
@@ -475,7 +414,7 @@ function QuizPhase({
                   'border-destructive/50 bg-destructive/5',
                 !isCorrect &&
                   !showWrong &&
-                  'border-border bg-card shadow-sm',
+                  'border-border bg-card shadow-premium card-lift',
                 isFocused && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
               )}
             >
@@ -493,7 +432,7 @@ function QuizPhase({
                 disabled={isCorrect}
                 aria-label={`Romaji cho ${card.kana}`}
                 className={cn(
-                  'h-8 text-center text-xs',
+                  'min-h-10 text-center text-xs sm:min-h-11',
                   showWrong && 'border-destructive/50 text-destructive',
                   isCorrect && 'border-emerald-500/30 bg-background/80',
                 )}
@@ -543,7 +482,7 @@ function ResultCell({
   return (
     <div
       className={cn(
-        'flex min-w-[3.5rem] flex-1 flex-col items-center rounded-lg border px-1 py-2',
+        'flex min-w-[3.5rem] flex-1 flex-col items-center rounded-2xl border px-1 py-2 shadow-premium card-lift',
         isOk && 'border-emerald-500/40 bg-emerald-50/80 dark:bg-emerald-950/20',
         !isOk && !isNa && 'border-destructive/30 bg-destructive/5',
         isNa && 'border-border bg-muted/30',
@@ -602,7 +541,7 @@ function ResultsPhase({
   };
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="space-y-6">
       <Card className="overflow-hidden border-primary/20">
         <CardHeader className="bg-gradient-to-br from-primary/15 via-primary/5 to-accent/10 text-center">
           <p className="text-sm text-muted-foreground">Tổng kết</p>
@@ -690,24 +629,14 @@ export function KanaQuizView() {
     KANA_FONT_OPTIONS.find((f) => f.value === fontKey)?.family ??
     KANA_FONT_OPTIONS[0].family;
 
-  const header = useMemo(() => {
-    if (phase === 'setup') {
-      return {
-        title: 'Luyện kana',
-        description:
-          'Chọn hàng kana cần ôn, rồi gõ romaji tương ứng trong bài quiz. Hỗ trợ hiragana và katakana.',
-      };
-    }
+  const headerDescription = useMemo(() => {
     if (phase === 'quiz') {
-      return {
-        title: 'Bài quiz kana',
-        description: 'Gõ romaji cho từng ký tự, nhấn Enter để kiểm tra và chuyển ô tiếp theo.',
-      };
+      return 'Gõ romaji cho từng ký tự, nhấn Enter để kiểm tra và chuyển ô tiếp theo.';
     }
-    return {
-      title: 'Kết quả luyện kana',
-      description: 'Xem chi tiết từng ký tự và luyện lại các hàng còn yếu.',
-    };
+    if (phase === 'results') {
+      return 'Xem chi tiết từng ký tự và luyện lại các hàng còn yếu.';
+    }
+    return 'Chọn hàng kana cần ôn, rồi gõ romaji tương ứng trong bài quiz. Hỗ trợ hiragana và katakana.';
   }, [phase]);
 
   const toggleRow = (key: string) => {
@@ -821,46 +750,56 @@ export function KanaQuizView() {
   };
 
   return (
-    <div className="w-full pb-6">
-      <PageHeader phase={phase} title={header.title} description={header.description} />
+    <PageShell
+      className={pageContentClass}
+      eyebrow="Học"
+      title="Luyện kana"
+      description={headerDescription}
+      icon={Keyboard}
+      iconClassName="bg-tertiary"
+      tone="secondary"
+      chips={['Hiragana', 'Katakana', 'Romaji']}
+      footer="Chọn hàng kana, gõ romaji và nhấn Enter để kiểm tra từng ký tự."
+    >
+      <div className="rounded-2xl border border-border/70 bg-surface-paper/50 p-4 md:p-6">
+          {phase === 'setup' && (
+            <SetupPhase
+              script={script}
+              setScript={setScript}
+              fontKey={fontKey}
+              setFontKey={setFontKey}
+              selectedRows={selectedRows}
+              toggleRow={toggleRow}
+              toggleGroup={toggleGroup}
+              toggleAll={toggleAll}
+              groups={groups}
+              onStart={handleStart}
+            />
+          )}
 
-      {phase === 'setup' && (
-        <SetupPhase
-          script={script}
-          setScript={setScript}
-          fontKey={fontKey}
-          setFontKey={setFontKey}
-          selectedRows={selectedRows}
-          toggleRow={toggleRow}
-          toggleGroup={toggleGroup}
-          toggleAll={toggleAll}
-          groups={groups}
-          onStart={handleStart}
-        />
-      )}
+          {phase === 'quiz' && (
+            <QuizPhase
+              key={quizSession}
+              cards={quizCards}
+              fontFamily={fontFamily}
+              progress={progress}
+              onSubmit={handleSubmit}
+              onClearWrongInput={handleClearWrongInput}
+              onFinish={handleFinish}
+            />
+          )}
 
-      {phase === 'quiz' && (
-        <QuizPhase
-          key={quizSession}
-          cards={quizCards}
-          fontFamily={fontFamily}
-          progress={progress}
-          onSubmit={handleSubmit}
-          onClearWrongInput={handleClearWrongInput}
-          onFinish={handleFinish}
-        />
-      )}
-
-      {phase === 'results' && (
-        <ResultsPhase
-          groups={groups}
-          cards={quizCards}
-          progress={progress}
-          fontFamily={fontFamily}
-          onQuizAgain={handleQuizAgain}
-          onHome={() => navigate(paths.learn.hub)}
-        />
-      )}
-    </div>
+          {phase === 'results' && (
+            <ResultsPhase
+              groups={groups}
+              cards={quizCards}
+              progress={progress}
+              fontFamily={fontFamily}
+              onQuizAgain={handleQuizAgain}
+              onHome={() => navigate(paths.learn.hub)}
+            />
+          )}
+      </div>
+    </PageShell>
   );
 }

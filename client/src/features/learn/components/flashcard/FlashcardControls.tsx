@@ -1,6 +1,6 @@
-import { Check, X } from 'lucide-react';
+﻿import { Check, X } from 'lucide-react';
 
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 type FlashcardControlsProps = {
   flipped: boolean;
@@ -12,8 +12,8 @@ export function FlashcardControls({ flipped, onLearning, onMastered }: Flashcard
   if (!flipped) {
     return (
       <p className="mx-auto max-w-2xl px-2 text-center text-sm text-muted-foreground">
-        Nhấn thẻ hoặc <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">Space</kbd>{' '}
-        để xem đáp án · <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">A</kbd>{' '}
+        Nhấn thẻ hoặc <kbd className="rounded-lg border border-border bg-surface-paper px-1.5 py-0.5 text-xs font-bold shadow-premium card-lift">Space</kbd>{' '}
+        để xem đáp án · <kbd className="rounded-lg border border-border bg-surface-paper px-1.5 py-0.5 text-xs font-bold shadow-premium card-lift">A</kbd>{' '}
         nghe
       </p>
     );
@@ -25,10 +25,9 @@ export function FlashcardControls({ flipped, onLearning, onMastered }: Flashcard
         type="button"
         onClick={onLearning}
         className={cn(
-          'flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl border-2 px-3 py-3 sm:min-h-[56px]',
-          'border-orange-400/60 bg-orange-50 font-bold text-orange-800 shadow-md',
-          'transition-transform active:scale-[0.97] hover:bg-orange-100/90',
-          'dark:bg-orange-950/40 dark:text-orange-200 dark:hover:bg-orange-950/60',
+          'flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl border px-3 py-3 sm:min-h-[56px]',
+          'border-border bg-secondary/20 font-display font-extrabold text-foreground shadow-premium card-lift',
+          'transition-all active:scale-[0.97] hover:-translate-y-0.5 hover:bg-secondary/30 hover:shadow-premium card-lift',
         )}
       >
         <X className="size-6 stroke-[2.5] sm:size-7" />
@@ -38,10 +37,9 @@ export function FlashcardControls({ flipped, onLearning, onMastered }: Flashcard
         type="button"
         onClick={onMastered}
         className={cn(
-          'flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl border-2 px-3 py-3 sm:min-h-[56px]',
-          'border-emerald-400/60 bg-emerald-50 font-bold text-emerald-900 shadow-md',
-          'transition-transform active:scale-[0.97] hover:bg-emerald-100/90',
-          'dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-950/60',
+          'flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl border px-3 py-3 sm:min-h-[56px]',
+          'border-border bg-quaternary/25 font-display font-extrabold text-foreground shadow-premium card-lift',
+          'transition-all active:scale-[0.97] hover:-translate-y-0.5 hover:bg-quaternary/35 hover:shadow-premium card-lift',
         )}
       >
         <Check className="size-6 stroke-[2.5] sm:size-7" />

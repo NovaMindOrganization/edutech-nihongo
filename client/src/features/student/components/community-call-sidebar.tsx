@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import {
   Languages,
   Loader2,
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { CallChatMessage, CallSidebarPanel, CallSttEntry } from '@/features/student/types/webrtc-call.types';
 import { postCommunityTranslate } from '@/features/student/services/studentApi';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 const PANELS: { id: CallSidebarPanel; label: string; icon: typeof MessageSquare }[] = [
   { id: 'stt', label: 'Phiên nói', icon: Mic },
@@ -93,19 +93,22 @@ export function CommunityCallSidebar({
   }
 
   return (
-    <aside className="flex h-full w-full flex-col border-l border-white/10 bg-zinc-900/95">
-      <div className="flex border-b border-white/10">
+    <aside className="flex h-full w-full flex-col border-l border-background/10 bg-ink/95">
+      <div className="flex border-b border-background/10" role="tablist" aria-label="Công cụ cuộc gọi">
         {PANELS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type="button"
+            role="tab"
+            aria-selected={activePanel === id}
+            aria-controls={`call-panel-${id}`}
             disabled={disabled && id !== 'stt'}
             onClick={() => onPanelChange(id)}
             className={cn(
-              'flex flex-1 flex-col items-center gap-1 py-3 text-xs transition-colors',
+              'flex min-h-11 flex-1 flex-col items-center gap-1 py-3 text-xs transition-colors',
               activePanel === id
-                ? 'border-b-2 border-primary bg-white/5 text-white'
-                : 'text-zinc-400 hover:text-white',
+                ? 'border-b-2 border-primary bg-background/5 text-background'
+                : 'text-background/60 hover:text-background',
             )}
           >
             <Icon className="h-4 w-4" />
@@ -116,11 +119,11 @@ export function CommunityCallSidebar({
 
       <div className="flex min-h-0 flex-1 flex-col p-3">
         {activePanel === 'stt' && (
-          <>
+          <div id="call-panel-stt" role="tabpanel" className="flex min-h-0 flex-1 flex-col">
             <div
               className={cn(
                 'mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs',
-                sttListening ? 'bg-emerald-500/15 text-emerald-300' : 'bg-zinc-800 text-zinc-400',
+                sttListening ? 'bg-quaternary/15 text-quaternary' : 'bg-background/10 text-background/60',
               )}
             >
               <Radio className={cn('h-3 w-3', sttListening && 'animate-pulse')} />
@@ -131,9 +134,9 @@ export function CommunityCallSidebar({
                   : 'Bật mic để nhận dạng giọng nói'}
             </div>
 
-            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto rounded-lg bg-zinc-950/60 p-2">
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto rounded-lg bg-ink/60 p-2">
               {sttEntries.length === 0 && !sttLiveLine && (
-                <p className="py-8 text-center text-xs text-zinc-500">
+                <p className="py-8 text-center text-xs text-background/50">
                   Lời nói của hai người sẽ hiện dạng tin nhắn khi bắt đầu nói.
                 </p>
               )}
@@ -141,10 +144,10 @@ export function CommunityCallSidebar({
                 <div
                   key={e.id}
                   className={cn(
-                    'max-w-[92%] rounded-2xl px-3 py-2 text-sm shadow-sm',
+                    'max-w-[92%] break-words rounded-2xl px-3 py-2 text-sm shadow-premium card-lift [overflow-wrap:anywhere]',
                     e.from === 'me'
                       ? 'ml-auto rounded-br-md bg-primary text-primary-foreground'
-                      : 'rounded-bl-md bg-zinc-800 text-zinc-100',
+                      : 'rounded-bl-md bg-background/10 text-background',
                   )}
                 >
                   <div
@@ -159,7 +162,7 @@ export function CommunityCallSidebar({
                   {onPickTranslate && (
                     <button
                       type="button"
-                      className="mt-1 text-[10px] underline opacity-80 hover:opacity-100"
+                      className="mt-1 inline-flex min-h-8 items-center text-[10px] underline opacity-80 hover:opacity-100"
                       onClick={() => {
                         setTranslateSource(e.text);
                         onPickTranslate?.(e.text);
@@ -172,30 +175,30 @@ export function CommunityCallSidebar({
                 </div>
               ))}
               {sttLiveLine && (
-                <div className="ml-auto max-w-[92%] rounded-2xl rounded-br-md border border-dashed border-primary/40 bg-primary/10 px-3 py-2 text-sm text-zinc-200">
-                  <span className="text-[10px] text-zinc-400">đang nghe…</span>
+                <div className="ml-auto max-w-[92%] break-words rounded-2xl rounded-br-md border border-dashed border-primary/40 bg-primary/10 px-3 py-2 text-sm text-background/80 [overflow-wrap:anywhere]">
+                  <span className="text-[10px] text-background/60">đang nghe…</span>
                   <p className="mt-0.5 italic">{sttLiveLine}</p>
                 </div>
               )}
               <div ref={sttEndRef} />
             </div>
-          </>
+          </div>
         )}
 
         {activePanel === 'chat' && (
           <>
-            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto rounded-lg bg-zinc-950/60 p-2">
+            <div id="call-panel-chat" role="tabpanel" className="min-h-0 flex-1 space-y-2 overflow-y-auto rounded-lg bg-ink/60 p-2">
               {chatMessages.length === 0 && (
-                <p className="text-center text-xs text-zinc-500">Chưa có tin nhắn</p>
+                <p className="text-center text-xs text-background/50">Chưa có tin nhắn</p>
               )}
               {chatMessages.map((m) => (
                 <div
                   key={m.id}
                   className={cn(
-                    'max-w-[90%] rounded-lg px-2 py-1.5 text-sm',
+                    'max-w-[90%] break-words rounded-lg px-2 py-1.5 text-sm [overflow-wrap:anywhere]',
                     m.from === 'me'
                       ? 'ml-auto bg-primary text-primary-foreground'
-                      : 'bg-zinc-800 text-zinc-100',
+                      : 'bg-background/10 text-background',
                   )}
                 >
                   {m.text}
@@ -215,9 +218,9 @@ export function CommunityCallSidebar({
                 onChange={(e) => setChatDraft(e.target.value)}
                 placeholder="Nhắn bạn học…"
                 disabled={disabled}
-                className="border-white/15 bg-zinc-950 text-white"
+                className="border-background/15 bg-ink text-background"
               />
-              <Button type="submit" size="icon" disabled={disabled || !chatDraft.trim()}>
+              <Button type="submit" size="icon" disabled={disabled || !chatDraft.trim()} aria-label="Gửi tin nhắn">
                 <Send className="h-4 w-4" />
               </Button>
             </form>
@@ -226,7 +229,8 @@ export function CommunityCallSidebar({
 
         {activePanel === 'translate' && (
           <>
-            <p className="text-xs text-zinc-400">
+            <div id="call-panel-translate" role="tabpanel">
+            <p className="text-xs text-background/60">
               Dịch tiếng Nhật → Việt (tab riêng, dùng AI — không dùng cho phiên âm).
             </p>
             <textarea
@@ -234,7 +238,7 @@ export function CommunityCallSidebar({
               onChange={(e) => setTranslateSource(e.target.value)}
               placeholder="Dán câu từ tab Phiên nói…"
               disabled={disabled}
-              className="mt-3 min-h-[100px] w-full resize-none rounded-lg border border-white/15 bg-zinc-950 p-2 text-sm text-white"
+              className="mt-3 min-h-[100px] w-full resize-none rounded-lg border border-background/15 bg-ink p-2 text-sm text-background"
             />
             <Button
               type="button"
@@ -252,10 +256,11 @@ export function CommunityCallSidebar({
               )}
             </Button>
             {translateResult && (
-              <div className="mt-3 rounded-lg border border-white/10 bg-zinc-950 p-3 text-sm text-zinc-100">
+              <div className="mt-3 rounded-lg border border-background/10 bg-ink p-3 text-sm text-background">
                 {translateResult}
               </div>
             )}
+            </div>
           </>
         )}
       </div>

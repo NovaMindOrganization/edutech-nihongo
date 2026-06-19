@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, Clock } from 'lucide-react';
+﻿import { AlertTriangle, ArrowLeft, Clock, FileText, RotateCcw } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -6,11 +6,8 @@ import { toast } from 'sonner';
 import { ApiRequestError } from '@/services/httpClient';
 import { paths } from '@/router/paths';
 import { cn } from '@/lib/utils';
-import { examChrome } from '@/features/student/components/exam-shell-theme';
-import {
-  McqExamShell,
-  EXAM_ROOT,
-} from '@/features/student/components/mcq-exam-shell';
+import { McqExamShell } from '@/features/student/components/mcq-exam-shell';
+import { EXAM_ROOT } from '@/features/student/components/mcq-exam-utils';
 import {
   getActiveJlptSession,
   getJlptSession,
@@ -64,6 +61,21 @@ function clearDraftAnswers(examId: string) {
   sessionStorage.removeItem(draftStorageKey(examId));
 }
 
+const jlptChrome = {
+  header: 'border-b border-border bg-surface-paper text-foreground',
+  eyebrow: 'text-muted-foreground',
+  fg: 'text-foreground',
+  fgMuted: 'text-muted-foreground',
+  fgSoft: 'text-muted-foreground',
+  btnSolid:
+    'rounded-md bg-ink text-background transition-colors hover:bg-ink/90',
+  btnSecondary:
+    'rounded-md border border-border bg-surface-paper text-foreground transition-colors hover:bg-muted',
+  btnDisabled:
+    'cursor-not-allowed border-border bg-muted text-muted-foreground',
+  timer: 'border-border bg-surface-paper text-foreground',
+} as const;
+
 export function JlptExamView() {
   const { examId = '' } = useParams();
   const location = useLocation();
@@ -94,10 +106,10 @@ export function JlptExamView() {
       .then((list) => {
         const found = list.find((e) => e.id === examId);
         if (found) setExamMeta(found);
-        else if (!examMeta) toast.error('Không tìm thấy đề thi');
+        else toast.error('Không tìm thấy đề thi');
       })
       .catch(() => {
-        if (!examMeta) toast.error('Không tải được đề thi');
+        toast.error('Không tải được đề thi');
       });
   }, [examId, phase]);
 
@@ -268,9 +280,9 @@ export function JlptExamView() {
 
   if (phase === 'intro') {
     return (
-      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-muted/40')}>
-        <div className={cn('px-4 py-3 md:px-8', examChrome.header)}>
-          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.2em]', examChrome.eyebrow)}>
+      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-background')}>
+        <div className={cn('px-4 py-3 md:px-8', jlptChrome.header)}>
+          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.2em]', jlptChrome.eyebrow)}>
             Thi thử JLPT
           </p>
           <h1 className="mt-1 font-display text-lg font-semibold tracking-tight md:text-xl">
@@ -281,37 +293,37 @@ export function JlptExamView() {
         <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 md:px-6">
           <Link
             to={paths.student.jlptSim}
-            className="mb-8 inline-flex items-center text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+            className="mb-6 inline-flex items-center text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
             Thoát — danh sách đề
           </Link>
 
-          <div className="border border-border bg-card shadow-sm">
-            <div className="border-b border-border bg-muted/50 px-6 py-4">
+          <div className="overflow-hidden rounded-lg border border-border bg-surface-paper shadow-premium card-lift">
+            <div className="border-b border-border bg-muted px-6 py-4">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Thông tin đề thi
               </p>
-              <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                <div>
+              <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-md border border-border bg-surface-paper p-3">
                   <dt className="text-muted-foreground">Cấp độ</dt>
                   <dd className="font-semibold text-foreground">
                     {examMeta.jlptLevel}
                   </dd>
                 </div>
-                <div>
+                <div className="rounded-md border border-border bg-surface-paper p-3">
                   <dt className="text-muted-foreground">Thời gian</dt>
                   <dd className="font-semibold text-foreground">
                     {examMeta.durationMinutes} phút
                   </dd>
                 </div>
-                <div>
+                <div className="rounded-md border border-border bg-surface-paper p-3">
                   <dt className="text-muted-foreground">Số câu</dt>
                   <dd className="font-semibold text-foreground">
                     {examMeta.questionCount}
                   </dd>
                 </div>
-                <div>
+                <div className="rounded-md border border-border bg-surface-paper p-3">
                   <dt className="text-muted-foreground">Lượt thi</dt>
                   <dd className="font-semibold text-foreground">
                     {examMeta.myAttemptCount}/{examMeta.maxAttempts}
@@ -324,7 +336,10 @@ export function JlptExamView() {
             </div>
 
             <div className="space-y-4 px-6 py-6 text-sm leading-relaxed text-muted-foreground">
-              <p className="font-medium text-foreground">Quy chế làm bài</p>
+              <div className="flex items-center gap-2 text-foreground">
+                <FileText className="size-4" />
+                <p className="font-semibold">Quy chế làm bài</p>
+              </div>
               <ul className="list-inside list-decimal space-y-2 marker:text-muted-foreground">
                 <li>Toàn bộ câu hỏi hiển thị trên một trang — cuộn để làm bài.</li>
                 <li>Đồng hồ đếm ngược; hết giờ hệ thống tự nộp bài.</li>
@@ -339,7 +354,7 @@ export function JlptExamView() {
             </div>
 
             {activeSession && activeSession.remainingMs > 0 && (
-              <div className="mx-6 mb-0 border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
+              <div className="mx-6 mb-0 rounded-md border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
                 <p className="font-medium">Bạn có bài đang làm dở</p>
                 <p className="mt-1 font-mono tabular-nums">
                   Còn {formatCountdown(activeSession.remainingMs)} — bấm bên dưới để tiếp tục (không reset
@@ -349,12 +364,12 @@ export function JlptExamView() {
             )}
 
             {!examMeta.canStart && !(activeSession && activeSession.remainingMs > 0) && (
-              <div className="mx-6 border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
+              <div className="mx-6 rounded-md border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
                 Bạn đã dùng hết {examMeta.maxAttempts} lượt thi cho đề này.
               </div>
             )}
 
-            <div className="border-t border-border bg-muted/50 px-6 py-5">
+            <div className="border-t border-border bg-muted px-6 py-5">
               <button
                 type="button"
                 disabled={
@@ -365,7 +380,7 @@ export function JlptExamView() {
                 onClick={handleStart}
                 className={cn(
                   'w-full py-3.5 text-sm font-semibold uppercase tracking-wider',
-                  examChrome.btnSolid,
+                  jlptChrome.btnSolid,
                   'disabled:cursor-not-allowed disabled:opacity-40',
                 )}
               >
@@ -382,14 +397,18 @@ export function JlptExamView() {
 
   if (phase === 'results' && score) {
     return (
-      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-muted/40')}>
-        <div className={cn('px-4 py-4 text-center md:px-8', examChrome.header)}>
-          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.2em]', examChrome.eyebrow)}>
+      <div className={cn(EXAM_ROOT, 'overflow-y-auto bg-background')}>
+        <div className={cn('px-4 py-5 md:px-8', jlptChrome.header)}>
+          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.2em]', jlptChrome.eyebrow)}>
             Kết quả bài thi
           </p>
-          <p className="mt-3 font-mono text-5xl font-bold tabular-nums">{score.total}</p>
-          <p className={cn('mt-1 text-sm', examChrome.fgMuted)}>điểm tổng (thang 100)</p>
-          <p className="mt-2 text-base font-medium">{examTitle}</p>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="font-mono text-5xl font-bold tabular-nums">{score.total}</p>
+              <p className={cn('mt-1 text-sm', jlptChrome.fgMuted)}>điểm tổng (thang 100)</p>
+            </div>
+            <p className="max-w-xl text-right text-base font-medium">{examTitle}</p>
+          </div>
         </div>
 
         <div className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-8 pb-12 md:px-6">
@@ -403,43 +422,56 @@ export function JlptExamView() {
                 setSessionId(null);
                 autoSubmittedRef.current = false;
               }}
-              className={cn('px-5 py-2.5 text-sm font-semibold', examChrome.btnSolid)}
+              className={cn(
+                'inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold',
+                jlptChrome.btnSolid,
+              )}
             >
+              <RotateCcw className="size-4" />
               Thi lại
             </button>
             <Link
               to={paths.student.jlptSim}
-              className="inline-flex items-center rounded-md border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
+              className={cn(
+                'inline-flex items-center px-5 py-2.5 text-sm font-medium',
+                jlptChrome.btnSecondary,
+              )}
             >
               Danh sách đề
             </Link>
           </div>
 
-          <div className="border border-border bg-card">
-            <div className="border-b border-border bg-muted/50 px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="overflow-hidden rounded-lg border border-border bg-surface-paper">
+            <div className="border-b border-border bg-muted px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Phân tích theo phần
             </div>
             <div className="divide-y divide-border">
               {Object.entries(score.bySection).map(([section, pct]) => (
-                <div key={section} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                <div
+                  key={section}
+                  className="grid gap-3 px-4 py-3 text-sm sm:grid-cols-[1fr_4rem] sm:items-center"
+                >
                   <span className="font-medium text-foreground">{section}</span>
-                  <span className="font-mono font-semibold tabular-nums text-foreground">
-                    {pct}%
-                  </span>
+                  <div className="flex items-center gap-3 sm:justify-end">
+                    <div className="h-2 w-full rounded-full bg-muted sm:hidden">
+                      <div className="h-2 rounded-full bg-ink" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="font-mono font-semibold tabular-nums text-foreground">{pct}%</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           {details.length > 0 && (
-            <div className="border border-border bg-card">
-              <div className="border-b border-border bg-muted/50 px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <div className="overflow-hidden rounded-lg border border-border bg-surface-paper">
+              <div className="border-b border-border bg-muted px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Chi tiết từng câu
               </div>
               <div className="divide-y divide-border">
                 {details.map((d, i) => (
                   <div key={d.questionId} className="px-4 py-3 text-sm">
-                    <span className="font-mono text-muted-foreground">#{i + 1}</span>
+                    <span className="inline-flex min-w-10 font-mono text-muted-foreground">#{i + 1}</span>
                     <span
                       className={cn(
                         'ml-3 font-semibold uppercase tracking-wide',
@@ -487,14 +519,14 @@ export function JlptExamView() {
             className={cn(
               'flex items-center gap-2 rounded-md border px-4 py-2 font-mono text-lg font-bold tabular-nums tracking-wider',
               timerUrgent
-                ? 'border-amber-300 bg-amber-600 text-white'
-                : examChrome.timer,
+                ? 'border-amber-600 bg-amber-50 text-amber-900'
+                : jlptChrome.timer,
             )}
           >
             <Clock className="h-4 w-4 shrink-0 opacity-80" />
             {formatCountdown(remainingMs)}
           </div>
-          <div className={cn('text-right text-xs', examChrome.fgMuted)}>
+          <div className={cn('text-right text-xs', jlptChrome.fgMuted)}>
             <p>{durationMinutes} phút</p>
             <p className="mt-0.5 font-mono tabular-nums">
               {answeredCount}/{questions.length} đã trả lời
@@ -506,17 +538,17 @@ export function JlptExamView() {
         <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-8">
           <div className="flex items-start gap-2 text-sm">
             {!allAnswered && (
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             )}
-            <p className={examChrome.fgSoft}>
-              <span className={cn('font-mono font-semibold', examChrome.fg)}>
+            <p className={jlptChrome.fgSoft}>
+              <span className={cn('font-mono font-semibold', jlptChrome.fg)}>
                 {answeredCount}
               </span>
-              <span className={examChrome.fgMuted}> / </span>
+              <span className={jlptChrome.fgMuted}> / </span>
               <span className="font-mono">{questions.length}</span>
               <span className="ml-1">câu đã chọn</span>
               {!allAnswered && (
-                <span className="ml-2 text-amber-200">
+                <span className="ml-2 text-amber-700">
                   — còn {questions.length - answeredCount} câu
                 </span>
               )}
@@ -528,7 +560,7 @@ export function JlptExamView() {
             onClick={handleSubmitClick}
             className={cn(
               'min-w-[10rem] rounded-md border px-6 py-2.5 text-sm font-semibold uppercase tracking-wider transition-colors',
-              allAnswered ? examChrome.btnOnChrome : examChrome.btnOnChromeDisabled,
+              allAnswered ? jlptChrome.btnSolid : jlptChrome.btnDisabled,
             )}
           >
             Nộp bài

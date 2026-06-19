@@ -1,4 +1,4 @@
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 import {
   STUDY_SET_CONTENT_COLORS,

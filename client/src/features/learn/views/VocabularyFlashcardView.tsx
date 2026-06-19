@@ -2,6 +2,11 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
+import {
+  EmptyState,
+  emptyStatePresets,
+  FlashcardSkeleton,
+} from '@/components/usable/states';
 import { Button } from '@/components/ui/button';
 import { useSpeech } from '@/hooks/use-speech';
 
@@ -31,7 +36,6 @@ export function VocabularyFlashcardView() {
     progressPercent,
     total,
     reload,
-    reveal,
     toggleFlip,
     toggleStar,
     markLearning,
@@ -87,32 +91,32 @@ export function VocabularyFlashcardView() {
         onAutoPlayChange={setAutoPlay}
       />
 
-      {loading && total === 0 && (
-        <p className="py-16 text-center text-muted-foreground">Đang tải thẻ...</p>
-      )}
+      {loading && total === 0 && <FlashcardSkeleton />}
 
       {!loading && total === 0 && (
-        <div className="rounded-2xl border border-dashed border-border py-16 text-center">
-          <p className="text-muted-foreground">Không có từ vựng cho bộ lọc này.</p>
-          <Button type="button" variant="outline" className="mt-4" onClick={() => setSource('all')}>
-            Xem tất cả
-          </Button>
-        </div>
+        <EmptyState
+          {...emptyStatePresets.flashcards}
+          action={
+            <Button type="button" variant="outline" onClick={() => setSource('all')}>
+              Xem tất cả
+            </Button>
+          }
+        />
       )}
 
       {finished && total > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-border bg-card p-10 text-center shadow-sm"
         >
-          <p className="text-2xl font-bold">Xong rồi!</p>
-          <p className="mt-2 text-muted-foreground">
-            Bạn đã ôn {total} từ trong bộ lọc hiện tại.
-          </p>
-          <Button type="button" className="mt-6" onClick={() => void reload()}>
-            Học lại
-          </Button>
+          <EmptyState
+            {...emptyStatePresets.flashcardsComplete}
+            action={
+              <Button type="button" onClick={() => void reload()}>
+                Học lại
+              </Button>
+            }
+          />
         </motion.div>
       )}
 
@@ -129,7 +133,7 @@ export function VocabularyFlashcardView() {
             cardKey={`${current.id}-${index}`}
             speaking={speaking}
             starred={current.progress?.isStarred ?? false}
-            onReveal={reveal}
+            onFlip={toggleFlip}
             onToggleStar={() =>
               toggleStar(current.id, !(current.progress?.isStarred ?? false))
             }

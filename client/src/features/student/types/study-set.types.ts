@@ -1,4 +1,4 @@
-export type StudySetContentType =
+﻿export type StudySetContentType =
   | 'vocabulary'
   | 'grammar'
   | 'kanji'
@@ -145,9 +145,9 @@ export const STUDY_SET_CONTENT_LABELS: Record<StudySetContentType, string> = {
 };
 
 export const STUDY_SET_CONTENT_COLORS: Record<StudySetContentType, string> = {
-  vocabulary: 'bg-emerald-100 text-emerald-800',
-  grammar: 'bg-violet-100 text-violet-800',
-  kanji: 'bg-amber-100 text-amber-800',
-  listening: 'bg-sky-100 text-sky-800',
-  speaking: 'bg-rose-100 text-rose-800',
+  vocabulary: 'bg-quaternary/30 text-quaternary-foreground',
+  grammar: 'bg-secondary/40 text-secondary-foreground',
+  kanji: 'bg-tertiary/40 text-tertiary-foreground',
+  listening: 'bg-brand-soft text-brand',
+  speaking: 'bg-pink-soft text-pink-foreground',
 };

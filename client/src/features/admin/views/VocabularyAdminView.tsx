@@ -1,16 +1,19 @@
 import { motion } from 'framer-motion';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Languages, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
+import { AdminListSkeleton, emptyStatePresets, ViewState } from '@/components/usable/states';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { paths } from '@/router/paths';
 
+import {
+  AdminListPanel,
+  AdminPagination,
+  StaffListPageShell,
+} from '../components/admin-page-shell';
 import {
   AdminListFilters,
   AdminSearchFilter,
@@ -166,70 +169,88 @@ export function VocabularyAdminView() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Từ vựng</h1>
-          <p className="text-sm text-muted-foreground">
-            {total} mục — gán theo khóa học và tiết. Nên quản lý chi tiết tại{' '}
-            <Link to={paths.admin.courses} className="text-primary hover:underline">
-              Khóa học → Tiết → Từ vựng
-            </Link>
-            .
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Thêm từ
-        </Button>
-      </div>
-
-      <AdminListFilters onReset={hasFilters ? resetFilters : undefined}>
-        <JlptLevelFilter
-          value={jlptLevel}
-          onChange={(v) => {
-            setJlptLevel(v);
-            setPage(1);
-          }}
-        />
-        <AdminSearchFilter
-          value={search}
-          placeholder="Từ, đọc, nghĩa…"
-          onChange={(v) => {
-            setSearch(v);
-            setPage(1);
-          }}
-        />
-        <CourseFilter
-          value={filterCourseId}
-          courses={courses}
-          onChange={(v) => {
-            setFilterCourseId(v);
-            setFilterLessonId('');
-            setPage(1);
-          }}
-        />
-        <LessonFilter
-          value={filterLessonId}
-          lessons={filterLessons}
-          disabled={!filterCourseId}
-          onChange={(v) => {
-            setFilterLessonId(v);
-            setPage(1);
-          }}
-        />
-      </AdminListFilters>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Danh sách</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {loading ? (
-            <p className="p-5 text-sm text-muted-foreground">Đang tải...</p>
-          ) : items.length === 0 ? (
-            <p className="p-5 text-sm text-muted-foreground">Không có kết quả.</p>
-          ) : (
+    <>
+      <StaffListPageShell
+        title="Từ vựng"
+        description="Gán từ theo khóa học và tiết — quản lý chi tiết tại Khóa học → Tiết → Từ vựng."
+        icon={Languages}
+        iconClassName="bg-secondary/50"
+        tone="secondary"
+        chips={['JLPT', 'Khóa học', 'Tiết học']}
+        total={total}
+        secondaryStat={{ label: 'Trang này', value: items.length }}
+        createAction={
+          <Button onClick={openCreate} className="w-full">
+            <Plus className="size-4" />
+            Thêm từ
+          </Button>
+        }
+        filters={
+          <AdminListFilters onReset={hasFilters ? resetFilters : undefined} className="mt-0 border-0 bg-transparent p-0 shadow-none">
+            <JlptLevelFilter
+              value={jlptLevel}
+              onChange={(v) => {
+                setJlptLevel(v);
+                setPage(1);
+              }}
+            />
+            <AdminSearchFilter
+              value={search}
+              placeholder="Từ, đọc, nghĩa…"
+              onChange={(v) => {
+                setSearch(v);
+                setPage(1);
+              }}
+            />
+            <CourseFilter
+              value={filterCourseId}
+              courses={courses}
+              onChange={(v) => {
+                setFilterCourseId(v);
+                setFilterLessonId('');
+                setPage(1);
+              }}
+            />
+            <LessonFilter
+              value={filterLessonId}
+              lessons={filterLessons}
+              disabled={!filterCourseId}
+              onChange={(v) => {
+                setFilterLessonId(v);
+                setPage(1);
+              }}
+            />
+          </AdminListFilters>
+        }
+        pagination={
+          <AdminPagination
+            page={page}
+            total={total}
+            pageSize={30}
+            onPrevious={() => setPage((p) => p - 1)}
+            onNext={() => setPage((p) => p + 1)}
+          />
+        }
+      >
+        <AdminListPanel>
+          <ViewState
+            loading={loading}
+            empty={!loading && items.length === 0}
+            loadingSkeleton={
+              <div className="p-5">
+                <AdminListSkeleton count={6} />
+              </div>
+            }
+            loadingLabel="Đang tải từ vựng…"
+            emptyEmbedded
+            {...emptyStatePresets.admin}
+            emptyTone="vocabulary"
+            emptyAction={
+              <Button type="button" size="sm" onClick={openCreate}>
+                Thêm từ vựng
+              </Button>
+            }
+          >
             <div className="divide-y divide-border/60">
               {items.map((item, i) => (
                 <motion.div
@@ -261,21 +282,9 @@ export function VocabularyAdminView() {
                 </motion.div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="mt-4 flex justify-center gap-2">
-        <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-          Trước
-        </Button>
-        <span className="flex items-center text-sm">
-          Trang {page} / {Math.max(1, Math.ceil(total / 30))}
-        </span>
-        <Button variant="outline" disabled={page * 30 >= total} onClick={() => setPage((p) => p + 1)}>
-          Sau
-        </Button>
-      </div>
+          </ViewState>
+        </AdminListPanel>
+      </StaffListPageShell>
 
       <Dialog open={open} onOpenChange={setOpen} title={editing ? 'Sửa từ vựng' : 'Thêm từ vựng'} className="max-w-lg">
         <div className="grid gap-3">
@@ -321,6 +330,6 @@ export function VocabularyAdminView() {
           <Button onClick={handleSave}>Lưu</Button>
         </div>
       </Dialog>
-    </div>
+    </>
   );
 }

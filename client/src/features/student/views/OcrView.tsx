@@ -1,7 +1,23 @@
-import { Upload } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import {
+  AlertTriangle,
+  BookOpen,
+  Brain,
+  CheckCircle2,
+  ClipboardCheck,
+  FileImage,
+  GraduationCap,
+  Languages,
+  Loader2,
+  NotebookPen,
+  ScanText,
+  Sparkles,
+  Upload,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { AppIcon } from '@/components/usable/app-icon';
+import { PageHero } from '@/components/usable/page-hero';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,15 +61,94 @@ const MODE_HINTS: Record<OcrMode, string> = {
 function MetaLine({ meta }: { meta?: OcrMeta | null }) {
   if (!meta) return null;
   return (
-    <p className="text-xs text-muted-foreground">
-      {meta.engine}
-      {meta.gpu ? ' · GPU' : ' · CPU'} · {meta.processing_ms}ms · {meta.line_count} dòng
-      {meta.confidence_avg != null && ` · conf ${Math.round(meta.confidence_avg * 100)}%`}
-    </p>
+    <div className="flex flex-wrap gap-2 text-xs font-bold text-muted-foreground">
+      <span className="rounded-full border border-border bg-surface-paper px-3 py-1 shadow-premium card-lift">
+        {meta.engine}
+      </span>
+      <span className="rounded-full border border-border bg-surface-paper px-3 py-1 shadow-premium card-lift">
+        {meta.gpu ? 'GPU' : 'CPU'}
+      </span>
+      <span className="rounded-full border border-border bg-surface-paper px-3 py-1 shadow-premium card-lift">
+        {meta.processing_ms}ms
+      </span>
+      <span className="rounded-full border border-border bg-surface-paper px-3 py-1 shadow-premium card-lift">
+        {meta.line_count} dòng
+      </span>
+      {meta.confidence_avg != null && (
+        <span className="rounded-full border border-border bg-quaternary/20 px-3 py-1 shadow-premium card-lift">
+          conf {Math.round(meta.confidence_avg * 100)}%
+        </span>
+      )}
+    </div>
+  );
+}
+
+function SectionHeading({
+  icon,
+  eyebrow,
+  title,
+  description,
+  accent = 'bg-tertiary',
+}: {
+  icon: typeof Upload;
+  eyebrow: string;
+  title: string;
+  description?: string;
+  accent?: string;
+}) {
+  return (
+    <div className="mb-4 flex items-start gap-3">
+      <AppIcon icon={icon} size="lg" className={accent} />
+      <div>
+        <p className="font-display text-xs font-extrabold uppercase tracking-widest text-primary">
+          {eyebrow}
+        </p>
+        <h2 className="font-display text-2xl font-extrabold tracking-tight">{title}</h2>
+        {description && (
+          <p className="mt-1 text-sm font-medium leading-6 text-muted-foreground">{description}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ExtractedTextCard({
+  text,
+  meta,
+  title = 'Văn bản nhận diện',
+}: {
+  text: string;
+  meta?: OcrMeta | null;
+  title?: string;
+}) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-border bg-surface-paper">
+        <SectionHeading
+          icon={ScanText}
+          eyebrow="OCR Results"
+          title={title}
+          description="Đoạn chữ được nhận diện từ ảnh, giữ xuống dòng để dễ so lại với tài liệu gốc."
+          accent="bg-quaternary"
+        />
+        <MetaLine meta={meta} />
+      </CardHeader>
+      <CardContent className="bg-background p-4 sm:p-6">
+        <div className="rounded-3xl border border-dashed border-border bg-surface-paper p-4 shadow-premium card-lift">
+          <p className="whitespace-pre-wrap font-jp text-base font-semibold leading-8">
+            {text || '—'}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
 type NotebookPick = { itemId: string; itemType: 'vocabulary' | 'kanji' };
+
+function notebookPickKey(p: NotebookPick) {
+  return `${p.itemType}:${p.itemId}`;
+}
 
 function OcrNotebookSuggestions({
   vocabulary,
@@ -67,18 +162,22 @@ function OcrNotebookSuggestions({
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [adding, setAdding] = useState(false);
 
-  const allKeys: NotebookPick[] = [
-    ...vocabulary.map((v) => ({ itemId: v.id, itemType: 'vocabulary' as const })),
-    ...kanji.map((k) => ({ itemId: k.id, itemType: 'kanji' as const })),
-  ];
-  const keyOf = (p: NotebookPick) => `${p.itemType}:${p.itemId}`;
+  const allKeys = useMemo<NotebookPick[]>(
+    () => [
+      ...vocabulary.map((v) => ({ itemId: v.id, itemType: 'vocabulary' as const })),
+      ...kanji.map((k) => ({ itemId: k.id, itemType: 'kanji' as const })),
+    ],
+    [vocabulary, kanji],
+  );
 
   useEffect(() => {
-    setSelected(new Set(allKeys.map(keyOf)));
-  }, [vocabulary, kanji]);
+    queueMicrotask(() => {
+      setSelected(new Set(allKeys.map(notebookPickKey)));
+    });
+  }, [allKeys]);
 
   const toggle = (pick: NotebookPick) => {
-    const k = keyOf(pick);
+    const k = notebookPickKey(pick);
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(k)) next.delete(k);
@@ -88,11 +187,11 @@ function OcrNotebookSuggestions({
   };
 
   const selectAll = (on: boolean) => {
-    setSelected(on ? new Set(allKeys.map(keyOf)) : new Set());
+    setSelected(on ? new Set(allKeys.map(notebookPickKey)) : new Set());
   };
 
   async function handleAdd() {
-    const items = allKeys.filter((p) => selected.has(keyOf(p)));
+    const items = allKeys.filter((p) => selected.has(notebookPickKey(p)));
     if (!items.length) {
       toast.error('Chọn ít nhất một mục');
       return;
@@ -111,18 +210,24 @@ function OcrNotebookSuggestions({
 
   if (!vocabulary.length && !kanji.length) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="rounded-3xl border border-dashed border-border bg-surface-paper px-5 py-8 text-center text-sm font-medium text-muted-foreground shadow-premium card-lift">
         Không tìm thấy từ vựng/kanji mới trong ảnh (hoặc đã có hết trong sổ tay).
       </p>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">
-          {vocabulary.length} từ · {kanji.length} kanji chưa có trong sổ tay
-        </p>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift">
+        <div className="flex items-center gap-3">
+          <AppIcon icon={NotebookPen} size="md" className="bg-tertiary" />
+          <div>
+            <p className="font-display text-sm font-extrabold">Vocabulary Analysis</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              {vocabulary.length} từ · {kanji.length} kanji chưa có trong sổ tay
+            </p>
+          </div>
+        </div>
         <div className="flex gap-2">
           <Button type="button" size="sm" variant="outline" onClick={() => selectAll(true)}>
             Chọn tất cả
@@ -134,32 +239,50 @@ function OcrNotebookSuggestions({
       </div>
 
       {vocabulary.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Từ vựng</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-border bg-surface-paper">
+            <SectionHeading
+              icon={BookOpen}
+              eyebrow="Vocabulary"
+              title="Từ vựng mới"
+              description="Chọn các từ cần đưa vào sổ tay để ôn lại sau."
+              accent="bg-quaternary"
+            />
           </CardHeader>
-          <CardContent className="divide-y p-0">
+          <CardContent className="grid gap-3 bg-background p-4 md:grid-cols-2">
             {vocabulary.map((v) => {
               const pick: NotebookPick = { itemId: v.id, itemType: 'vocabulary' };
-              const k = keyOf(pick);
+              const k = notebookPickKey(pick);
               return (
                 <label
                   key={k}
-                  className="flex cursor-pointer items-start gap-3 px-4 py-3 text-sm hover:bg-muted/40"
+                  className={cn(
+                    'cursor-pointer rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:shadow-premium card-lift',
+                    selected.has(k) && 'bg-quaternary/15',
+                  )}
                 >
-                  <input
-                    type="checkbox"
-                    className="mt-1 size-4 rounded border-input"
-                    checked={selected.has(k)}
-                    onChange={() => toggle(pick)}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <span className="font-jp font-medium">{v.word}</span>
-                    {v.reading && (
-                      <span className="ml-2 text-muted-foreground">{v.reading}</span>
-                    )}
-                    <span className="ml-2 text-xs text-muted-foreground">{v.jlptLevel}</span>
-                    <p className="mt-0.5 text-muted-foreground">{v.meaning}</p>
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-1 size-5 rounded border-input accent-primary"
+                      checked={selected.has(k)}
+                      onChange={() => toggle(pick)}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className="bg-brand-soft text-brand">{v.jlptLevel}</Badge>
+                        {selected.has(k) && (
+                          <Badge className="bg-quaternary text-quaternary-foreground">Đã chọn</Badge>
+                        )}
+                      </div>
+                      <p className="mt-3 truncate font-jp text-2xl font-bold">{v.word}</p>
+                      {v.reading && (
+                        <p className="mt-1 truncate font-jp text-base font-medium text-primary">
+                          {v.reading}
+                        </p>
+                      )}
+                      <p className="mt-3 text-sm font-semibold leading-6 text-muted-foreground">{v.meaning}</p>
+                    </div>
                   </div>
                 </label>
               );
@@ -169,33 +292,55 @@ function OcrNotebookSuggestions({
       )}
 
       {kanji.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Kanji</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-border bg-amber-50">
+            <SectionHeading
+              icon={Languages}
+              eyebrow="Kanji"
+              title="Kanji được nhận diện"
+              description="Kanji giữ màu học tập cũ: nền amber, On/Kun rõ ràng."
+              accent="bg-amber-200"
+            />
           </CardHeader>
-          <CardContent className="divide-y p-0">
+          <CardContent className="grid gap-3 bg-background p-4 md:grid-cols-2">
             {kanji.map((k) => {
               const pick: NotebookPick = { itemId: k.id, itemType: 'kanji' };
-              const key = keyOf(pick);
+              const key = notebookPickKey(pick);
               const reading = [...k.readingsOn, ...k.readingsKun].filter(Boolean).join(', ');
               return (
                 <label
                   key={key}
-                  className="flex cursor-pointer items-start gap-3 px-4 py-3 text-sm hover:bg-muted/40"
+                  className={cn(
+                    'cursor-pointer rounded-xl border border-border bg-amber-50 p-4 shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:shadow-premium card-lift',
+                    selected.has(key) && 'bg-emerald-50/80',
+                  )}
                 >
-                  <input
-                    type="checkbox"
-                    className="mt-1 size-4 rounded border-input"
-                    checked={selected.has(key)}
-                    onChange={() => toggle(pick)}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <span className="font-jp text-xl font-bold">{k.character}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">{k.jlptLevel}</span>
-                    <p className="mt-0.5">{k.meaning}</p>
-                    {reading && (
-                      <p className="text-xs text-muted-foreground font-jp">{reading}</p>
-                    )}
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-1 size-5 rounded border-input accent-primary"
+                      checked={selected.has(key)}
+                      onChange={() => toggle(pick)}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className="bg-amber-200 text-amber-950">{k.jlptLevel}</Badge>
+                        {selected.has(key) && (
+                          <Badge className="bg-quaternary text-quaternary-foreground">Đã chọn</Badge>
+                        )}
+                      </div>
+                      <div className="mt-3 flex items-center gap-4">
+                        <span className="font-jp text-5xl font-black text-foreground">{k.character}</span>
+                        <div>
+                          <p className="text-base font-bold text-foreground/80">{k.meaning}</p>
+                          {reading && (
+                            <p className="mt-1 font-jp text-xs font-medium text-muted-foreground">
+                              {reading}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </label>
               );
@@ -206,10 +351,11 @@ function OcrNotebookSuggestions({
 
       <Button
         type="button"
-        className="w-full"
+        className="w-full gap-2"
         disabled={adding || selected.size === 0}
         onClick={() => void handleAdd()}
       >
+        <NotebookPen className="size-4" />
         {adding ? 'Đang thêm…' : `Thêm vào sổ tay (${selected.size})`}
       </Button>
     </div>
@@ -221,16 +367,26 @@ function OcrQuizResults({ questions }: { questions: OcrQuizQuestion[] }) {
 
   return (
     <div className="space-y-4">
+      <SectionHeading
+        icon={Brain}
+        eyebrow="Generated Quiz"
+        title="Quiz từ ảnh"
+        description="Chọn đáp án để hiện kết quả và giải thích ngay bên dưới câu hỏi."
+        accent="bg-secondary"
+      />
       {questions.map((q, qi) => {
         const picked = revealed[q.id] ?? null;
         return (
-          <Card key={q.id}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">
-                {qi + 1}. {q.prompt}
-              </CardTitle>
+          <Card key={q.id} className="overflow-hidden">
+            <CardHeader className="border-b border-border bg-surface-paper">
+              <div className="flex items-start gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-tertiary font-display text-sm font-extrabold shadow-premium card-lift">
+                  {qi + 1}
+                </span>
+                <CardTitle className="text-base leading-7">{q.prompt}</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="grid gap-2">
+            <CardContent className="grid gap-2 bg-background p-4">
               {q.choices.map((choice, i) => (
                 <button
                   key={`${q.id}-${i}`}
@@ -238,23 +394,31 @@ function OcrQuizResults({ questions }: { questions: OcrQuizQuestion[] }) {
                   disabled={picked !== null}
                   onClick={() => setRevealed((prev) => ({ ...prev, [q.id]: i }))}
                   className={cn(
-                    'rounded-lg border px-3 py-2 text-left text-sm transition',
-                    picked === null && 'hover:border-primary/50 hover:bg-muted/50',
-                    picked !== null && i === q.answer && 'border-emerald-500 bg-emerald-50',
+                    'rounded-lg border border-border bg-surface-paper px-3 py-3 text-left text-sm font-medium shadow-premium card-lift transition-all',
+                    picked === null && 'hover:-translate-y-0.5 hover:bg-tertiary/20 hover:shadow-premium card-lift',
+                    picked !== null && i === q.answer && 'bg-emerald-50',
                     picked !== null &&
                       picked === i &&
                       i !== q.answer &&
-                      'border-destructive bg-destructive/10',
+                      'bg-destructive/10',
                   )}
                 >
-                  <span className="mr-2 font-semibold text-muted-foreground">
+                  <span className="mr-2 inline-flex size-7 items-center justify-center rounded-xl border border-border bg-background font-display text-xs font-extrabold text-muted-foreground">
                     {String.fromCharCode(65 + i)}.
                   </span>
                   {choice}
                 </button>
               ))}
               {picked !== null && q.explanation && (
-                <p className="text-sm text-muted-foreground">{q.explanation}</p>
+                <div className="mt-2 rounded-3xl border border-dashed border-border bg-quaternary/15 p-3">
+                  <div className="mb-1 flex items-center gap-2">
+                    <AppIcon icon={CheckCircle2} size="sm" className="bg-quaternary" />
+                    <span className="font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                      Explanation
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium leading-6 text-muted-foreground">{q.explanation}</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -280,37 +444,67 @@ function OcrGradeResults({
           Ước lượng: {scoreEstimate}
         </Badge>
       )}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Nhận xét tổng quan</CardTitle>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-border bg-surface-paper">
+          <SectionHeading
+            icon={ClipboardCheck}
+            eyebrow="Grammar Analysis"
+            title="Nhận xét tổng quan"
+            description="AI tóm tắt chất lượng bài làm và các điểm cần cải thiện."
+            accent="bg-quaternary"
+          />
         </CardHeader>
-        <CardContent>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{overallFeedback}</p>
+        <CardContent className="bg-background p-4">
+          <p className="whitespace-pre-wrap rounded-3xl border border-dashed border-border bg-surface-paper p-4 text-sm font-medium leading-7 shadow-premium card-lift">
+            {overallFeedback}
+          </p>
         </CardContent>
       </Card>
       {errors.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Lỗi và gợi ý sửa ({errors.length})</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-border bg-surface-paper">
+            <SectionHeading
+              icon={AlertTriangle}
+              eyebrow="Corrections"
+              title={`Lỗi và gợi ý sửa (${errors.length})`}
+              description="Mỗi lỗi được tách thành vị trí, câu trả lời của bạn, đáp án/gợi ý và giải thích."
+              accent="bg-secondary"
+            />
           </CardHeader>
-          <CardContent className="divide-y p-0">
+          <CardContent className="grid gap-3 bg-background p-4">
             {errors.map((err, i) => (
-              <div key={i} className="space-y-1 px-4 py-3 text-sm">
-                <p className="font-medium">{err.location}</p>
-                <p>
-                  <span className="text-muted-foreground">Bạn:</span> {err.student_answer || '—'}
+              <div key={i} className="rounded-xl border border-border bg-surface-paper p-4 text-sm shadow-premium card-lift">
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="flex size-8 items-center justify-center rounded-xl border border-border bg-secondary font-display text-xs font-extrabold shadow-premium card-lift">
+                    {i + 1}
+                  </span>
+                  <p className="font-display font-extrabold">{err.location}</p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl border border-dashed border-border bg-destructive/10 p-3">
+                    <p className="font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                      Bạn
+                    </p>
+                    <p className="mt-1 font-medium leading-6">{err.student_answer || '—'}</p>
+                  </div>
+                  <div className="rounded-2xl border border-dashed border-border bg-quaternary/15 p-3">
+                    <p className="font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                      Đúng / gợi ý
+                    </p>
+                    <p className="mt-1 font-medium leading-6">{err.correct_answer || '—'}</p>
+                  </div>
+                </div>
+                <p className="mt-3 rounded-2xl border border-dashed border-border bg-background/75 p-3 font-medium leading-6 text-muted-foreground">
+                  {err.explanation}
                 </p>
-                <p>
-                  <span className="text-muted-foreground">Đúng / gợi ý:</span>{' '}
-                  {err.correct_answer || '—'}
-                </p>
-                <p className="text-muted-foreground">{err.explanation}</p>
               </div>
             ))}
           </CardContent>
         </Card>
       ) : (
-        <p className="text-sm text-muted-foreground">Không phát hiện lỗi rõ ràng trong bài làm.</p>
+        <p className="rounded-3xl border border-dashed border-border bg-surface-paper px-5 py-8 text-center text-sm font-medium text-muted-foreground shadow-premium card-lift">
+          Không phát hiện lỗi rõ ràng trong bài làm.
+        </p>
       )}
     </div>
   );
@@ -490,7 +684,7 @@ export function OcrView() {
     mode === 'lookup' ? 'Tra cứu' : mode === 'quiz' ? 'Tạo quiz' : 'Chấm bài';
 
   return (
-    <div className="w-full">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
       <input
         ref={inputRef}
         type="file"
@@ -500,124 +694,195 @@ export function OcrView() {
         onChange={onInputChange}
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="font-display text-2xl font-bold">OCR</h1>
-        <Badge variant="outline" className="font-normal">
-          {engineInfo}
-        </Badge>
-      </div>
+      <PageHero
+        animate={false}
+        className="mb-6"
+        badge="OCR Analysis"
+        title="Phân tích ảnh tiếng Nhật"
+        description="Upload ảnh bài học, đề thi hoặc ghi chú để nhận OCR results, vocabulary analysis và grammar analysis."
+        icon={ScanText}
+        iconClassName="bg-quaternary"
+        tone="quaternary"
+        chips={['Tra cứu', 'Quiz từ ảnh', 'Chấm ngữ pháp']}
+        footer="Hỗ trợ PNG, JPG, WEBP tối đa 8MB — kết quả có thể thêm thẳng vào sổ tay."
+        aside={
+          <div className="rounded-xl border border-border bg-background p-4 shadow-premium card-lift">
+            <p className="font-display text-xs font-extrabold uppercase tracking-widest text-primary">
+              OCR Engine
+            </p>
+            <p className="mt-2 text-sm font-bold leading-6">{engineInfo}</p>
+          </div>
+        }
+      />
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {(Object.keys(MODE_LABELS) as OcrMode[]).map((m) => (
-          <Button
-            key={m}
-            type="button"
-            size="sm"
-            variant={mode === m ? 'default' : 'outline'}
-            onClick={() => {
-              setMode(m);
-              clearResults();
-            }}
-          >
-            {MODE_LABELS[m]}
-          </Button>
-        ))}
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">{MODE_HINTS[mode]}</p>
+      <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-border bg-surface-paper">
+            <SectionHeading
+              icon={Upload}
+              eyebrow="Upload"
+              title="Chọn ảnh để phân tích"
+              description="Kéo thả hoặc chọn file từ máy. Hỗ trợ PNG, JPG, WEBP tối đa 8MB."
+              accent="bg-tertiary"
+            />
+          </CardHeader>
+          <CardContent className="space-y-4 bg-background p-4 sm:p-6">
+            <div
+              role="presentation"
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              className={cn(
+                'flex min-h-[260px] flex-col items-center justify-center rounded-3xl border border-dashed border-border px-6 py-10 text-center transition-all',
+                isDragging
+                  ? 'bg-primary/10 shadow-premium card-lift'
+                  : 'bg-surface-paper hover:-translate-y-0.5 hover:bg-tertiary/15 hover:shadow-premium card-lift',
+              )}
+            >
+              <AppIcon icon={FileImage} size="lg" className="mb-4 bg-quaternary" />
+              <p className="font-display text-xl font-extrabold">Kéo thả ảnh vào đây</p>
+              <p className="mt-2 text-sm font-medium text-muted-foreground">hoặc chọn file từ máy</p>
+              <Button type="button" className="mt-5 gap-2" disabled={loading} onClick={openFilePicker}>
+                <Upload className="size-4" />
+                Chọn ảnh từ máy
+              </Button>
+              <p className="mt-4 text-xs font-semibold text-muted-foreground">PNG, JPG, WEBP · tối đa 8MB</p>
+            </div>
 
-      {mode === 'quiz' && (
-        <div className="mt-4 flex items-center gap-3">
-          <label htmlFor="quiz-count" className="text-sm font-medium shrink-0">
-            Số câu quiz
-          </label>
-          <Input
-            id="quiz-count"
-            type="number"
-            min={3}
-            max={20}
-            value={quizCount}
-            onChange={(e) => setQuizCount(Number(e.target.value) || 5)}
-            className="w-24"
-          />
-          <span className="text-xs text-muted-foreground">3–20</span>
-        </div>
-      )}
+            {previewUrl ? (
+              <div className="rounded-xl border border-border bg-surface-paper p-3 shadow-premium card-lift">
+                <img
+                  src={previewUrl}
+                  alt="Ảnh đã chọn"
+                  className="max-h-64 w-full rounded-2xl object-contain"
+                />
+              </div>
+            ) : (
+              <p className="rounded-3xl border border-dashed border-border bg-surface-paper px-4 py-4 text-center text-sm font-medium text-muted-foreground">
+                Chưa có ảnh được chọn.
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
-      {mode === 'grade' && (
-        <div className="mt-4">
-          <label htmlFor="grade-context" className="text-sm font-medium">
-            Môn / bài học (tùy chọn)
-          </label>
-          <Input
-            id="grade-context"
-            className="mt-1"
-            value={gradeContext}
-            onChange={(e) => setGradeContext(e.target.value)}
-            placeholder="VD: N5 — bài 3, JLPT mock…"
-          />
-        </div>
-      )}
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-border bg-surface-paper">
+            <SectionHeading
+              icon={Sparkles}
+              eyebrow="Analysis Mode"
+              title={MODE_LABELS[mode]}
+              description={MODE_HINTS[mode]}
+              accent="bg-secondary"
+            />
+          </CardHeader>
+          <CardContent className="space-y-4 bg-background p-4 sm:p-6">
+            <div className="grid gap-2 sm:grid-cols-3">
+              {(Object.keys(MODE_LABELS) as OcrMode[]).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={cn(
+                    'rounded-xl border border-border px-4 py-4 text-left shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:shadow-premium card-lift',
+                    mode === m ? 'bg-brand text-white' : 'bg-surface-paper',
+                  )}
+                  onClick={() => {
+                    setMode(m);
+                    clearResults();
+                  }}
+                >
+                  <p className="font-display text-sm font-extrabold">{MODE_LABELS[m]}</p>
+                  <p className={cn('mt-1 text-xs font-medium leading-5', mode === m ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
+                    {m === 'lookup' ? 'Vocabulary + Grammar' : m === 'quiz' ? 'Questions' : 'Corrections'}
+                  </p>
+                </button>
+              ))}
+            </div>
 
-      <div
-        role="presentation"
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        className={cn(
-          'mt-6 flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 transition-colors',
-          isDragging
-            ? 'border-primary bg-primary/10'
-            : 'border-primary/40 bg-muted/30 hover:border-primary/60 hover:bg-muted/50',
-        )}
-      >
-        <Upload className="mb-3 size-10 text-primary/70" aria-hidden />
-        <p className="text-sm font-medium">Kéo thả ảnh vào đây</p>
-        <p className="mt-1 text-xs text-muted-foreground">hoặc</p>
-        <Button type="button" className="mt-3" disabled={loading} onClick={openFilePicker}>
-          Chọn ảnh từ máy
-        </Button>
-        <p className="mt-3 text-xs text-muted-foreground">PNG, JPG, WEBP — tối đa 8MB</p>
-      </div>
+            {mode === 'quiz' && (
+              <div className="rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift">
+                <label htmlFor="quiz-count" className="font-display text-sm font-extrabold">
+                  Số câu quiz
+                </label>
+                <div className="mt-2 flex items-center gap-3">
+                  <Input
+                    id="quiz-count"
+                    type="number"
+                    min={3}
+                    max={20}
+                    value={quizCount}
+                    onChange={(e) => setQuizCount(Number(e.target.value) || 5)}
+                    className="w-24"
+                  />
+                  <span className="text-xs font-semibold text-muted-foreground">3–20 câu</span>
+                </div>
+              </div>
+            )}
 
-      {previewUrl && (
-        <img
-          src={previewUrl}
-          alt="Ảnh đã chọn"
-          className="mt-4 max-h-48 w-full rounded-lg border object-contain"
-        />
-      )}
+            {mode === 'grade' && (
+              <div className="rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift">
+                <label htmlFor="grade-context" className="font-display text-sm font-extrabold">
+                  Môn / bài học (tùy chọn)
+                </label>
+                <Input
+                  id="grade-context"
+                  className="mt-2"
+                  value={gradeContext}
+                  onChange={(e) => setGradeContext(e.target.value)}
+                  placeholder="VD: N5 — bài 3, JLPT mock…"
+                />
+              </div>
+            )}
 
-      <Button
-        type="button"
-        className="mt-4 w-full"
-        size="lg"
-        disabled={loading || !pendingBase64}
-        onClick={() => void runAnalysis()}
-      >
-        {loading ? 'Đang xử lý…' : submitLabel}
-      </Button>
+            <Button
+              type="button"
+              className="w-full gap-2"
+              size="lg"
+              disabled={loading || !pendingBase64}
+              onClick={() => void runAnalysis()}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Đang xử lý…
+                </>
+              ) : (
+                <>
+                  <ScanText className="size-4" />
+                  {submitLabel}
+                </>
+              )}
+            </Button>
 
-      {loading && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          OCR + AI có thể mất 10–60 giây…
-        </p>
-      )}
+            {loading && (
+              <p className="rounded-2xl border border-dashed border-border bg-tertiary/20 px-4 py-3 text-sm font-medium text-muted-foreground">
+                OCR + AI có thể mất 10–60 giây…
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </section>
 
       {lookupResult && mode === 'lookup' && (
-        <div className="mt-6 space-y-4">
-          <MetaLine meta={lookupResult.meta} />
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-jp text-lg font-normal leading-relaxed whitespace-pre-wrap">
-                {lookupResult.extracted_text || '—'}
-              </CardTitle>
-            </CardHeader>
-            {lookupResult.grammar_explanation && (
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{lookupResult.grammar_explanation}</p>
+        <div className="space-y-5">
+          <ExtractedTextCard text={lookupResult.extracted_text} meta={lookupResult.meta} />
+          {lookupResult.grammar_explanation && (
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b border-border bg-surface-paper">
+                <SectionHeading
+                  icon={GraduationCap}
+                  eyebrow="Grammar Analysis"
+                  title="Giải thích ngữ pháp"
+                  description="AI tóm tắt điểm ngữ pháp đáng chú ý trong đoạn OCR."
+                  accent="bg-secondary"
+                />
+              </CardHeader>
+              <CardContent className="bg-background p-4">
+                <p className="rounded-3xl border border-dashed border-border bg-surface-paper p-4 text-sm font-medium leading-7 text-muted-foreground shadow-premium card-lift">
+                  {lookupResult.grammar_explanation}
+                </p>
               </CardContent>
-            )}
-          </Card>
+            </Card>
+          )}
           <OcrNotebookSuggestions
             vocabulary={lookupResult.suggested_vocabulary}
             kanji={lookupResult.suggested_kanji}
@@ -642,17 +907,9 @@ export function OcrView() {
       )}
 
       {quizResult && mode === 'quiz' && (
-        <div className="mt-6 space-y-4">
-          <MetaLine meta={quizResult.meta} />
+        <div className="space-y-5">
           {quizResult.extracted_text && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Văn bản nhận diện</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-jp text-sm whitespace-pre-wrap">{quizResult.extracted_text}</p>
-              </CardContent>
-            </Card>
+            <ExtractedTextCard text={quizResult.extracted_text} meta={quizResult.meta} />
           )}
           {quizResult.questions.length > 0 && (
             <OcrQuizResults questions={quizResult.questions} />
@@ -661,17 +918,9 @@ export function OcrView() {
       )}
 
       {gradeResult && mode === 'grade' && (
-        <div className="mt-6 space-y-4">
-          <MetaLine meta={gradeResult.meta} />
+        <div className="space-y-5">
           {gradeResult.extracted_text && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Văn bản nhận diện</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-jp text-sm whitespace-pre-wrap">{gradeResult.extracted_text}</p>
-              </CardContent>
-            </Card>
+            <ExtractedTextCard text={gradeResult.extracted_text} meta={gradeResult.meta} />
           )}
           <OcrGradeResults
             errors={gradeResult.errors}

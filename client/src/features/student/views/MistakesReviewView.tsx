@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { ArrowRight, BookOpen, CheckCircle2, XCircle } from 'lucide-react';
+﻿import { motion } from 'framer-motion';
+import { ArrowRight, BookOpen, CheckCircle2, History, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -39,7 +39,7 @@ function MistakeCard({ row, index }: { row: MistakeRow; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
     >
-      <Card className="overflow-hidden border-border/70 shadow-sm">
+      <Card className="overflow-hidden shadow-premium card-lift">
         <CardContent className="p-0">
           <div className="flex flex-wrap items-center gap-2 border-b border-border/50 bg-muted/40 px-4 py-3">
             <Badge variant="outline" className="border-primary/30 bg-background text-primary">
@@ -122,9 +122,14 @@ export function MistakesReviewView() {
       eyebrow="Theo dõi"
       title="Ôn lỗi sai"
       description="Xem lại câu hỏi, đáp án bạn chọn và đáp án đúng."
+      icon={History}
+      iconClassName="bg-secondary"
+      tone="secondary"
+      chips={['MiniTest', 'Luyện nói AI', 'Ôn tập']}
+      footer="Lỗi được ghi tự động từ bài test, luyện nói và các phiên ôn — dùng để tránh lặp lại sai sót."
     >
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <Link to={paths.student.review}>
+        <Link to={paths.student.notebookDefault}>
           <Button className="gap-2">
             Ôn tập ngay
             <ArrowRight className="size-4" />

@@ -1,16 +1,18 @@
-import { Clock, FileText, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, ClipboardList, Clock, FileText, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { InsetEmpty } from '@/components/usable/inset-empty';
 import { paths } from '@/router/paths';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
+import { StaffListPageShell } from '../components/admin-page-shell';
 import {
   createMockExam,
   deleteMockExam,
@@ -19,6 +21,47 @@ import {
 } from '../services/adminApi';
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
+
+function ExamAdminCard({
+  exam,
+  onDelete,
+}: {
+  exam: MockExamListItem;
+  onDelete: () => void;
+}) {
+  return (
+    <article className="depth-interactive relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-surface-paper/50 p-5 shadow-premium card-lift">
+      <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full border border-border bg-secondary/10" />
+      <div className="relative flex items-start justify-between gap-2">
+        <Badge className="border-0 bg-secondary text-secondary-foreground">{exam.jlptLevel}</Badge>
+        <Button size="icon-sm" variant="ghost" className="text-destructive" onClick={onDelete}>
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+      <h3 className="relative mt-3 font-display text-lg font-extrabold leading-snug">{exam.title}</h3>
+      <div className="relative mt-3 flex flex-wrap gap-3 text-xs font-bold text-muted-foreground">
+        <span className="inline-flex items-center gap-1">
+          <Clock className="size-3.5" />
+          {exam.durationMinutes} phút
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <FileText className="size-3.5" />
+          {exam.questionCount} câu
+        </span>
+        <span>
+          {exam.maxAttempts} lượt/HV · {exam.totalSessions} phiên
+        </span>
+      </div>
+      <Link
+        to={paths.admin.mockExamDetail(exam.id)}
+        className={cn(buttonVariants({ size: 'sm' }), 'relative mt-5 w-full gap-1.5')}
+      >
+        Quản lý câu hỏi
+        <ArrowRight className="size-3.5" />
+      </Link>
+    </article>
+  );
+}
 
 export function MockExamsAdminView() {
   const [level, setLevel] = useState<string>('N5');
@@ -80,83 +123,58 @@ export function MockExamsAdminView() {
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-6 flex flex-col gap-4 border-b border-border/60 pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-display text-sm tracking-widest text-primary uppercase">JLPT</p>
-          <h1 className="font-display text-2xl font-bold md:text-3xl">Đề thi JLPT</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Tạo đề thủ công hoặc import câu hỏi hàng loạt
-          </p>
-        </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Tạo đề mới
-        </Button>
-      </div>
-
-      <div className="mb-6 flex flex-wrap gap-2">
-        {LEVELS.map((l) => (
-          <Button
-            key={l}
-            size="sm"
-            variant={level === l ? 'default' : 'outline'}
-            onClick={() => setLevel(l)}
-          >
-            {l}
+    <>
+      <StaffListPageShell
+        title="Đề thi JLPT"
+        description="Tạo đề mock thủ công, import câu hỏi hàng loạt và cấu hình thời gian/lượt thi."
+        icon={ClipboardList}
+        iconClassName="bg-secondary/50"
+        tone="secondary"
+        chips={['JLPT', 'Mock exam', 'Import']}
+        secondaryStat={{ label: `Đề ${level}`, value: items.length }}
+        createAction={
+          <Button onClick={() => setDialogOpen(true)} className="w-full">
+            <Plus className="mr-1.5 size-4" />
+            Tạo đề mới
           </Button>
-        ))}
-      </div>
-
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
-      ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Chưa có đề {level}. Tạo đề mới để bắt đầu.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {items.map((exam) => (
-            <Card key={exam.id} className="overflow-hidden">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-2">
-                  <Badge variant="secondary">{exam.jlptLevel}</Badge>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-destructive"
-                    onClick={() => handleDelete(exam.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <h3 className="mt-3 font-display text-lg font-semibold leading-snug">
-                  {exam.title}
-                </h3>
-                <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    {exam.durationMinutes} phút
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <FileText className="h-3.5 w-3.5" />
-                    {exam.questionCount} câu
-                  </span>
-                  <span>{exam.maxAttempts} lượt / HV · {exam.totalSessions} phiên</span>
-                </div>
-                <Link
-                  to={paths.admin.mockExamDetail(exam.id)}
-                  className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  Quản lý câu hỏi
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+        }
+        toolbarExtra={
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-border/70 pt-4">
+            {LEVELS.map((l) => (
+              <Button
+                key={l}
+                size="sm"
+                variant={level === l ? 'default' : 'outline'}
+                onClick={() => setLevel(l)}
+              >
+                {l}
+              </Button>
+            ))}
+          </div>
+        }
+      >
+        {loading ? (
+          <p className="text-sm font-medium text-muted-foreground">Đang tải…</p>
+        ) : items.length === 0 ? (
+          <InsetEmpty
+            tone="exam"
+            title={`Chưa có đề ${level}`}
+            description="Tạo đề mới để bắt đầu thêm câu hỏi."
+            action={
+              <Button onClick={() => setDialogOpen(true)}>
+                <Plus className="mr-1.5 size-4" />
+                Tạo đề đầu tiên
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {items.map((exam) => (
+              <ExamAdminCard key={exam.id} exam={exam} onDelete={() => handleDelete(exam.id)} />
+            ))}
+          </div>
+        )}
+      </StaffListPageShell>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen} title="Tạo đề thi mới">
         <div className="space-y-3">
@@ -168,7 +186,7 @@ export function MockExamsAdminView() {
           <div className="flex gap-2">
             <select
               className={cn(
-                'flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm',
+                'flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm',
               )}
               value={createLevel}
               onChange={(e) => setCreateLevel(e.target.value)}
@@ -204,6 +222,6 @@ export function MockExamsAdminView() {
           </Button>
         </div>
       </Dialog>
-    </div>
+    </>
   );
 }

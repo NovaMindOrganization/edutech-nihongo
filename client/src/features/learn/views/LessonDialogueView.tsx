@@ -1,6 +1,8 @@
-import { ChevronLeft, ChevronRight, EyeOff, Languages, Volume2 } from 'lucide-react';
+﻿import { ChevronLeft, ChevronRight, EyeOff, Languages, Volume2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { AppIcon } from '@/components/usable/app-icon';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSpeech } from '@/hooks/use-speech';
@@ -78,18 +80,31 @@ export function LessonDialogueView() {
   return (
     <div className="space-y-4">
       {conversations.length === 0 && (
-        <p className="text-sm text-muted-foreground">Chưa có hội thoại mẫu cho tiết này.</p>
+        <p className="rounded-3xl border border-dashed border-border bg-surface-paper py-12 text-center text-sm font-medium text-muted-foreground shadow-premium card-lift">
+          Chưa có hội thoại mẫu cho tiết này.
+        </p>
       )}
 
       {activeConversation && (
         <Card className="overflow-hidden">
-          <CardHeader className="items-center border-b bg-muted/20 px-6 py-5 text-center">
-            <CardTitle className="font-display text-xl">
-              {activeConversation.title ?? 'Hội thoại mẫu'}
-            </CardTitle>
+          <CardHeader className="border-b border-border bg-surface-paper px-6 py-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <AppIcon icon={Volume2} size="lg" className="bg-secondary" />
+                <div>
+                  <Badge className="bg-tertiary text-tertiary-foreground">Audio Dialogue</Badge>
+                  <CardTitle className="mt-2 font-display text-2xl">
+                    {activeConversation.title ?? 'Hội thoại mẫu'}
+                  </CardTitle>
+                </div>
+              </div>
+              <span className="rounded-lg border border-border bg-background px-3 py-1.5 font-display text-sm font-extrabold tabular-nums shadow-premium card-lift">
+                {activeIndex + 1} / {conversations.length}
+              </span>
+            </div>
           </CardHeader>
 
-          <CardContent className="space-y-6 bg-background p-5 sm:p-8">
+          <CardContent className="space-y-6 bg-background p-4 sm:p-8">
             {dialogue.map((line, index) => {
               const speaker = line.speaker ?? (index % 2 === 0 ? 'A' : 'B');
               const isLeft = speaker === 'A';
@@ -104,25 +119,27 @@ export function LessonDialogueView() {
                   className={`flex items-end gap-3 ${isLeft ? 'justify-start' : 'justify-end'}`}
                 >
                   {isLeft && (
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-muted font-semibold text-muted-foreground">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-tertiary font-display font-extrabold text-foreground shadow-premium card-lift">
                       {speaker}
                     </div>
                   )}
 
                   <div
-                    className={`relative max-w-[78%] rounded-2xl border bg-card px-5 py-3 shadow-sm ${
+                    className={`relative max-w-[82%] rounded-xl border border-border bg-surface-paper px-5 py-4 shadow-premium card-lift ${
                       isLeft
-                        ? 'rounded-bl-sm border-primary/20'
-                        : 'rounded-br-sm border-border'
+                        ? 'rounded-bl-md'
+                        : 'rounded-br-md bg-primary/10'
                     }`}
                   >
                     <div className="mb-1 flex items-center justify-between gap-3">
-                      <p className="text-xs font-medium text-muted-foreground">Speaker {speaker}</p>
+                      <p className="font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                        Speaker {speaker}
+                      </p>
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-7 px-2"
+                        className="gap-1.5 px-3"
                         disabled={speaking || !text}
                         onClick={() => playTts(text)}
                       >
@@ -135,15 +152,15 @@ export function LessonDialogueView() {
                     </p>
                     {line.reading && <p className="mt-1 text-sm text-primary/80">{line.reading}</p>}
                     {translation && (
-                      <div className="mt-2 border-t pt-2">
+                      <div className="mt-3 border-t-2 border-dashed border-border pt-3">
                         {showTranslation && (
-                          <p className="text-sm text-muted-foreground">{translation}</p>
+                          <p className="text-sm font-medium leading-6 text-muted-foreground">{translation}</p>
                         )}
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="mt-1 px-0 text-xs"
+                          className="mt-1 px-0 text-xs font-extrabold text-primary"
                           onClick={() => toggleTranslation(translationKey)}
                         >
                           {showTranslation ? <EyeOff className="size-3.5" /> : <Languages className="size-3.5" />}
@@ -154,7 +171,7 @@ export function LessonDialogueView() {
                   </div>
 
                   {!isLeft && (
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-primary/10 font-semibold text-primary">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary font-display font-extrabold text-foreground shadow-premium card-lift">
                       {speaker}
                     </div>
                   )}
@@ -162,7 +179,7 @@ export function LessonDialogueView() {
               );
             })}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
               <Button
                 type="button"
                 variant="outline"
@@ -172,7 +189,7 @@ export function LessonDialogueView() {
                 <ChevronLeft className="size-4" />
                 Hội thoại trước
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm font-bold text-muted-foreground">
                 {activeIndex + 1} / {conversations.length}
               </span>
               <Button

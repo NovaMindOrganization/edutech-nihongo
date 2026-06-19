@@ -123,9 +123,12 @@ export const conversationSchema = z.object({
 });
 
 export const reviewGenerateSchema = z.object({
-  mode: z.enum(["random", "weakness", "flashcard"]).optional(),
+  mode: z.enum(["random", "weakness", "flashcard", "lesson", "pick"]).optional(),
   count: z.number().int().min(1).max(50).optional(),
   type: z.enum(["kanji", "vocabulary", "grammar", "mixed"]).optional(),
+  pool: z.enum(["learned", "collected"]).optional(),
+  lessonIds: z.array(z.string().uuid()).optional(),
+  itemIds: z.array(z.string().uuid()).optional(),
 });
 
 export const miniTestSubmitSchema = z.object({

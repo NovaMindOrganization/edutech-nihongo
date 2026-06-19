@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { paths } from '@/router/paths';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 import {
   getMockExam,

@@ -1,8 +1,9 @@
-import { Check, Filter, Loader2 } from 'lucide-react';
+﻿import { Check, Filter, Loader2, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { cn } from '@/utils/cn';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
 
 import type { VocabSourceFilter } from '../../services/vocabularyApi';
@@ -50,25 +51,26 @@ export function FlashcardHeader({
   }, [menuOpen]);
 
   return (
-    <header className="space-y-4">
+    <header className="space-y-4 rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift">
       <div className="flex items-center gap-3">
         <Link
           to={paths.learn.lessonVocabulary(lessonId)}
-          className="shrink-0 text-sm text-primary hover:underline"
+          className="shrink-0 text-sm font-bold text-primary hover:underline"
         >
           ← Từ vựng
         </Link>
         <div className="min-w-0 flex-1 text-center">
-          <p className="text-sm font-medium tabular-nums text-foreground">{progressLabel}</p>
+          <Badge className="bg-quaternary text-quaternary-foreground">Flashcards</Badge>
+          <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-foreground">{progressLabel}</p>
         </div>
         <div className="relative shrink-0" ref={menuRef}>
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             className={cn(
-              'flex size-10 items-center justify-center rounded-full border border-border',
-              'bg-muted/50 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-              menuOpen && 'border-primary/40 bg-primary/10 text-primary',
+              'flex size-11 items-center justify-center rounded-lg border border-border',
+              'bg-background text-foreground shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:bg-brand-soft',
+              menuOpen && 'bg-brand text-white',
             )}
             aria-label="Bộ lọc từ vựng"
             aria-expanded={menuOpen}
@@ -85,9 +87,9 @@ export function FlashcardHeader({
             <div
               role="listbox"
               aria-label="Lọc từ vựng"
-              className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-xl"
+              className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-surface-paper py-2 shadow-premium-hover"
             >
-              <p className="px-3 py-2 text-xs font-medium text-muted-foreground">Hiển thị</p>
+              <p className="px-3 py-2 font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Hiển thị</p>
               {FILTER_OPTIONS.map((opt) => {
                 const active = source === opt.id;
                 return (
@@ -101,8 +103,8 @@ export function FlashcardHeader({
                       setMenuOpen(false);
                     }}
                     className={cn(
-                      'flex w-full items-center justify-between px-3 py-2.5 text-sm transition-colors',
-                      active ? 'bg-primary/10 font-medium text-primary' : 'hover:bg-muted/80',
+                      'flex w-full items-center justify-between px-3 py-2.5 text-sm font-bold transition-colors',
+                      active ? 'bg-primary/10 text-primary' : 'hover:bg-tertiary/20',
                     )}
                   >
                     {opt.label}
@@ -116,7 +118,7 @@ export function FlashcardHeader({
       </div>
 
       <div className="space-y-2">
-        <div className="h-2 overflow-hidden rounded-full bg-muted">
+        <div className="h-4 overflow-hidden rounded-full border border-border bg-muted">
           <div
             className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
             style={{ width: `${progressPercent}%` }}
@@ -130,7 +132,10 @@ export function FlashcardHeader({
 
         <div className="flex items-center justify-between gap-2 px-0.5">
           <label className="flex cursor-pointer items-center gap-2.5">
-            <span className="text-xs font-medium text-muted-foreground">Auto-play Audio</span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+              <Volume2 className="size-3.5" />
+              Auto-play Audio
+            </span>
             <button
               type="button"
               role="switch"
@@ -138,14 +143,14 @@ export function FlashcardHeader({
               aria-label="Tự động phát âm khi lật thẻ"
               onClick={() => onAutoPlayChange(!autoPlay)}
               className={cn(
-                'relative h-5 w-9 shrink-0 rounded-full transition-colors',
-                autoPlay ? 'bg-primary' : 'bg-muted-foreground/30',
+                'relative h-6 w-11 shrink-0 rounded-full border border-border transition-colors',
+                autoPlay ? 'bg-primary' : 'bg-muted',
               )}
             >
               <span
                 className={cn(
-                  'absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform',
-                  autoPlay && 'translate-x-4',
+                  'absolute left-0.5 top-0.5 size-4 rounded-full border border-border bg-surface-paper shadow-premium card-lift transition-transform',
+                  autoPlay && 'translate-x-5',
                 )}
               />
             </button>

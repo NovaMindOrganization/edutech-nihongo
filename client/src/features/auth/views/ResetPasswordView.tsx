@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { paths } from '@/router/paths';
 
+import { AuthCard, AuthField } from '../components/auth-card';
 import { resetPassword } from '../services/authApi';
 
 export function ResetPasswordView() {
@@ -36,36 +37,56 @@ export function ResetPasswordView() {
 
   if (!token) {
     return (
-      <p className="text-sm text-muted-foreground">
-        Liên kết không hợp lệ. <Link to={paths.forgotPassword}>Yêu cầu lại</Link>
-      </p>
+      <AuthCard
+        title="Liên kết không hợp lệ"
+        description="Đường dẫn đặt lại mật khẩu đã thiếu token hoặc không còn dùng được."
+        accent="brand"
+        footer={
+          <Link to={paths.forgotPassword} className="font-extrabold text-primary hover:underline">
+            Yêu cầu liên kết mới
+          </Link>
+        }
+      >
+        <div className="rounded-lg border border-border bg-muted p-4 text-sm font-medium text-muted-foreground shadow-sm">
+          Hãy yêu cầu lại email đặt mật khẩu để tiếp tục.
+        </div>
+      </AuthCard>
     );
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card/90 p-8 shadow-xl">
-      <h1 className="font-display text-xl font-bold">Đặt lại mật khẩu</h1>
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <Input
-          type="password"
-          placeholder="Mật khẩu mới (tối thiểu 8 ký tự)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          minLength={8}
-          required
-        />
-        <Input
-          type="password"
-          placeholder="Xác nhận mật khẩu"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          minLength={8}
-          required
-        />
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Đang lưu…' : 'Lưu mật khẩu'}
+    <AuthCard
+      title="Đặt lại mật khẩu"
+      description="Chọn mật khẩu mới để quay lại bài học, flashcard và tiến độ JLPT của bạn."
+      accent="success"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <AuthField label="Mật khẩu mới" hint="Tối thiểu 8 ký tự.">
+          <Input
+            type="password"
+            placeholder="Tối thiểu 8 ký tự"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={8}
+            autoComplete="new-password"
+            required
+          />
+        </AuthField>
+        <AuthField label="Xác nhận mật khẩu">
+          <Input
+            type="password"
+            placeholder="Nhập lại mật khẩu"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            minLength={8}
+            autoComplete="new-password"
+            required
+          />
+        </AuthField>
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          {loading ? 'Đang lưu…' : 'Lưu mật khẩu mới'}
         </Button>
       </form>
-    </div>
+    </AuthCard>
   );
 }

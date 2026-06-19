@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { LoadingState } from '@/components/usable/loading-state';
 import { getAccessToken, refreshAccessToken, setAccessToken } from '@/services/httpClient';
 
 import { fetchMe } from '../services/authApi';
@@ -32,9 +33,12 @@ export function AuthBootstrap({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
-        Đang tải phiên đăng nhập…
-      </div>
+      <LoadingState
+        label="Đang tải phiên đăng nhập…"
+        variant="page"
+        tone="default"
+        className="border-0 bg-transparent"
+      />
     );
   }
 

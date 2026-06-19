@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { paths } from '@/router/paths';
 
+import { AuthCard, AuthField } from '../components/auth-card';
 import { forgotPassword } from '../services/authApi';
 
 export function ForgotPasswordView() {
@@ -28,30 +29,39 @@ export function ForgotPasswordView() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card/90 p-8 shadow-xl">
-      <h1 className="font-display text-xl font-bold">Quên mật khẩu</h1>
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <Input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Button type="submit" className="w-full" disabled={loading}>
+    <AuthCard
+      title="Quên mật khẩu?"
+      description="Không sao cả. Nhập email và chúng tôi sẽ gửi một đường dẫn để bạn quay lại lộ trình."
+      accent="warning"
+      footer={
+        <Link to={paths.login} className="font-extrabold text-primary hover:underline">
+          ← Quay lại đăng nhập
+        </Link>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <AuthField label="Email" hint="Dùng email bạn đã đăng ký tài khoản NIHONGOCOACH.">
+          <Input
+            type="email"
+            placeholder="email@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+        </AuthField>
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading ? 'Đang gửi…' : 'Gửi liên kết đặt lại'}
         </Button>
       </form>
       {devUrl && (
-        <p className="mt-4 break-all text-xs text-muted-foreground">
-          Dev: <Link to={devUrl.replace(/^https?:\/\/[^/]+/, '')} className="text-primary">{devUrl}</Link>
+        <p className="mt-5 break-all rounded-lg border border-border bg-muted p-3 text-xs font-medium text-muted-foreground shadow-sm">
+          Dev:{' '}
+          <Link to={devUrl.replace(/^https?:\/\/[^/]+/, '')} className="font-bold text-primary">
+            {devUrl}
+          </Link>
         </p>
       )}
-      <p className="mt-6 text-center text-sm">
-        <Link to={paths.login} className="text-primary hover:underline">
-          ← Đăng nhập
-        </Link>
-      </p>
-    </div>
+    </AuthCard>
   );
 }

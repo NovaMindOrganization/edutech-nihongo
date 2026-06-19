@@ -4,17 +4,22 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { AdminListSkeleton, ViewState } from '@/components/usable/states';
 
 import { listReports, resolveReport, type AbuseReportRow } from '../services/systemAdminApi';
 
 export function ReportsAdminView() {
   const [items, setItems] = useState<AbuseReportRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       setItems(await listReports());
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Không tải báo cáo');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -36,11 +41,22 @@ export function ReportsAdminView() {
     <div>
       <h1 className="font-display text-2xl font-bold">Báo cáo lạm dụng</h1>
       <Card className="mt-6">
-        <CardContent className="divide-y p-0">
-          {items.length === 0 ? (
-            <p className="px-5 py-4 text-sm text-muted-foreground">Không có báo cáo.</p>
-          ) : (
-            items.map((r) => (
+        <CardContent className="p-0">
+          <ViewState
+            loading={loading}
+            empty={!loading && items.length === 0}
+            loadingSkeleton={
+              <div className="p-5">
+                <AdminListSkeleton count={4} />
+              </div>
+            }
+            loadingLabel="Đang tải báo cáo…"
+            emptyTitle="Không có báo cáo"
+            emptyDescription="Mọi thứ đang ổn — chưa có báo cáo lạm dụng nào cần xử lý."
+            emptyTone="admin"
+          >
+            <div className="divide-y">
+              {items.map((r) => (
               <div key={r.id} className="space-y-2 px-5 py-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{r.status}</Badge>
@@ -66,8 +82,9 @@ export function ReportsAdminView() {
                   </div>
                 )}
               </div>
-            ))
-          )}
+              ))}
+            </div>
+          </ViewState>
         </CardContent>
       </Card>
     </div>
