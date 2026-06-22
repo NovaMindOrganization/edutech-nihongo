@@ -1,15 +1,172 @@
+import { MasteryItemType } from '@prisma/client';
+
 import { db } from '../config/db.js';
 import { toClientReviewQuestion } from '../utils/review-question.js';
+import {
+  getProgressLessonIds,
+  type NotebookContentType,
+} from './notebook-content.service.js';
 import { touchStreak } from './dashboard.service.js';
 
 type ReviewType = 'kanji' | 'vocabulary' | 'grammar' | 'mixed';
+type ReviewPool = 'learned' | 'collected';
+type ReviewGenerateMode = 'random' | 'weakness' | 'flashcard' | 'lesson' | 'pick';
 
-export async function generateReview(
+export type GenerateReviewInput = {
+  mode?: ReviewGenerateMode;
+  count?: number;
+  type?: ReviewType;
+  pool?: ReviewPool;
+  lessonIds?: string[];
+  itemIds?: string[];
+};
+
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+async function flashcardFromLearned(
   userId: string,
-  mode: 'random' | 'weakness' | 'flashcard',
+  type: NotebookContentType,
   count: number,
-  type: ReviewType = 'mixed',
+  lessonIds?: string[],
 ) {
+  const ids = await getProgressLessonIds(userId, lessonIds);
+  if (ids.length === 0) return [];
+
+  if (type === 'kanji') {
+    const rows = await db.lessonKanji.findMany({
+      where: { lessonId: { in: ids } },
+      include: { kanji: true },
+    });
+    const unique = [...new Map(rows.map((r) => [r.kanji.id, r.kanji])).values()];
+    return shuffle(unique)
+      .slice(0, count)
+      .map((k) => ({
+        id: k.id,
+        itemType: 'kanji' as const,
+        front: k.character,
+        back: k.meaning,
+        reading: k.readingsKun[0] ?? k.readingsOn[0],
+      }));
+  }
+
+  if (type === 'vocabulary') {
+    const rows = await db.lessonVocabulary.findMany({
+      where: { lessonId: { in: ids } },
+      include: { vocabulary: true },
+    });
+    const unique = [...new Map(rows.map((r) => [r.vocabulary.id, r.vocabulary])).values()];
+    return shuffle(unique)
+      .slice(0, count)
+      .map((v) => ({
+        id: v.id,
+        itemType: 'vocabulary' as const,
+        front: v.word,
+        back: v.meaning,
+        reading: v.reading ?? undefined,
+      }));
+  }
+
+  const rows = await db.lessonGrammar.findMany({
+    where: { lessonId: { in: ids } },
+    include: { grammar: true },
+  });
+  const unique = [...new Map(rows.map((r) => [r.grammar.id, r.grammar])).values()];
+  return shuffle(unique)
+    .slice(0, count)
+    .map((g) => ({
+      id: g.id,
+      itemType: 'grammar' as const,
+      front: g.pattern,
+      back: g.meaningVi,
+    }));
+}
+
+async function flashcardFromCollected(
+  userId: string,
+  type: 'kanji' | 'vocabulary',
+  count: number,
+  itemIds?: string[],
+) {
+  const itemType = type === 'kanji' ? MasteryItemType.kanji : MasteryItemType.vocabulary;
+  const mastery = await db.userMasteryItem.findMany({
+    where: {
+      userId,
+      itemType,
+      ...(itemIds?.length ? { itemId: { in: itemIds } } : {}),
+    },
+  });
+  if (mastery.length === 0) return [];
+
+  const picked = shuffle(itemIds?.length ? mastery : mastery).slice(0, count);
+  const ids = picked.map((m) => m.itemId);
+
+  if (type === 'kanji') {
+    const kanji = await db.kanji.findMany({ where: { id: { in: ids } } });
+    const map = new Map(kanji.map((k) => [k.id, k]));
+    return picked
+      .map((m) => map.get(m.itemId))
+      .filter(Boolean)
+      .map((k) => ({
+        id: k!.id,
+        itemType: 'kanji' as const,
+        front: k!.character,
+        back: k!.meaning,
+        reading: k!.readingsKun[0] ?? k!.readingsOn[0],
+      }));
+  }
+
+  const vocab = await db.vocabulary.findMany({ where: { id: { in: ids } } });
+  const map = new Map(vocab.map((v) => [v.id, v]));
+  return picked
+    .map((m) => map.get(m.itemId))
+    .filter(Boolean)
+    .map((v) => ({
+      id: v!.id,
+      itemType: 'vocabulary' as const,
+      front: v!.word,
+      back: v!.meaning,
+      reading: v!.reading ?? undefined,
+    }));
+}
+
+export async function generateReview(userId: string, input: GenerateReviewInput = {}) {
+  const legacyMode = input.mode ?? 'random';
+  const mode: ReviewGenerateMode =
+    legacyMode === 'flashcard' ? 'random' : legacyMode;
+  const count = Math.min(input.count ?? 20, 50);
+  const type = input.type ?? 'mixed';
+  const pool = input.pool ?? 'learned';
+
+  if (pool === 'collected' && type !== 'mixed' && type !== 'grammar') {
+    const reviewMode = input.mode === 'pick' || mode === 'pick' ? 'pick' : 'random';
+    const items = await flashcardFromCollected(
+      userId,
+      type,
+      count,
+      reviewMode === 'pick' ? input.itemIds : undefined,
+    );
+    return { mode: reviewMode, type, pool, items, questions: [] };
+  }
+
+  if (
+    pool === 'learned' &&
+    type !== 'mixed' &&
+    (mode === 'random' || mode === 'lesson' || legacyMode === 'flashcard')
+  ) {
+    const lessonFilter =
+      mode === 'lesson' && input.lessonIds?.length ? input.lessonIds : undefined;
+    const items = await flashcardFromLearned(userId, type, count, lessonFilter);
+    return {
+      mode: mode === 'lesson' ? 'lesson' : 'random',
+      type,
+      pool,
+      items,
+      questions: [],
+    };
+  }
+
   const completed = await db.userLessonProgress.findMany({
     where: { userId, status: 'completed' },
     select: { lessonId: true },
@@ -17,70 +174,22 @@ export async function generateReview(
   const lessonIds = completed.map((c) => c.lessonId);
 
   if (lessonIds.length === 0) {
-    return { mode, type, questions: [], items: [] };
+    return { mode, type, pool, questions: [], items: [] };
   }
 
   if (type === 'kanji') {
-    const rows = await db.lessonKanji.findMany({
-      where: { lessonId: { in: lessonIds } },
-      include: { kanji: true },
-    });
-    const unique = [...new Map(rows.map((r) => [r.kanji.id, r.kanji])).values()];
-    const shuffled = unique.sort(() => Math.random() - 0.5).slice(0, count);
-    return {
-      mode,
-      type,
-      items: shuffled.map((k) => ({
-        id: k.id,
-        itemType: 'kanji' as const,
-        front: k.character,
-        back: k.meaning,
-        readingsOn: k.readingsOn,
-        readingsKun: k.readingsKun,
-      })),
-      questions: [],
-    };
+    const items = await flashcardFromLearned(userId, 'kanji', count);
+    return { mode, type, pool: 'learned' as const, items, questions: [] };
   }
 
   if (type === 'vocabulary') {
-    const rows = await db.lessonVocabulary.findMany({
-      where: { lessonId: { in: lessonIds } },
-      include: { vocabulary: true },
-    });
-    const unique = [...new Map(rows.map((r) => [r.vocabulary.id, r.vocabulary])).values()];
-    const shuffled = unique.sort(() => Math.random() - 0.5).slice(0, count);
-    return {
-      mode,
-      type,
-      items: shuffled.map((v) => ({
-        id: v.id,
-        itemType: 'vocabulary' as const,
-        front: v.word,
-        reading: v.reading,
-        back: v.meaning,
-      })),
-      questions: [],
-    };
+    const items = await flashcardFromLearned(userId, 'vocabulary', count);
+    return { mode, type, pool: 'learned' as const, items, questions: [] };
   }
 
   if (type === 'grammar') {
-    const rows = await db.lessonGrammar.findMany({
-      where: { lessonId: { in: lessonIds } },
-      include: { grammar: true },
-    });
-    const unique = [...new Map(rows.map((r) => [r.grammar.id, r.grammar])).values()];
-    const shuffled = unique.sort(() => Math.random() - 0.5).slice(0, count);
-    return {
-      mode,
-      type,
-      items: shuffled.map((g) => ({
-        id: g.id,
-        itemType: 'grammar' as const,
-        front: g.pattern,
-        back: g.meaningVi,
-      })),
-      questions: [],
-    };
+    const items = await flashcardFromLearned(userId, 'grammar', count);
+    return { mode, type, pool: 'learned' as const, items, questions: [] };
   }
 
   if (mode === 'weakness') {
@@ -98,6 +207,7 @@ export async function generateReview(
       return {
         mode,
         type,
+        pool,
         questions: lessonQuestions.map((lq) =>
           toClientReviewQuestion(lq.question, lq.lessonId, mode),
         ),
@@ -111,13 +221,16 @@ export async function generateReview(
     include: { question: true },
   });
 
-  const shuffled = lessonQuestions.sort(() => Math.random() - 0.5).slice(0, count);
+  const shuffled = shuffle(lessonQuestions).slice(0, count);
 
+  const legacyQuestionMode =
+    mode === 'lesson' || mode === 'pick' ? 'random' : mode;
   return {
     mode,
     type,
+    pool,
     questions: shuffled.map((lq) =>
-      toClientReviewQuestion(lq.question, lq.lessonId, mode),
+      toClientReviewQuestion(lq.question, lq.lessonId, legacyQuestionMode),
     ),
     items: [],
   };

@@ -1,13 +1,19 @@
-import { motion } from 'framer-motion';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Check, CreditCard, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { AppIcon } from '@/components/usable/app-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { InsetEmpty } from '@/components/usable/inset-empty';
+import { cn } from '@/lib/utils';
+
+import {
+  AdminPageShell,
+  AdminStatPill,
+} from '../components/admin-page-shell';
 import {
   createPricingPlan,
   deletePricingPlan,
@@ -38,6 +44,106 @@ function formatVnd(amount: number) {
   }).format(amount);
 }
 
+function formatDuration(days: number | null) {
+  if (!days) return 'Trọn đời';
+  if (days >= 365) return `${Math.round(days / 365)} năm`;
+  if (days >= 30) return `${Math.round(days / 30)} tháng`;
+  return `${days} ngày`;
+}
+
+function PlanAdminCard({
+  plan,
+  onEdit,
+  onDelete,
+}: {
+  plan: PricingPlanItem;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const isFree = plan.price <= 0;
+
+  return (
+    <article
+      className={cn(
+        'depth-interactive relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-surface-paper/50 p-5 shadow-premium card-lift',
+        plan.isPopular && 'border-brand/40 ring-1 ring-brand/20',
+        !plan.isActive && 'opacity-70',
+      )}
+    >
+      <div
+        className={cn(
+          'pointer-events-none absolute -right-8 -top-8 size-24 rounded-full border border-border',
+          plan.isPopular ? 'bg-brand-soft/60' : 'bg-secondary/50',
+        )}
+      />
+
+      <div className="relative mb-4 flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {plan.isPopular && (
+            <Badge className="border-0 bg-brand text-brand-foreground">
+              <Sparkles className="mr-1 size-3" />
+              Phổ biến
+            </Badge>
+          )}
+          {!plan.isActive && <Badge variant="secondary">Ẩn</Badge>}
+          <span className="rounded-full border border-border bg-tertiary px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-tertiary-foreground">
+            #{plan.sortOrder}
+          </span>
+        </div>
+        <AppIcon icon={Check} size="sm" className={isFree ? 'bg-quaternary' : 'bg-secondary'} />
+      </div>
+
+      <h3 className="relative font-display text-xl font-extrabold tracking-tight">{plan.name}</h3>
+      {plan.description ? (
+        <p className="relative mt-1 line-clamp-2 text-sm font-medium text-muted-foreground">
+          {plan.description}
+        </p>
+      ) : null}
+
+      <div className="relative mt-4">
+        <p className="font-display text-3xl font-extrabold tracking-tight text-primary">
+          {isFree ? 'Miễn phí' : formatVnd(plan.price)}
+        </p>
+        <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          {formatDuration(plan.durationDays)}
+        </p>
+      </div>
+
+      {plan.courses.length > 0 ? (
+        <p className="relative mt-4 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs font-bold text-muted-foreground">
+          {plan.courses.length} khóa: {plan.courses.map((c) => c.jlptLevel ?? c.title).join(', ')}
+        </p>
+      ) : (
+        <p className="relative mt-4 text-xs font-medium italic text-muted-foreground">Chưa gắn khóa</p>
+      )}
+
+      {plan.features.length > 0 ? (
+        <ul className="relative mt-4 flex-1 space-y-1.5">
+          {plan.features.slice(0, 5).map((f) => (
+            <li key={f} className="flex gap-2 text-sm font-medium">
+              <Check className="mt-0.5 size-4 shrink-0 text-brand" strokeWidth={2.5} />
+              <span className="line-clamp-1">{f}</span>
+            </li>
+          ))}
+          {plan.features.length > 5 ? (
+            <li className="text-xs font-bold text-muted-foreground">+{plan.features.length - 5} tính năng</li>
+          ) : null}
+        </ul>
+      ) : null}
+
+      <div className="relative mt-5 flex gap-2 border-t border-border/70 pt-4">
+        <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
+          <Pencil className="mr-1.5 size-3.5" />
+          Sửa
+        </Button>
+        <Button variant="destructive" size="sm" onClick={onDelete}>
+          <Trash2 className="size-3.5" />
+        </Button>
+      </div>
+    </article>
+  );
+}
+
 export function PricingAdminView() {
   const [plans, setPlans] = useState<PricingPlanItem[]>([]);
   const [courses, setCourses] = useState<CourseRef[]>([]);
@@ -66,6 +172,9 @@ export function PricingAdminView() {
     () => [...plans].sort((a, b) => a.sortOrder - b.sortOrder),
     [plans],
   );
+
+  const activeCount = useMemo(() => plans.filter((p) => p.isActive).length, [plans]);
+  const popularCount = useMemo(() => plans.filter((p) => p.isPopular).length, [plans]);
 
   function openCreate() {
     setEditing(null);
@@ -147,60 +256,58 @@ export function PricingAdminView() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Gói học &amp; giá</h1>
-          <p className="text-sm text-muted-foreground">
-            Cấu hình gói hiển thị trang chủ; thanh toán SePAY tự mở khóa sau webhook.
-          </p>
+    <AdminPageShell
+      title="Gói học & giá"
+      description="Cấu hình gói hiển thị trang chủ; thanh toán SePAY tự mở khóa sau webhook."
+      icon={CreditCard}
+      iconClassName="bg-secondary"
+      tone="secondary"
+      chips={['Trang chủ', 'SePAY', 'Khóa học', 'Ghi danh']}
+      footer="Gói ẩn không hiển thị công khai — webhook vẫn xử lý đơn đã tạo."
+      headerExtra={
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-2">
+            <AdminStatPill label="Tổng gói" value={plans.length} accent="brand" />
+            <AdminStatPill label="Đang hiển thị" value={activeCount} />
+          </div>
+          <Button onClick={openCreate} className="w-full">
+            <Plus className="mr-1.5 size-4" />
+            Thêm gói
+          </Button>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-1.5 size-4" />
-          Thêm gói
-        </Button>
-      </div>
+      }
+    >
+      <div className="space-y-5">
+        {popularCount > 0 ? (
+          <p className="rounded-xl border border-brand/20 bg-brand-soft/20 px-4 py-2 text-sm font-medium text-muted-foreground">
+            <Sparkles className="mr-1.5 inline size-4 text-brand" />
+            {popularCount} gói được đánh dấu phổ biến — hiển thị nổi bật trên trang giá.
+          </p>
+        ) : null}
 
-      <div className="grid gap-4">
-        {sortedPlans.map((plan) => (
-          <Card key={plan.id}>
-            <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
-              <div>
-                <CardTitle className="flex flex-wrap items-center gap-2 text-lg">
-                  {plan.name}
-                  {plan.isPopular && <Badge>Phổ biến</Badge>}
-                  {!plan.isActive && <Badge variant="secondary">Ẩn</Badge>}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {formatVnd(plan.price)}
-                  {plan.durationDays
-                    ? ` · ${plan.durationDays} ngày`
-                    : ' · Trọn đời'}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => openEdit(plan)}>
-                  <Pencil className="size-4" />
-                </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(plan)}>
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <p>{plan.courses.map((c) => c.title).join(' · ') || 'Chưa gắn khóa'}</p>
-              {plan.features.length > 0 && (
-                <ul className="mt-2 list-inside list-disc">
-                  {plan.features.slice(0, 4).map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-        {!sortedPlans.length && (
-          <p className="text-sm text-muted-foreground">Chưa có gói nào.</p>
+        {sortedPlans.length === 0 ? (
+          <InsetEmpty
+            tone="courses"
+            title="Chưa có gói nào"
+            description="Tạo gói học đầu tiên để học viên có thể đăng ký."
+            action={
+              <Button onClick={openCreate}>
+                <Plus className="mr-1.5 size-4" />
+                Tạo gói đầu tiên
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {sortedPlans.map((plan) => (
+              <PlanAdminCard
+                key={plan.id}
+                plan={plan}
+                onEdit={() => openEdit(plan)}
+                onDelete={() => handleDelete(plan)}
+              />
+            ))}
+          </div>
         )}
       </div>
 
@@ -238,13 +345,13 @@ export function PricingAdminView() {
             />
           </div>
           <textarea
-            className="min-h-[80px] w-full rounded-lg border bg-background p-2 text-sm"
+            className="min-h-[80px] w-full rounded-xl border border-border bg-background p-3 text-sm shadow-sm"
             placeholder="Tính năng (mỗi dòng một mục)"
             value={form.featuresText}
             onChange={(e) => setForm((f) => ({ ...f, featuresText: e.target.value }))}
           />
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 font-medium">
               <input
                 type="checkbox"
                 checked={form.isActive}
@@ -252,7 +359,7 @@ export function PricingAdminView() {
               />
               Hiển thị
             </label>
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 font-medium">
               <input
                 type="checkbox"
                 checked={form.isPopular}
@@ -268,9 +375,9 @@ export function PricingAdminView() {
               onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value }))}
             />
           </div>
-          <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border p-2">
+          <div className="max-h-40 space-y-1 overflow-y-auto rounded-xl border border-border p-3">
             {courses.map((c) => (
-              <label key={c.id} className="flex items-center gap-2 text-sm">
+              <label key={c.id} className="flex items-center gap-2 text-sm font-medium">
                 <input
                   type="checkbox"
                   checked={form.courseIds.includes(c.id)}
@@ -285,6 +392,6 @@ export function PricingAdminView() {
           <Button onClick={handleSave}>Lưu</Button>
         </div>
       </Dialog>
-    </motion.div>
+    </AdminPageShell>
   );
 }

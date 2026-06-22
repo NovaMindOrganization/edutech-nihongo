@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -24,10 +24,10 @@ export function StudentProfileDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange} title="Tài khoản">
       <div className="space-y-5">
-        <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
-          <p className="font-display text-lg font-semibold">{displayName}</p>
+        <div className="rounded-xl border border-border bg-surface-paper p-4 shadow-premium">
+          <p className="font-display text-lg font-extrabold">{displayName}</p>
           <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
-          <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground">
+          <p className="mt-2 font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             Vai trò: {user.role}
           </p>
         </div>
@@ -39,14 +39,14 @@ export function StudentProfileDialog({
           <Link
             to={paths.pricing}
             onClick={() => onOpenChange(false)}
-            className="block rounded-lg border border-border/60 px-3 py-2 hover:bg-muted/50"
+            className="block rounded-lg border border-border bg-surface-paper px-3 py-2 font-bold shadow-premium transition-all hover:-translate-y-0.5 hover:bg-muted/50 hover:shadow-premium"
           >
             Gói học & thanh toán
           </Link>
           <Link
             to={paths.forgotPassword}
             onClick={() => onOpenChange(false)}
-            className="block rounded-lg border border-border/60 px-3 py-2 hover:bg-muted/50"
+            className="block rounded-lg border border-border bg-surface-paper px-3 py-2 font-bold shadow-premium transition-all hover:-translate-y-0.5 hover:bg-muted/50 hover:shadow-premium"
           >
             Đổi mật khẩu
           </Link>

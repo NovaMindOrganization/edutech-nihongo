@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { LoadingState } from '@/components/usable/loading-state';
 import { LessonContext } from '@/features/learn/context/lesson-context';
 import { examChrome } from '@/features/student/components/exam-shell-theme';
 import {
@@ -120,7 +121,7 @@ export function MiniTestView() {
   }
 
   if (questions.length === 0) {
-    return <p className="text-sm text-muted-foreground">Đang tải câu hỏi…</p>;
+    return <LoadingState label="Đang tải câu hỏi MiniTest…" tone="exam" />;
   }
 
   return (

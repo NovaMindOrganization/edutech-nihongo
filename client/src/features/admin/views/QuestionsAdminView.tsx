@@ -1,10 +1,17 @@
+import { HelpCircle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { InsetEmpty } from '@/components/usable/inset-empty';
 import { Input } from '@/components/ui/input';
 
+import {
+  AdminListPanel,
+  AdminPagination,
+  AdminSection,
+  StaffListPageShell,
+} from '../components/admin-page-shell';
 import { AdminListFilters, JlptLevelFilter } from '../components/admin-list-filters';
 import { JLPT_ALL } from '../constants';
 import { createQuestion, deleteQuestion, listQuestions, type QuestionItem } from '../services/adminApi';
@@ -86,106 +93,112 @@ export function QuestionsAdminView() {
   }
 
   return (
-    <div>
-      <h1 className="font-display text-2xl font-bold">Ngân hàng câu hỏi</h1>
-      <p className="text-sm text-muted-foreground">
-        {total} câu — dùng cho đề JLPT hoặc gán vào bài học
-      </p>
-
-      <AdminListFilters>
-        <JlptLevelFilter
-          value={jlptLevel}
-          onChange={(v) => {
-            setJlptLevel(v);
-            setPage(1);
-          }}
+    <StaffListPageShell
+      title="Ngân hàng câu hỏi"
+      description="MCQ dùng chung cho đề JLPT mock hoặc gán vào bài học."
+      icon={HelpCircle}
+      iconClassName="bg-brand-soft"
+      tone="brand"
+      chips={['MCQ', 'JLPT', 'Import']}
+      total={total}
+      secondaryStat={{ label: 'Trang này', value: items.length }}
+      filters={
+        <AdminListFilters className="mt-0 border-0 bg-transparent p-0 shadow-none">
+          <JlptLevelFilter
+            value={jlptLevel}
+            onChange={(v) => {
+              setJlptLevel(v);
+              setPage(1);
+            }}
+          />
+        </AdminListFilters>
+      }
+      pagination={
+        <AdminPagination
+          page={page}
+          total={total}
+          pageSize={40}
+          onPrevious={() => setPage((p) => p - 1)}
+          onNext={() => setPage((p) => p + 1)}
         />
-      </AdminListFilters>
-
-      <Card className="mt-6">
-        <CardContent className="space-y-3 p-4">
-          <Input placeholder="Nội dung câu hỏi" value={text} onChange={(e) => setText(e.target.value)} />
-          {OPTION_LABELS.map((label) => (
-            <div key={label} className="flex gap-2">
-              <span className="flex w-8 items-center text-sm font-medium">{label}</span>
-              <Input
-                placeholder={`Đáp án ${label}`}
-                value={options[label]}
-                onChange={(e) => setOptions((o) => ({ ...o, [label]: e.target.value }))}
-              />
-            </div>
-          ))}
-          <div className="flex flex-wrap gap-3">
-            <select
-              className="rounded-lg border bg-background px-3 py-2 text-sm"
-              value={correctLabel}
-              onChange={(e) => setCorrectLabel(e.target.value)}
-            >
-              {OPTION_LABELS.map((l) => (
-                <option key={l} value={l}>
-                  Đáp án đúng: {l}
-                </option>
-              ))}
-            </select>
-            <select
-              className="rounded-lg border bg-background px-3 py-2 text-sm"
-              value={createJlpt}
-              onChange={(e) => setCreateJlpt(e.target.value)}
-            >
-              {['N5', 'N4', 'N3', 'N2', 'N1'].map((lv) => (
-                <option key={lv} value={lv}>
-                  {lv}
-                </option>
-              ))}
-            </select>
+      }
+    >
+      <AdminSection
+        title="Thêm câu hỏi mới"
+        description="Nhập nội dung, đáp án A–D và chọn đáp án đúng."
+        icon={HelpCircle}
+        iconClassName="bg-secondary"
+      >
+        <Input placeholder="Nội dung câu hỏi" value={text} onChange={(e) => setText(e.target.value)} />
+        {OPTION_LABELS.map((label) => (
+          <div key={label} className="flex gap-2">
+            <span className="flex w-8 items-center text-sm font-bold">{label}</span>
             <Input
-              className="flex-1 min-w-[10rem]"
-              placeholder="Phân loại (vd: 文字・語彙)"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              placeholder={`Đáp án ${label}`}
+              value={options[label]}
+              onChange={(e) => setOptions((o) => ({ ...o, [label]: e.target.value }))}
             />
           </div>
+        ))}
+        <div className="flex flex-wrap gap-3">
+          <select
+            className="rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm"
+            value={correctLabel}
+            onChange={(e) => setCorrectLabel(e.target.value)}
+          >
+            {OPTION_LABELS.map((l) => (
+              <option key={l} value={l}>
+                Đáp án đúng: {l}
+              </option>
+            ))}
+          </select>
+          <select
+            className="rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm"
+            value={createJlpt}
+            onChange={(e) => setCreateJlpt(e.target.value)}
+          >
+            {['N5', 'N4', 'N3', 'N2', 'N1'].map((lv) => (
+              <option key={lv} value={lv}>
+                {lv}
+              </option>
+            ))}
+          </select>
           <Input
-            placeholder="Giải thích (tuỳ chọn)"
-            value={explanation}
-            onChange={(e) => setExplanation(e.target.value)}
+            className="min-w-[10rem] flex-1"
+            placeholder="Phân loại (vd: 文字・語彙)"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
           />
-          <Button onClick={handleCreate}>Thêm vào ngân hàng</Button>
-        </CardContent>
-      </Card>
-      <Card className="mt-6">
-        <CardContent className="divide-y p-0">
-          {items.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-muted-foreground">Không có câu hỏi.</p>
-          ) : (
-            items.map((q) => (
-              <div key={q.id} className="flex items-start gap-3 px-4 py-3">
-                <div className="flex-1">
-                  <p className="text-sm font-jp">{q.questionText}</p>
-                  {q.jlptLevel && (
-                    <p className="mt-0.5 text-xs text-muted-foreground">{q.jlptLevel}</p>
-                  )}
-                </div>
-                <Button size="sm" variant="destructive" onClick={() => deleteQuestion(q.id).then(load)}>
-                  Xóa
-                </Button>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+        </div>
+        <Input
+          placeholder="Giải thích (tuỳ chọn)"
+          value={explanation}
+          onChange={(e) => setExplanation(e.target.value)}
+        />
+        <Button onClick={handleCreate}>Thêm vào ngân hàng</Button>
+      </AdminSection>
 
-      <div className="mt-4 flex justify-center gap-2">
-        <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-          Trước
-        </Button>
-        <span className="flex items-center text-sm">
-          Trang {page} / {Math.max(1, Math.ceil(total / 40))}
-        </span>
-        <Button variant="outline" disabled={page * 40 >= total} onClick={() => setPage((p) => p + 1)}>
-          Sau
-        </Button>
-      </div>
-    </div>
+      <AdminListPanel>
+        {items.length === 0 ? (
+          <InsetEmpty tone="exam" title="Không có câu hỏi" description="Thêm câu hỏi mới hoặc đổi bộ lọc JLPT." />
+        ) : (
+          items.map((q) => (
+            <div key={q.id} className="flex items-start gap-3 border-b border-border/70 px-4 py-3 last:border-b-0">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-jp font-medium">{q.questionText}</p>
+                {q.jlptLevel ? (
+                  <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                    {q.jlptLevel}
+                  </p>
+                ) : null}
+              </div>
+              <Button size="sm" variant="destructive" onClick={() => deleteQuestion(q.id).then(load)}>
+                Xóa
+              </Button>
+            </div>
+          ))
+        )}
+      </AdminListPanel>
+    </StaffListPageShell>
   );
 }

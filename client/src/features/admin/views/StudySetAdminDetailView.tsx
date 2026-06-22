@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { StudySetGridSkeleton } from '@/components/usable/state-skeletons';
+import { ViewState } from '@/components/usable/view-state';
 import { paths } from '@/router/paths';
 
 import { StudySetApproveFields } from '../components/study-set-approve-fields';
@@ -79,7 +81,13 @@ export function StudySetAdminDetailView() {
   }
 
   if (!set) {
-    return <p className="text-sm text-muted-foreground">Đang tải…</p>;
+    return (
+      <ViewState
+        loading
+        loadingLabel="Đang tải study set…"
+        loadingSkeleton={<StudySetGridSkeleton count={1} />}
+      />
+    );
   }
 
   const grouped = groupItemsByType(set.items);

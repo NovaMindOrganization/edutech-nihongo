@@ -1,21 +1,21 @@
-import { Search, X } from 'lucide-react';
+﻿import { Search, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 import { JLPT_ALL, JLPT_LEVELS, type PublishedFilter, type UserStatusFilter } from '../constants';
 
-const selectClass =
-  'h-9 min-w-[120px] rounded-lg border border-input bg-background px-3 text-sm shadow-xs';
+const selectClass = 'min-h-11 w-full min-w-0 rounded-xl text-xs shadow-premium card-lift sm:w-auto sm:min-w-32';
 
 type SelectOption = { value: string; label: string };
 
 function FilterField({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+    <label className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none">
+      <span className="font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">{label}</span>
       {children}
     </label>
   );
@@ -35,7 +35,7 @@ function FilterSelect({
   className?: string;
 }) {
   return (
-    <select
+    <Select
       className={cn(selectClass, className)}
       value={value}
       disabled={disabled}
@@ -46,7 +46,7 @@ function FilterSelect({
           {o.label}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }
 
@@ -62,13 +62,13 @@ export function AdminListFilters({
   return (
     <div
       className={cn(
-        'mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-border/60 bg-muted/25 p-3',
+        'mt-4 flex flex-col items-stretch gap-3 rounded-xl border border-border bg-surface-paper p-3 shadow-premium card-lift sm:flex-row sm:flex-wrap sm:items-end',
         className,
       )}
     >
       {children}
       {onReset && (
-        <Button type="button" variant="ghost" size="sm" className="h-9 gap-1" onClick={onReset}>
+        <Button type="button" variant="ghost" size="sm" className="gap-1 sm:self-end" onClick={onReset}>
           <X className="size-3.5" />
           Xóa lọc
         </Button>
@@ -114,7 +114,7 @@ export function AdminSearchFilter({
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="h-9 w-[200px] pl-8 md:w-[240px]"
+          className="min-h-11 w-full pl-8 sm:w-60"
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
@@ -138,7 +138,7 @@ export function CourseFilter({
       <FilterSelect
         value={value}
         onChange={onChange}
-        className="min-w-[180px]"
+        className="sm:min-w-48"
         options={[
           { value: '', label: 'Tất cả khóa' },
           ...courses.map((c) => ({
@@ -168,7 +168,7 @@ export function LessonFilter({
         value={value}
         onChange={onChange}
         disabled={disabled}
-        className="min-w-[160px]"
+        className="sm:min-w-40"
         options={[
           { value: '', label: 'Tất cả tiết' },
           ...lessons.map((l) => ({
@@ -259,7 +259,7 @@ export function SourceLessonFilter({
   return (
     <FilterField label="Lesson ID">
       <Input
-        className="h-9 w-24"
+        className="min-h-11 w-full sm:w-32"
         type="text"
         placeholder="UUID"
         value={value}

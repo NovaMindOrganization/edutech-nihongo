@@ -1,6 +1,9 @@
+import { Layers3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { buttonVariants } from '@/components/ui/button';
+import { AppIcon } from '@/components/usable/app-icon';
+import { EmptyState, emptyStatePresets, VocabularyListSkeleton } from '@/components/usable/states';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { useSpeech } from '@/hooks/use-speech';
 import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
@@ -32,7 +35,7 @@ export function VocabularyList({ lessonId, fallbackTitle }: VocabularyListProps)
   };
 
   if (loading) {
-    return <p className="py-12 text-center text-muted-foreground">Đang tải danh sách từ vựng...</p>;
+    return <VocabularyListSkeleton />;
   }
 
   return (
@@ -49,17 +52,16 @@ export function VocabularyList({ lessonId, fallbackTitle }: VocabularyListProps)
           to={paths.learn.lessonVocabularyFlashcards(lessonId)}
           className={cn(
             buttonVariants({ size: 'lg' }),
-            'hidden w-full text-base font-semibold shadow-md sm:inline-flex',
+            'hidden w-full gap-2 text-base font-semibold sm:inline-flex',
           )}
         >
-          🚀 Bắt đầu học Flashcard
+          <AppIcon icon={Layers3} size="sm" className="bg-tertiary" />
+          Bắt đầu học Flashcard
         </Link>
       </div>
 
       {total === 0 ? (
-        <p className="rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">
-          Chưa có từ vựng trong bài này.
-        </p>
+        <EmptyState {...emptyStatePresets.vocabulary} />
       ) : (
         <ul className="mt-2 space-y-3" aria-label="Danh sách từ vựng">
           {items.map((item) => (
@@ -83,10 +85,11 @@ export function VocabularyList({ lessonId, fallbackTitle }: VocabularyListProps)
             to={paths.learn.lessonVocabularyFlashcards(lessonId)}
             className={cn(
               buttonVariants({ size: 'lg' }),
-              'h-14 w-full text-base font-semibold shadow-lg',
+              'h-14 w-full gap-2 text-base font-semibold',
             )}
           >
-            🚀 Bắt đầu học Flashcard
+            <AppIcon icon={Layers3} size="sm" className="bg-tertiary" />
+            Bắt đầu học Flashcard
           </Link>
         </div>
       )}

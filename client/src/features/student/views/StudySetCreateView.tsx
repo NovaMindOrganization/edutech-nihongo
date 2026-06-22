@@ -1,8 +1,9 @@
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { PageShell, pageContentClass } from '@/components/usable/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { paths } from '@/router/paths';
@@ -103,17 +104,20 @@ export function StudySetCreateView() {
   }
 
   return (
-    <div className="w-full pb-12">
-      <Link to={paths.student.studySets} className="text-sm text-primary hover:underline">
-        ← Study sets
-      </Link>
-      <h1 className="mt-4 font-display text-2xl font-bold">
-        {isEdit ? 'Sửa study set' : 'Tạo study set'}
-      </h1>
-
-      <form className="mt-6 space-y-8" onSubmit={handleSubmit}>
-        <section className="space-y-4 rounded-xl border p-4">
-          <h2 className="font-medium">Thông tin bộ</h2>
+    <PageShell
+      className={pageContentClass}
+      eyebrow="Study Sets"
+      title={isEdit ? 'Sửa study set' : 'Tạo study set'}
+      description="Thêm từ vựng, kanji hoặc ngữ pháp — lưu riêng hoặc gửi cộng đồng sau kiểm duyệt."
+      icon={Sparkles}
+      iconClassName="bg-tertiary"
+      tone="brand"
+      chips={['Từ vựng', 'Kanji', 'Ngữ pháp', 'Nghe · Nói']}
+      footer="Bật công khai cộng đồng để gửi kiểm duyệt — bộ riêng tư chỉ bạn xem được."
+    >
+      <form className="space-y-5" onSubmit={handleSubmit}>
+        <section className="space-y-4 rounded-2xl border border-border/70 bg-surface-paper/50 p-4 md:p-6">
+          <h2 className="font-display text-lg font-extrabold">Thông tin bộ</h2>
           <div>
             <label className="text-sm font-medium">Tiêu đề</label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -161,9 +165,9 @@ export function StudySetCreateView() {
           </div>
         </section>
 
-        <section className="space-y-4">
+        <section className="space-y-4 rounded-2xl border border-border/70 bg-surface-paper/50 p-4 md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-medium">Nội dung ({items.length})</h2>
+            <h2 className="font-display text-lg font-extrabold">Nội dung ({items.length})</h2>
             <div className="flex items-center gap-2">
               <StudySetItemTypePicker value={newItemType} onChange={setNewItemType} />
               <Button
@@ -197,10 +201,10 @@ export function StudySetCreateView() {
           ))}
         </section>
 
-        <Button type="submit" disabled={saving}>
+        <Button type="submit" disabled={saving} className="min-h-11 px-6">
           {saving ? 'Đang lưu…' : isEdit ? 'Cập nhật' : 'Tạo bộ'}
         </Button>
       </form>
-    </div>
+    </PageShell>
   );
 }

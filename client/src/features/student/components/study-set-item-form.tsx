@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+﻿import { Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -224,7 +224,7 @@ export function StudySetItemTypePicker({
 }) {
   return (
     <select
-      className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+      className="min-h-11 rounded-2xl border border-input bg-surface-paper px-3 text-sm font-semibold shadow-premium card-lift"
       value={value}
       onChange={(e) => onChange(e.target.value as StudySetContentType)}
     >

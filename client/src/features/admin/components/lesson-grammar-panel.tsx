@@ -1,7 +1,8 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+﻿import { BookOpen, LibraryBig, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { AppIcon } from '@/components/usable/app-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -147,9 +148,18 @@ export function LessonGrammarPanel({ lessonId, jlptLevel, items, onUpdated }: Pr
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle>Ngữ pháp ({items.length})</CardTitle>
+    <Card className="overflow-hidden bg-background">
+      <CardHeader className="border-b border-border bg-surface-paper">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <AppIcon icon={BookOpen} size="md" active />
+            <div>
+              <p className="font-display text-xs font-extrabold uppercase tracking-widest text-primary">
+                Grammar block
+              </p>
+              <CardTitle>Ngữ pháp ({items.length})</CardTitle>
+            </div>
+          </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={openPicker}>
             Gán có sẵn
@@ -159,46 +169,72 @@ export function LessonGrammarPanel({ lessonId, jlptLevel, items, onUpdated }: Pr
             Tạo mới
           </Button>
         </div>
+        </div>
       </CardHeader>
-      <CardContent className="divide-y divide-border/60 p-0">
+      <CardContent className="p-4">
         {items.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">Chưa có mẫu ngữ pháp trong tiết.</p>
+          <p className="rounded-3xl border border-dashed border-border bg-surface-paper px-5 py-8 text-center text-sm font-medium text-muted-foreground shadow-premium card-lift">
+            Chưa có mẫu ngữ pháp trong tiết. Insert grammar block hoặc tạo mới.
+          </p>
         ) : (
-          items.map((item) => (
-            <div key={item.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
-              <div className="min-w-[160px]">
-                <p className="font-medium">{item.title}</p>
-                <p className="font-jp text-sm text-muted-foreground">{item.pattern}</p>
+          <div className="grid gap-3">
+            {items.map((item, index) => (
+              <div
+                key={item.id}
+                className="rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:shadow-premium card-lift"
+              >
+                <div className="flex flex-wrap items-start gap-3">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background font-mono text-xs font-black shadow-premium card-lift">
+                    {index + 1}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-display text-lg font-extrabold">{item.title}</p>
+                      {item.type && <Badge variant="outline">{item.type}</Badge>}
+                      <Badge className="bg-brand-soft text-brand">Assigned</Badge>
+                    </div>
+                    <p className="mt-1 font-jp text-sm font-bold text-primary">{item.pattern}</p>
+                    <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
+                      {item.meaningVi}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button size="icon-sm" variant="ghost" onClick={() => openEdit(item)} aria-label={`Sửa ngữ pháp ${item.title}`}>
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleUnlink(item.id)}>
+                      Gỡ
+                    </Button>
+                    <Button size="icon-sm" variant="ghost" onClick={() => handleDeleteGlobal(item.id)} aria-label={`Xóa ngữ pháp ${item.title}`}>
+                      <Trash2 className="size-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 text-sm">{item.meaningVi}</div>
-              {item.type && <Badge variant="outline">{item.type}</Badge>}
-              <div className="flex gap-1">
-                <Button size="icon-sm" variant="ghost" onClick={() => openEdit(item)}>
-                  <Pencil className="size-4" />
-                </Button>
-                <Button size="icon-sm" variant="ghost" onClick={() => handleUnlink(item.id)}>
-                  Gỡ
-                </Button>
-                <Button size="icon-sm" variant="ghost" onClick={() => handleDeleteGlobal(item.id)}>
-                  <Trash2 className="size-4 text-destructive" />
-                </Button>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </CardContent>
 
       <Dialog open={formOpen} onOpenChange={setFormOpen} title={editing ? 'Sửa ngữ pháp' : 'Tạo ngữ pháp'}>
-        <div className="grid gap-3">
-          <Input placeholder="Tiêu đề" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <Input placeholder="Loại" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} />
-          <Input placeholder="Mẫu (pattern)" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })} />
-          <Input placeholder="Nghĩa (VI)" value={form.meaningVi} onChange={(e) => setForm({ ...form, meaningVi: e.target.value })} />
-          <Input placeholder="Usage" value={form.usage} onChange={(e) => setForm({ ...form, usage: e.target.value })} />
-          <Input placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-          <div className="rounded-md border border-border/60 p-3">
+        <div className="grid gap-4">
+          <div className="rounded-xl border border-border bg-surface-paper p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <AppIcon icon={BookOpen} size="sm" active />
+              <p className="font-display text-sm font-extrabold">Grammar properties</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input placeholder="Tiêu đề" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <Input placeholder="Loại" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} />
+              <Input placeholder="Mẫu (pattern)" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })} />
+              <Input placeholder="Nghĩa (VI)" value={form.meaningVi} onChange={(e) => setForm({ ...form, meaningVi: e.target.value })} />
+              <Input placeholder="Usage" value={form.usage} onChange={(e) => setForm({ ...form, usage: e.target.value })} />
+              <Input placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-background p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">Examples</p>
+              <p className="font-display text-sm font-extrabold">Example blocks</p>
             </div>
             <div className="space-y-2">
               {form.examplesItems.map((ex, idx) => (
@@ -269,9 +305,9 @@ export function LessonGrammarPanel({ lessonId, jlptLevel, items, onUpdated }: Pr
               </Button>
             </div>
           </div>
-          <div className="rounded-md border border-border/60 p-3">
+          <div className="rounded-xl border border-border bg-background p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">Quiz</p>
+              <p className="font-display text-sm font-extrabold">Quiz blocks</p>
             </div>
             <div className="space-y-2">
               {form.quizItems.map((q, idx) => (
@@ -345,16 +381,20 @@ export function LessonGrammarPanel({ lessonId, jlptLevel, items, onUpdated }: Pr
       </Dialog>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen} title="Gán ngữ pháp có sẵn" className="max-w-2xl">
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-border bg-surface-paper p-3">
+          <AppIcon icon={LibraryBig} size="sm" className="bg-tertiary" />
+          <p className="text-sm font-bold text-muted-foreground">Library insert · chọn grammar block để gán vào lesson</p>
+        </div>
         <div className="max-h-[50vh] space-y-2 overflow-y-auto">
           {pool.length === 0 ? (
             <p className="text-sm text-muted-foreground">Không còn mục {jlptLevel} chưa gán.</p>
           ) : (
             pool.map((g) => (
-              <div key={g.id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
-                <span>
+              <div key={g.id} className="flex flex-col items-stretch gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm shadow-premium card-lift sm:flex-row sm:items-center sm:justify-between">
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                   <span className="font-medium">{g.title}</span> — {g.pattern}
                 </span>
-                <Button size="sm" onClick={() => handleAddFromPool(g.id)}>
+                <Button size="sm" className="sm:shrink-0" onClick={() => handleAddFromPool(g.id)}>
                   Gán
                 </Button>
               </div>

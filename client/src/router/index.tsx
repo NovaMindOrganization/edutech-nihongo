@@ -27,7 +27,6 @@ import { ForgotPasswordView, LoginView, RegisterView, ResetPasswordView } from "
 import {
   CourseDetailView,
   KanjiCourseView,
-  KanjiHandbookView,
   KanjiHubView,
   LearnHubView,
   LessonDialogueView,
@@ -44,16 +43,12 @@ import { PlacementTestView } from "@/features/placement";
 import {
   AiSpeakingView,
   CommunityCallView,
-  CommunityHubView,
-  NotebookHubView,
   DashboardView,
   JlptSimView,
   JlptExamView,
   MiniTestView,
   OcrView,
   PracticeHubView,
-  ReviewByTypeView,
-  ReviewHubView,
   StudySetCreateView,
   StudySetDetailView,
   StudySetsView,
@@ -68,6 +63,8 @@ import { LearnLayout } from "@/layouts/learn-layout";
 import { CheckoutPage } from "@/pages/CheckoutPage";
 import { HomePage } from "@/pages/HomePage";
 import { PricingPage } from "@/pages/PricingPage";
+
+import { NotebookHubView, NotebookPoolRedirectView, NotebookShellView } from "@/features/student/notebook";
 
 import { paths } from "./paths";
 
@@ -107,18 +104,21 @@ export function AppRouter() {
             <Route path="/checkout/:orderId" element={<CheckoutPage />} />
 
             <Route path={paths.student.dashboard} element={<DashboardView />} />
-            <Route path={paths.student.review} element={<ReviewHubView />} />
+            <Route
+              path={paths.student.review}
+              element={<Navigate to={paths.student.notebook} replace />}
+            />
             <Route
               path={paths.student.reviewKanji}
-              element={<ReviewByTypeView type="kanji" />}
+              element={<Navigate to={paths.student.notebookLearned("kanji")} replace />}
             />
             <Route
               path={paths.student.reviewVocabulary}
-              element={<ReviewByTypeView type="vocabulary" />}
+              element={<Navigate to={paths.student.notebookLearned("vocabulary")} replace />}
             />
             <Route
               path={paths.student.reviewGrammar}
-              element={<ReviewByTypeView type="grammar" />}
+              element={<Navigate to={paths.student.notebookLearned("grammar")} replace />}
             />
             <Route
               path={paths.student.aiSpeaking}
@@ -134,7 +134,7 @@ export function AppRouter() {
             <Route path={paths.student.mistakes} element={<MistakesReviewView />} />
             <Route
               path={paths.student.community}
-              element={<CommunityHubView />}
+              element={<Navigate to={paths.student.studySets} replace />}
             />
             <Route path={paths.student.studySets} element={<StudySetsView />} />
             <Route
@@ -154,6 +154,8 @@ export function AppRouter() {
               element={<CommunityCallView />}
             />
             <Route path={paths.student.notebook} element={<NotebookHubView />} />
+            <Route path="/notebook/:pool/:type" element={<NotebookShellView />} />
+            <Route path="/notebook/:pool" element={<NotebookPoolRedirectView />} />
 
             <Route path={paths.learn.kanjiHub} element={<KanjiHubView />} />
             <Route
@@ -162,7 +164,9 @@ export function AppRouter() {
             />
             <Route
               path={paths.learn.kanjiHandbook}
-              element={<KanjiHandbookView />}
+              element={
+                <Navigate to={paths.student.notebookCollected("kanji")} replace />
+              }
             />
             <Route path={paths.learn.kanaQuiz} element={<KanaQuizView />} />
             <Route

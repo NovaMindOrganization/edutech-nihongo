@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { BookOpen, Layers3, ScrollText } from 'lucide-react';
 
+import { AppIcon } from '@/components/usable/app-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,16 +63,44 @@ export function LessonPreviewView() {
       )}
 
       {data.grammar.length > 0 && (
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle className="text-base">Ngữ pháp mẫu</CardTitle>
+        <Card className="mt-4 overflow-hidden">
+          <CardHeader className="border-b border-border bg-surface-paper">
+            <div className="flex items-center gap-3">
+              <AppIcon icon={ScrollText} size="md" className="bg-secondary" />
+              <div>
+                <p className="font-display text-xs font-extrabold uppercase tracking-widest text-primary">
+                  Preview
+                </p>
+                <CardTitle className="text-base">Ngữ pháp mẫu</CardTitle>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 bg-background p-4">
             {data.grammar.map((row, i) => (
-              <div key={i}>
-                <p className="font-medium">{row.grammar.title}</p>
-                <p className="font-jp text-primary">{row.grammar.pattern}</p>
-                <p className="text-sm text-muted-foreground">{row.grammar.meaningVi}</p>
+              <div key={i} className="rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift">
+                <p className="font-display text-lg font-extrabold">{row.grammar.title}</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-border bg-surface-paper p-3">
+                    <div className="mb-1 flex items-center gap-2">
+                      <AppIcon icon={Layers3} size="sm" className="bg-tertiary" />
+                      <span className="font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                        Pattern
+                      </span>
+                    </div>
+                    <p className="font-jp font-bold leading-7 text-primary">{row.grammar.pattern}</p>
+                  </div>
+                  <div className="rounded-2xl border border-dashed border-border bg-background/75 p-3">
+                    <div className="mb-1 flex items-center gap-2">
+                      <AppIcon icon={BookOpen} size="sm" className="bg-quaternary" />
+                      <span className="font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                        Meaning
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold leading-6 text-muted-foreground">
+                      {row.grammar.meaningVi}
+                    </p>
+                  </div>
+                </div>
               </div>
             ))}
           </CardContent>

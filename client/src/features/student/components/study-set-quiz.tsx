@@ -1,8 +1,8 @@
-import { Loader2, X } from 'lucide-react';
+﻿import { Loader2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 import { getStudySet } from '../services/studySetApi';
 import type { StudySetQuizPayload, StudySetQuizQuestion } from '../types/study-set.types';
@@ -146,9 +146,9 @@ export function StudySetQuiz({
                 disabled={picked !== null}
                 onClick={() => submitChoice(i)}
                 className={cn(
-                  'rounded-lg border px-4 py-3 text-left text-sm transition',
+                  'rounded-lg border border-border px-4 py-3 text-left text-sm font-medium shadow-premium card-lift transition-all',
                   'whitespace-normal break-words',
-                  picked === null && 'hover:border-primary/50 hover:bg-muted/50',
+                  picked === null && 'hover:-translate-y-0.5 hover:border-primary hover:bg-muted/50 hover:shadow-premium card-lift',
                   picked !== null && i === q.answer && 'border-emerald-500 bg-emerald-50',
                   picked !== null &&
                     picked === i &&
@@ -164,7 +164,7 @@ export function StudySetQuiz({
             ))}
           </div>
           {picked !== null && q.explanation && (
-            <p className="shrink-0 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
+            <p className="shrink-0 rounded-lg border border-border bg-muted/60 p-3 text-sm font-medium text-muted-foreground shadow-premium card-lift">
               {q.explanation}
             </p>
           )}

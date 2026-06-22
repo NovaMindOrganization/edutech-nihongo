@@ -1,11 +1,12 @@
-import { Check, Star, Volume2 } from 'lucide-react';
+﻿import { Check, Star, Volume2 } from 'lucide-react';
 
-import { cn } from '@/utils/cn';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 import type { LessonVocabularyItem } from '../../services/vocabularyApi';
 
 const iconBtnClass =
-  'flex size-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-muted/80 active:bg-muted';
+  'flex size-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-border bg-surface-paper shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:bg-brand-soft active:translate-x-0 active:translate-y-0 disabled:opacity-50';
 
 type VocabularyListItemProps = {
   item: LessonVocabularyItem;
@@ -24,48 +25,75 @@ export function VocabularyListItem({
   const starred = item.progress?.isStarred ?? false;
   const primaryText = item.reading ?? item.word;
   const kanjiText = item.reading ? item.word : null;
+  const example = item.exampleSentence?.trim() || item.exampleTranslation?.trim() || null;
+  const exampleSub =
+    item.exampleSentence && item.exampleTranslation ? item.exampleTranslation : null;
 
   return (
     <article
       className={cn(
-        'rounded-xl border border-border/70 bg-card p-4 shadow-sm transition-all',
-        'hover:border-primary/25 hover:shadow-md',
-        mastered && 'border-emerald-500/20 bg-emerald-50/50 opacity-80 dark:bg-emerald-950/20',
+        'rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift transition-all',
+        'hover:-translate-y-0.5 hover:shadow-premium card-lift',
+        mastered && 'bg-quaternary/15',
       )}
     >
-      <div className="flex items-center gap-3 sm:gap-4">
-        <div className="min-w-0 flex-1 sm:max-w-[38%]">
-          <p className="font-jp truncate text-xl font-bold text-foreground sm:text-2xl">
-            {primaryText}
-          </p>
-          {kanjiText && (
-            <p className="font-jp mt-0.5 truncate text-sm text-muted-foreground sm:text-base">
-              {kanjiText}
-            </p>
-          )}
-        </div>
-
-        <div className="flex min-w-0 flex-[1.4] items-center gap-2">
-          <p
-            className={cn(
-              'line-clamp-2 text-sm leading-snug text-foreground/90 sm:text-base',
-              mastered && 'text-muted-foreground',
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="bg-brand-soft text-brand">{item.jlptLevel}</Badge>
+            {mastered && (
+              <Badge className="gap-1 bg-quaternary text-quaternary-foreground">
+                <Check className="size-3.5 stroke-[2.5]" aria-hidden />
+                Đã thuộc
+              </Badge>
             )}
-          >
-            {item.meaning}
-          </p>
-          {mastered && (
-            <span
-              className="inline-flex shrink-0 items-center justify-center rounded-full bg-emerald-500/15 p-1 text-emerald-600 dark:text-emerald-400"
-              title="Đã thuộc"
-            >
-              <Check className="size-4 stroke-[2.5]" aria-hidden />
-              <span className="sr-only">Đã thuộc</span>
-            </span>
-          )}
+          </div>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-start">
+            <div className="min-w-0">
+              <p className="font-jp truncate text-2xl font-bold text-foreground sm:text-3xl">
+                {primaryText}
+              </p>
+              {kanjiText && (
+                <p className="mt-1 truncate font-jp text-base font-medium text-muted-foreground sm:text-lg">
+                  {kanjiText}
+                </p>
+              )}
+            </div>
+
+            <div className="min-w-0">
+              <p
+                className={cn(
+                  'text-base font-bold leading-snug text-foreground sm:text-lg',
+                  mastered && 'text-muted-foreground',
+                )}
+              >
+                {item.meaning}
+              </p>
+              {example && (
+                <div className="mt-3 rounded-2xl border border-dashed border-border bg-background/75 p-3">
+                  {item.exampleSentence && (
+                    <p className="font-jp text-sm font-semibold leading-7 text-foreground sm:text-base">
+                      {item.exampleSentence}
+                    </p>
+                  )}
+                  {exampleSub && (
+                    <p className="mt-1 text-xs font-medium leading-5 text-muted-foreground sm:text-sm">
+                      {exampleSub}
+                    </p>
+                  )}
+                  {!item.exampleSentence && item.exampleTranslation && (
+                    <p className="text-xs font-medium leading-5 text-muted-foreground sm:text-sm">
+                      {item.exampleTranslation}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+        <div className="flex shrink-0 items-center gap-2 self-end sm:self-start">
           <button
             type="button"
             className={iconBtnClass}
@@ -73,7 +101,7 @@ export function VocabularyListItem({
             aria-label={`Phát âm ${primaryText}`}
             onClick={onPlayAudio}
           >
-            <Volume2 className="size-5 text-muted-foreground" />
+            <Volume2 className="size-5 text-foreground" />
           </button>
           <button
             type="button"
@@ -85,7 +113,7 @@ export function VocabularyListItem({
             <Star
               className={cn(
                 'size-5',
-                starred ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/70',
+                starred ? 'fill-tertiary text-foreground' : 'text-muted-foreground/70',
               )}
             />
           </button>

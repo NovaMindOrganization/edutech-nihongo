@@ -1,14 +1,18 @@
 import { motion } from "framer-motion";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, ScrollText, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
+import {
+  AdminListPanel,
+  AdminPagination,
+  StaffListPageShell,
+} from "../components/admin-page-shell";
 import {
   AdminListFilters,
   AdminSearchFilter,
@@ -139,39 +143,47 @@ export function RadicalsAdminView() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold">214 Bộ Thủ</h1>
-          <p className="text-sm text-muted-foreground">
-            {total} mục — quản lý bộ thủ Hán tự.
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Thêm bộ thủ
-        </Button>
-      </div>
-
-      <AdminListFilters onReset={hasFilters ? resetFilters : undefined}>
-        <AdminSearchFilter
-          value={search}
-          placeholder="Số thứ tự, chữ, hán việt, nghĩa…"
-          onChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-        />
-      </AdminListFilters>
-
-      <Card className="mt-6">
-        <CardContent className="p-0">
+    <>
+      <StaffListPageShell
+        title="214 Bộ thủ"
+        description="Quản lý bộ thủ Hán — số thứ tự, Hán Việt, nghĩa và số nét."
+        icon={ScrollText}
+        chips={['Radicals', 'Hán Việt', 'Stroke count']}
+        total={total}
+        secondaryStat={{ label: 'Trang này', value: items.length }}
+        createAction={
+          <Button onClick={openCreate} className="w-full">
+            <Plus className="size-4" />
+            Thêm bộ thủ
+          </Button>
+        }
+        filters={
+          <AdminListFilters onReset={hasFilters ? resetFilters : undefined} className="mt-0 border-0 bg-transparent p-0 shadow-none">
+            <AdminSearchFilter
+              value={search}
+              placeholder="Số thứ tự, chữ, hán việt, nghĩa…"
+              onChange={(value) => {
+                setSearch(value);
+                setPage(1);
+              }}
+            />
+          </AdminListFilters>
+        }
+        pagination={
+          <AdminPagination
+            page={page}
+            total={total}
+            pageSize={30}
+            onPrevious={() => setPage((p) => p - 1)}
+            onNext={() => setPage((p) => p + 1)}
+          />
+        }
+      >
+        <AdminListPanel>
           {loading ? (
-            <p className="p-5 text-sm text-muted-foreground">Đang tải...</p>
+            <p className="p-5 text-sm font-medium text-muted-foreground">Đang tải…</p>
           ) : items.length === 0 ? (
-            <p className="p-5 text-sm text-muted-foreground">
-              Không có kết quả.
-            </p>
+            <p className="p-5 text-sm font-medium text-muted-foreground">Không có kết quả.</p>
           ) : (
             <div className="divide-y divide-border/60">
               {items.map((item, index) => (
@@ -223,28 +235,8 @@ export function RadicalsAdminView() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      <div className="mt-4 flex justify-center gap-2">
-        <Button
-          variant="outline"
-          disabled={page <= 1}
-          onClick={() => setPage((p) => p - 1)}
-        >
-          Trước
-        </Button>
-        <span className="flex items-center text-sm">
-          Trang {page} / {Math.max(1, Math.ceil(total / 30))}
-        </span>
-        <Button
-          variant="outline"
-          disabled={page * 30 >= total}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          Sau
-        </Button>
-      </div>
+        </AdminListPanel>
+      </StaffListPageShell>
 
       <Dialog
         open={open}
@@ -283,6 +275,6 @@ export function RadicalsAdminView() {
           <Button onClick={handleSave} className="mt-2">Lưu</Button>
         </div>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -8,9 +8,11 @@ import * as jlptService from '../services/jlpt.service.js';
 import * as mockExamService from '../services/mock-exam.service.js';
 import * as minitestService from '../services/minitest.service.js';
 import * as mistakesService from '../services/mistakes.service.js';
+import * as notebookContentService from '../services/notebook-content.service.js';
 import * as notebookService from '../services/notebook.service.js';
 import * as ocrNotebookService from '../services/ocr-notebook.service.js';
 import * as reviewService from '../services/review.service.js';
+import type { GenerateReviewInput } from '../services/review.service.js';
 import * as studySetMediaService from '../services/study-set-media.service.js';
 import * as studySetService from '../services/study-set.service.js';
 import * as webrtcService from '../services/webrtc.service.js';
@@ -55,18 +57,51 @@ export const notebookVocabulary = asyncHandler(async (req: Request, res: Respons
   res.json({ success: true, data });
 });
 
+export const notebookLearned = asyncHandler(async (req: Request, res: Response) => {
+  const type = String(req.params.type) as 'kanji' | 'vocabulary' | 'grammar';
+  const data = await notebookContentService.listLearnedContent(req.user!.id, type, {
+    lessonId: req.query.lessonId ? String(req.query.lessonId) : undefined,
+    level: req.query.level ? String(req.query.level) : undefined,
+  });
+  res.json({ success: true, data });
+});
+
+export const notebookCollected = asyncHandler(async (req: Request, res: Response) => {
+  const type = String(req.params.type) as 'kanji' | 'vocabulary' | 'grammar';
+  const data = await notebookContentService.listCollectedContent(req.user!.id, type, {
+    level: req.query.level ? String(req.query.level) : undefined,
+  });
+  res.json({ success: true, data });
+});
+
+export const notebookLessons = asyncHandler(async (req: Request, res: Response) => {
+  const type = String(req.query.type ?? 'kanji') as 'kanji' | 'vocabulary' | 'grammar';
+  const data = await notebookContentService.listNotebookLessons(req.user!.id, type);
+  res.json({ success: true, data });
+});
+
 export const upsertMastery = asyncHandler(async (req: Request, res: Response) => {
   const data = await notebookService.upsertMastery(req.user!.id, req.body);
   res.json({ success: true, data });
 });
 
 export const reviewGenerate = asyncHandler(async (req: Request, res: Response) => {
-  const data = await reviewService.generateReview(
-    req.user!.id,
-    req.body.mode ?? 'random',
-    req.body.count ?? 20,
-    req.body.type ?? 'mixed',
-  );
+  const body = req.body as {
+    mode?: string;
+    count?: number;
+    type?: string;
+    pool?: string;
+    lessonIds?: string[];
+    itemIds?: string[];
+  };
+  const data = await reviewService.generateReview(req.user!.id, {
+    mode: body.mode as GenerateReviewInput['mode'],
+    count: body.count,
+    type: body.type as GenerateReviewInput['type'],
+    pool: body.pool as GenerateReviewInput['pool'],
+    lessonIds: body.lessonIds,
+    itemIds: body.itemIds,
+  });
   res.json({ success: true, data });
 });
 

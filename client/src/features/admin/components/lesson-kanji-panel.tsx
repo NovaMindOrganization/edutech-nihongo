@@ -1,8 +1,9 @@
-import { motion } from "framer-motion";
-import { Check, LinkIcon, Search, Unlink } from "lucide-react";
+﻿import { motion } from "framer-motion";
+import { Check, LibraryBig, LinkIcon, Search, ScrollText, Unlink } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { AppIcon } from "@/components/usable/app-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -144,62 +145,78 @@ export function LessonKanjiPanel({
   const alreadyAssignedInPool = pool.filter((k) => assignedIds.has(k.id));
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle>Kanji ({items.length})</CardTitle>
+    <Card className="overflow-hidden bg-background">
+      <CardHeader className="border-b border-border bg-surface-paper">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <AppIcon icon={ScrollText} size="md" className="bg-amber-200" />
+            <div>
+              <p className="font-display text-xs font-extrabold uppercase tracking-widest text-primary">
+                Kanji block
+              </p>
+              <CardTitle>Kanji ({items.length})</CardTitle>
+            </div>
+          </div>
         <Button size="sm" onClick={openPicker}>
           <LinkIcon className="size-4" />
           Gán kanji có sẵn
         </Button>
+        </div>
       </CardHeader>
 
-      <CardContent className="divide-y divide-border/60 p-0">
+      <CardContent className="p-4">
         {items.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">
+          <p className="rounded-3xl border border-dashed border-border bg-surface-paper px-5 py-8 text-center text-sm font-medium text-muted-foreground shadow-premium card-lift">
             Chưa có kanji trong tiết. Nhấn <strong>"Gán kanji có sẵn"</strong>{" "}
             để thêm.
           </p>
         ) : (
-          items.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.02 }}
-              className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-muted/30"
-            >
-              <div className="font-jp text-2xl font-semibold">
-                {item.character}
-              </div>
-              <div className="min-w-[100px] text-sm">
-                <p className="font-medium">
-                  {item.hanVietPronunciation ?? "—"}
-                </p>
-                <p className="text-muted-foreground">{item.meaning}</p>
-                {item.examples.length > 0 && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {item.examples
-                      .map(
-                        (example) =>
-                          `${example.word}${example.reading ? `【${example.reading}】` : ""}`,
-                      )
-                      .join(" • ")}
-                  </p>
-                )}
-              </div>
-              <div className="flex-1" />
-              <Badge variant="outline">{item.jlptLevel}</Badge>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="gap-1 text-destructive hover:text-destructive"
-                onClick={() => handleUnlink(item.id)}
+          <div className="grid gap-3 md:grid-cols-2">
+            {items.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.02 }}
+                className="rounded-xl border border-border bg-amber-50 p-4 shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:shadow-premium card-lift"
               >
-                <Unlink className="size-3.5" />
-                Gỡ
-              </Button>
-            </motion.div>
-          ))
+                <div className="flex items-start gap-4">
+                  <div className="font-jp text-5xl font-black text-foreground">
+                    {item.character}
+                  </div>
+                  <div className="min-w-0 flex-1 text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-display font-extrabold">
+                        {item.hanVietPronunciation ?? "—"}
+                      </p>
+                      <Badge variant="outline">{item.jlptLevel}</Badge>
+                      <Badge className="bg-amber-200 text-amber-950">Assigned</Badge>
+                    </div>
+                    <p className="mt-1 font-medium text-muted-foreground">{item.meaning}</p>
+                    {item.examples.length > 0 && (
+                      <p className="mt-2 line-clamp-2 text-xs font-medium leading-5 text-muted-foreground">
+                        {item.examples
+                          .map(
+                            (example) =>
+                              `${example.word}${example.reading ? `【${example.reading}】` : ""}`,
+                          )
+                          .join(" • ")}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 text-destructive hover:text-destructive"
+                    onClick={() => handleUnlink(item.id)}
+                  >
+                    <Unlink className="size-3.5" />
+                    Gỡ
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         )}
       </CardContent>
 
@@ -211,14 +228,19 @@ export function LessonKanjiPanel({
         className="max-w-2xl"
       >
         {/* filters row */}
-        <div className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-border/60 bg-muted/25 p-3">
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-border bg-surface-paper p-3">
+          <AppIcon icon={LibraryBig} size="sm" className="bg-tertiary" />
+          <p className="text-sm font-bold text-muted-foreground">Kanji library · chọn nhiều block rồi batch assign</p>
+        </div>
+
+        <div className="mb-4 flex flex-col items-stretch gap-3 rounded-xl border border-border bg-background p-3 shadow-premium card-lift sm:flex-row sm:flex-wrap sm:items-end">
           {/* JLPT level filter */}
-          <label className="flex flex-col gap-1">
+          <label className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none">
             <span className="text-xs font-medium text-muted-foreground">
               Cấp JLPT
             </span>
             <select
-              className="h-9 min-w-[110px] rounded-lg border border-input bg-background px-3 text-sm shadow-xs"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-paper px-3 text-sm font-medium shadow-premium card-lift sm:w-auto sm:min-w-28"
               value={filterLevel}
               onChange={(e) => {
                 setFilterLevel(e.target.value);
@@ -234,14 +256,14 @@ export function LessonKanjiPanel({
           </label>
 
           {/* Search by Hán Việt / Nghĩa Việt */}
-          <label className="flex flex-col gap-1">
+          <label className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none">
             <span className="text-xs font-medium text-muted-foreground">
               Tìm (Hán Việt, nghĩa…)
             </span>
             <div className="relative">
               <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="h-9 w-[200px] pl-8 md:w-[260px]"
+                className="min-h-11 w-full pl-8 sm:w-64"
                 placeholder="VD: Nhật, mặt trời…"
                 value={filterSearch}
                 onChange={(e) => {
@@ -267,7 +289,7 @@ export function LessonKanjiPanel({
         )}
 
         {/* pool list */}
-        <div className="max-h-[45vh] space-y-1.5 overflow-y-auto pr-1">
+        <div className="max-h-[45vh] space-y-2 overflow-y-auto pr-1">
           {poolLoading ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
               Đang tải…
@@ -285,12 +307,22 @@ export function LessonKanjiPanel({
                 return (
                   <div
                     key={k.id}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isSelected}
+                    aria-label={`${isSelected ? "Bỏ chọn" : "Chọn"} kanji ${k.character}`}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm shadow-premium card-lift transition-colors ${
                       isSelected
-                        ? "border-primary/50 bg-primary/10"
-                        : "border-border/60 hover:border-border hover:bg-muted/40"
+                        ? "border-border bg-primary/10"
+                        : "border-border bg-surface-paper hover:bg-muted/40"
                     }`}
                     onClick={() => toggleSelect(k.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleSelect(k.id);
+                      }
+                    }}
                   >
                     {/* checkbox */}
                     <div
@@ -313,7 +345,7 @@ export function LessonKanjiPanel({
                       <p className="font-medium">
                         {k.hanVietPronunciation ?? "—"}
                       </p>
-                      <p className="truncate text-muted-foreground">
+                      <p className="break-words text-muted-foreground [overflow-wrap:anywhere]">
                         {k.meaning}
                       </p>
                     </div>
@@ -327,6 +359,7 @@ export function LessonKanjiPanel({
                       size="sm"
                       variant="outline"
                       className="shrink-0"
+                      aria-label={`Gán kanji ${k.character}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAddOne(k.id);
@@ -342,7 +375,7 @@ export function LessonKanjiPanel({
               {alreadyAssignedInPool.map((k) => (
                 <div
                   key={k.id}
-                  className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 text-sm opacity-60"
+                  className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 px-3 py-2.5 text-sm opacity-60"
                 >
                   <div className="flex size-5 shrink-0 items-center justify-center rounded border border-primary bg-primary text-primary-foreground">
                     <Check className="size-3.5" />

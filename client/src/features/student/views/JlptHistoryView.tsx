@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { History } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PageShell } from '@/components/usable/page-shell';
@@ -17,7 +18,16 @@ export function JlptHistoryView() {
   }, []);
 
   return (
-    <PageShell eyebrow="Luyện đề" title="Lịch sử thi JLPT">
+    <PageShell
+      eyebrow="Luyện đề"
+      title="Lịch sử thi JLPT"
+      description="Xem lại các lần thi thử JLPT và điểm số của bạn."
+      icon={History}
+      iconClassName="bg-tertiary"
+      tone="quaternary"
+      chips={['Điểm tổng', 'Theo cấp độ', 'Lịch sử nộp bài']}
+      footer="Điểm và thời gian nộp được lưu sau mỗi lần hoàn thành đề thi thử."
+    >
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">Chưa có lần thi nào.</p>
       ) : (

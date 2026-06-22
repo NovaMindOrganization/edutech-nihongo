@@ -1,9 +1,17 @@
+import { BookOpen, BrainCircuit, CreditCard, Gauge, ServerCog, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
+import {
+  AdminPageShell,
+  AdminSection,
+  AdminStatPill,
+} from '../components/admin-page-shell';
 import {
   getLlmConfig,
   getSepayConfig,
@@ -274,61 +282,102 @@ export function ConfigAdminView() {
   }
 
   const selectClass =
-    'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm';
+    'flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm';
+  const fieldLabel = 'text-sm font-bold text-foreground';
 
   return (
-    <div>
-      <h1 className="font-display text-2xl font-bold">Cấu hình hệ thống</h1>
+    <AdminPageShell
+      title="Cấu hình hệ thống"
+      description="MiniTest, bảo trì, thanh toán SePAY và provider LLM cho toàn nền tảng."
+      icon={ServerCog}
+      iconClassName="bg-brand-soft"
+      tone="brand"
+      chips={['MiniTest', 'SePAY', 'Gemini', 'Agent Router']}
+      footer="Thay đổi LLM/SePAY có hiệu lực sau khi lưu — kiểm tra kết nối trước khi deploy."
+      headerExtra={
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <AdminStatPill
+              label="Bảo trì"
+              value={maintenanceMode ? 'Bật' : 'Tắt'}
+              accent={maintenanceMode ? 'quaternary' : 'default'}
+            />
+            <AdminStatPill label="LLM" value={llmProvider === 'gemini' ? 'Gemini' : 'Agent'} accent="brand" />
+          </div>
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {maintenanceMode && (
+              <Badge className="border-0 bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                Đang bảo trì
+              </Badge>
+            )}
+            {n4FreeAccess && (
+              <Badge className="border-0 bg-quaternary/30 text-quaternary-foreground">N4 miễn phí</Badge>
+            )}
+          </div>
+        </div>
+      }
+    >
+      <div className="space-y-5">
+        <div className="grid gap-5 lg:grid-cols-3">
+          <AdminSection
+            title="MiniTest"
+            description="Ngưỡng điểm đạt mặc định cho bài kiểm tra nhanh."
+            icon={Gauge}
+            iconClassName="bg-secondary"
+          >
+            <label className={fieldLabel}>Pass threshold (%)</label>
+            <div className="mt-2 flex gap-2">
+              <Input value={threshold} onChange={(e) => setThreshold(e.target.value)} />
+              <Button onClick={saveThreshold}>Lưu</Button>
+            </div>
+          </AdminSection>
 
-      <section className="mt-8 w-full xl:max-w-4xl space-y-4">
-        <h2 className="text-lg font-semibold">MiniTest</h2>
-        <label className="text-sm font-medium">Pass threshold (%)</label>
-        <Input value={threshold} onChange={(e) => setThreshold(e.target.value)} />
-        <Button onClick={saveThreshold}>Lưu</Button>
-      </section>
+          <AdminSection
+            title="Khóa học N4"
+            description="Mở ghi danh N4 không cần mua gói — dùng tạm khi QA."
+            icon={BookOpen}
+            iconClassName="bg-quaternary"
+            tone={n4FreeAccess ? 'brand' : 'default'}
+          >
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={n4FreeAccess}
+                onChange={(e) => void saveN4FreeAccess(e.target.checked)}
+              />
+              Mở ghi danh N4 miễn phí (tạm thời)
+            </label>
+          </AdminSection>
 
-      <section className="mt-8 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
-        <h2 className="text-lg font-semibold">Khóa học N4</h2>
-        <p className="text-sm text-muted-foreground">
-          Bật để học viên ghi danh N4 không cần mua gói (dùng tạm khi QA). Tắt lại khi bán chính
-          thức.
-        </p>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={n4FreeAccess}
-            onChange={(e) => void saveN4FreeAccess(e.target.checked)}
-          />
-          Mở ghi danh N4 miễn phí (tạm thời)
-        </label>
-      </section>
+          <AdminSection
+            title="Bảo trì"
+            description="API trả 503 cho học viên; admin và đăng nhập vẫn hoạt động."
+            icon={Wrench}
+            iconClassName="bg-tertiary"
+            tone={maintenanceMode ? 'warning' : 'default'}
+          >
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={maintenanceMode}
+                onChange={(e) => void saveMaintenance(e.target.checked)}
+              />
+              Chế độ bảo trì
+            </label>
+          </AdminSection>
+        </div>
 
-      <section className="mt-8 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
-        <h2 className="text-lg font-semibold">Bảo trì</h2>
-        <p className="text-sm text-muted-foreground">
-          Khi bật, API trả 503 cho học viên (admin và đăng nhập vẫn hoạt động).
-        </p>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={maintenanceMode}
-            onChange={(e) => void saveMaintenance(e.target.checked)}
-          />
-          Chế độ bảo trì
-        </label>
-      </section>
+        <AdminSection
+          title="SePAY — Thanh toán chuyển khoản"
+          description="API Key từ SePay (Webhook → Phương thức xác thực). Header: Authorization: Apikey YOUR_KEY"
+          icon={CreditCard}
+          iconClassName="bg-secondary"
+        >
 
-      <section className="mt-10 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
-        <h2 className="text-lg font-semibold">SePAY — Thanh toán chuyển khoản</h2>
-        <p className="text-sm text-muted-foreground">
-          Dùng API Key từ SePay (Webhook → Phương thức xác thực → API Key). Header gửi kèm:{' '}
-          <code className="rounded bg-muted px-1">Authorization: Apikey YOUR_KEY</code>
-        </p>
-
-        <label className="text-sm font-medium">Webhook URL (dán vào SePay)</label>
+        <label className={fieldLabel}>Webhook URL (dán vào SePay)</label>
         <Input readOnly value={sepayWebhookUrl} className="font-mono text-xs" />
 
-        <label className="text-sm font-medium">Phương thức xác thực webhook</label>
+        <label className={fieldLabel}>Phương thức xác thực webhook</label>
         <select
           className={selectClass}
           value={sepayAuthMode}
@@ -341,7 +390,7 @@ export function ConfigAdminView() {
 
         {sepayAuthMode === 'api_key' && (
           <>
-            <label className="text-sm font-medium">SePAY API Key</label>
+            <label className={fieldLabel}>SePAY API Key</label>
             {sepayApiKeySet && sepayApiKeyPreview ? (
               <p className="text-xs text-muted-foreground">
                 Đã lưu: {sepayApiKeyPreview} — nhập key mới để thay thế
@@ -363,7 +412,7 @@ export function ConfigAdminView() {
 
         {sepayAuthMode === 'hmac' && (
           <>
-            <label className="text-sm font-medium">Secret Key (HMAC)</label>
+            <label className={fieldLabel}>Secret Key (HMAC)</label>
             {sepayWebhookSecretSet && sepayWebhookSecretPreview ? (
               <p className="text-xs text-muted-foreground">
                 Đã lưu: {sepayWebhookSecretPreview} — nhập secret mới để thay thế
@@ -380,7 +429,7 @@ export function ConfigAdminView() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium">Số tài khoản</label>
+            <label className={fieldLabel}>Số tài khoản</label>
             <Input
               value={sepayAccountNumber}
               onChange={(e) => setSepayAccountNumber(e.target.value)}
@@ -423,22 +472,23 @@ export function ConfigAdminView() {
         <Button onClick={saveSepay} disabled={sepaySaving}>
           {sepaySaving ? 'Đang lưu…' : 'Lưu cấu hình SePAY'}
         </Button>
-      </section>
+        </AdminSection>
 
-      <section className="mt-10 w-full xl:max-w-4xl space-y-4 rounded-xl border border-border p-6">
-        <h2 className="text-lg font-semibold">LLM (Gemini / Agent Router)</h2>
-        <p className="text-sm text-muted-foreground">
-          Chọn provider mặc định cho <strong>toàn bộ hệ thống</strong> (Speaking, OCR, Chat, Quiz,
-          Community…). Cấu hình cả hai bên dưới; chỉ provider được chọn mới được dùng khi chạy.
-          API key lưu trên server — chỉ hiển thị 6 ký tự cuối sau khi lưu.
-        </p>
+        <AdminSection
+          title="LLM (Gemini / Agent Router)"
+          description="Provider mặc định cho Speaking, OCR, Chat, Quiz… API key lưu server — chỉ hiện 6 ký tự cuối."
+          icon={BrainCircuit}
+          iconClassName="bg-brand-soft"
+          tone="brand"
+        >
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">Provider hệ thống</legend>
+          <legend className={fieldLabel}>Provider hệ thống</legend>
           <label
-            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
-              llmProvider === 'gemini' ? 'border-primary bg-primary/5' : 'border-border'
-            }`}
+            className={cn(
+              'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors',
+              llmProvider === 'gemini' ? 'border-brand bg-brand-soft/30' : 'border-border bg-background',
+            )}
           >
             <input
               type="radio"
@@ -455,9 +505,10 @@ export function ConfigAdminView() {
             </span>
           </label>
           <label
-            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
-              llmProvider === 'agent_router' ? 'border-primary bg-primary/5' : 'border-border'
-            }`}
+            className={cn(
+              'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors',
+              llmProvider === 'agent_router' ? 'border-brand bg-brand-soft/30' : 'border-border bg-background',
+            )}
           >
             <input
               type="radio"
@@ -612,14 +663,17 @@ export function ConfigAdminView() {
         <Button onClick={saveLlm} disabled={llmSaving}>
           {llmSaving ? 'Đang lưu…' : 'Lưu cấu hình LLM'}
         </Button>
-      </section>
+        </AdminSection>
 
-      <details className="mt-10 w-full xl:max-w-4xl">
-        <summary className="cursor-pointer text-sm text-muted-foreground">Raw system config</summary>
-        <pre className="mt-2 overflow-auto rounded-lg bg-muted p-4 text-xs">
-          {JSON.stringify(config, null, 2)}
-        </pre>
-      </details>
-    </div>
+        <details className="rounded-xl border border-border/70 bg-muted/30 px-4 py-3">
+          <summary className="cursor-pointer text-sm font-bold text-muted-foreground">
+            Raw system config
+          </summary>
+          <pre className="mt-3 overflow-auto rounded-lg bg-muted p-4 text-xs">
+            {JSON.stringify(config, null, 2)}
+          </pre>
+        </details>
+      </div>
+    </AdminPageShell>
   );
 }

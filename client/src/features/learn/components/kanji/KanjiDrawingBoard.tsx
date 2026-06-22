@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import HanziWriter from 'hanzi-writer';
 
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 type WriterHandle = {
   animateCharacter: (options?: { onComplete?: (res: { canceled: boolean }) => void }) => Promise<unknown>;
@@ -22,7 +22,11 @@ type KanjiDrawingBoardProps = {
 const CANVAS_MAX_PX = 320;
 
 const controlBtnClass =
-  'rounded-lg border border-gray-200 bg-white py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50';
+  'min-h-11 rounded-lg border border-border bg-surface-paper px-2 py-2 font-display text-sm font-extrabold text-foreground shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:bg-brand-soft';
+
+function cssVarColor(name: string) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 
 export function KanjiDrawingBoard({
   character,
@@ -70,11 +74,11 @@ export function KanjiDrawingBoard({
       delayBetweenStrokes: 200,
       showOutline: true,
       showCharacter: false,
-      strokeColor: '#1c1917',
-      radicalColor: '#1c1917',
-      drawingColor: '#2563eb',
-      outlineColor: '#d6d3d1',
-      highlightColor: '#f59e0b',
+      strokeColor: cssVarColor('--color-ink'),
+      radicalColor: cssVarColor('--color-ink'),
+      drawingColor: cssVarColor('--color-purple'),
+      outlineColor: cssVarColor('--color-slate'),
+      highlightColor: cssVarColor('--color-yellow'),
     }) as WriterHandle;
 
     writerRef.current = writer;
@@ -136,16 +140,16 @@ export function KanjiDrawingBoard({
     <div className={cn('flex h-full w-full flex-col items-center justify-center', className)}>
       <div
         ref={wrapperRef}
-        className="aspect-square w-full max-w-[320px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-inner"
+        className="aspect-square w-full max-w-[320px] overflow-hidden rounded-xl border border-border bg-surface-paper shadow-premium card-lift"
       >
         <div className="relative h-full w-full">
           <div
             className="pointer-events-none absolute inset-0 grid grid-cols-2 grid-rows-2"
             aria-hidden
           >
-            <div className="border-r border-b border-dashed border-gray-300" />
-            <div className="border-b border-dashed border-gray-300" />
-            <div className="border-r border-dashed border-gray-300" />
+            <div className="border-b-2 border-r-2 border-dashed border-border/25" />
+            <div className="border-b-2 border-dashed border-border/25" />
+            <div className="border-r-2 border-dashed border-border/25" />
             <div />
           </div>
           <div

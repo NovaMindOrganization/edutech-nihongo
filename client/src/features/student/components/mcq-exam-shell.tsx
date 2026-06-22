@@ -1,47 +1,14 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
+import {
+  EXAM_ROOT,
+  groupQuestionsBySection,
+  questionDomId,
+  type McqExamQuestion,
+} from './mcq-exam-utils';
 
-export type McqExamQuestion = {
-  id: string;
-  questionText: string;
-  options?: Array<{ label: string; text: string }> | null;
-  section?: string | null;
-  questionCategory?: string | null;
-};
-
-const SECTION_LABELS: Record<string, string> = {
-  mini_test_vocab: 'Từ vựng',
-  mini_test_vocab_phrase: 'Cụm từ',
-  mini_test_kanji: 'Kanji',
-};
-
-function normalizeSectionKey(raw: string): string {
-  return raw.trim().toLowerCase();
-}
-
-export function sectionLabelForQuestion(q: McqExamQuestion): string {
-  const raw = q.section?.trim() || q.questionCategory?.trim();
-  if (!raw) return 'Tổng hợp';
-  return SECTION_LABELS[normalizeSectionKey(raw)] ?? raw;
-}
-
-export function groupQuestionsBySection(questions: McqExamQuestion[]) {
-  const map = new Map<string, McqExamQuestion[]>();
-  for (const q of questions) {
-    const key = sectionLabelForQuestion(q);
-    const list = map.get(key) ?? [];
-    list.push(q);
-    map.set(key, list);
-  }
-  return [...map.entries()];
-}
-
-export function questionDomId(prefix: string, index: number) {
-  return `${prefix}-q-${index + 1}`;
-}
-
-export const EXAM_ROOT = 'flex h-full min-h-0 w-full flex-col';
+export type { McqExamQuestion } from './mcq-exam-utils';
 
 type McqExamShellProps = {
   idPrefix: string;
@@ -77,6 +44,7 @@ export function McqExamShell({
 }: McqExamShellProps) {
   const embedded = variant === 'embedded';
   const sections = useMemo(() => groupQuestionsBySection(questions), [questions]);
+  const answeredCount = questions.filter((q) => Boolean(answers[q.id])).length;
 
   const questionIndexById = useMemo(() => {
     const map = new Map<string, number>();
@@ -92,20 +60,30 @@ export function McqExamShell({
     });
   }
 
-  let globalIndex = 0;
-
   return (
     <div
       className={cn(
         embedded
-          ? 'flex flex-col overflow-hidden rounded-xl border border-border bg-muted/30 shadow-sm'
-          : cn(EXAM_ROOT, 'bg-muted/50'),
+          ? 'flex flex-col overflow-hidden rounded-xl border border-border bg-muted/30 shadow-premium card-lift'
+          : cn(EXAM_ROOT, 'bg-background'),
       )}
     >
-      <header className="shrink-0 border-b border-primary/20 bg-primary text-primary-foreground">
+      <header
+        className={cn(
+          'shrink-0',
+          embedded
+            ? 'border-b border-primary/20 bg-primary text-primary-foreground'
+            : 'border-b border-border bg-surface-paper text-foreground',
+        )}
+      >
         <div className="flex flex-wrap items-center gap-4 px-4 py-3 md:px-6 lg:px-8">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">
+            <p
+              className={cn(
+                'text-[10px] font-semibold uppercase tracking-[0.18em]',
+                embedded ? 'text-primary-foreground/70' : 'text-muted-foreground',
+              )}
+            >
               {eyebrow}
             </p>
             <h1 className="truncate font-display text-sm font-semibold md:text-base">{title}</h1>
@@ -117,14 +95,30 @@ export function McqExamShell({
       <div className={cn('flex', embedded ? 'min-h-[28rem]' : 'min-h-0 flex-1')}>
         <aside
           className={cn(
-            'hidden w-52 shrink-0 flex-col border-r border-border bg-[var(--nc-sidebar)] lg:flex xl:w-56',
+            'hidden w-52 shrink-0 flex-col border-r lg:flex xl:w-56',
+            embedded ? 'border-border bg-[var(--surface-sidebar)]' : 'border-border bg-surface-paper',
             embedded ? 'max-h-[70vh] overflow-y-auto' : 'min-h-0',
           )}
         >
           <div className="min-h-0 flex-1 overflow-y-auto py-4 pl-3 pr-2">
-            <p className="mb-3 px-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Điều hướng
-            </p>
+            <div className="mb-4 px-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Điều hướng câu hỏi
+              </p>
+              <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+                {answeredCount}/{questions.length} đã trả lời
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-sm bg-ink" />
+                  Đã chọn
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-sm border border-border bg-surface-paper" />
+                  Trống
+                </span>
+              </div>
+            </div>
             {sections.map(([sectionName, sectionQs], sectionIdx) => (
               <div key={sectionName} className="mb-4">
                 <p className="mb-2 truncate px-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -141,12 +135,18 @@ export function McqExamShell({
                         type="button"
                         onClick={() => scrollToQuestion(idx)}
                         className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-md border text-xs font-semibold tabular-nums transition-colors',
-                          isHighlight && 'ring-2 ring-primary ring-offset-1',
+                          'flex h-11 w-11 items-center justify-center rounded-md border text-xs font-semibold tabular-nums transition-colors lg:h-8 lg:w-8',
+                          isHighlight &&
+                            (embedded
+                              ? 'ring-2 ring-primary ring-offset-1'
+                              : 'ring-2 ring-ink ring-offset-1'),
                           answered
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                            ? embedded
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-border bg-ink text-background'
+                            : 'border-border bg-card text-muted-foreground hover:border-border hover:text-foreground',
                         )}
+                        aria-label={`Đi tới câu ${idx + 1}`}
                         title={`Câu ${idx + 1}`}
                       >
                         {idx + 1}
@@ -164,12 +164,18 @@ export function McqExamShell({
 
         <main
           className={cn(
-            'min-w-0 flex-1 scroll-smooth bg-background',
+            'min-w-0 flex-1 scroll-smooth',
+            embedded ? 'bg-background' : 'bg-surface-paper',
             embedded ? 'max-h-[70vh] overflow-y-auto' : 'min-h-0 overflow-y-auto',
           )}
         >
           {topBanner}
-          <div className="border-b border-border bg-muted/40 px-4 py-2 lg:hidden">
+          <div
+            className={cn(
+              'border-b px-4 py-2 lg:hidden',
+              embedded ? 'border-border bg-muted/40' : 'border-border bg-surface-paper',
+            )}
+          >
             <div className="flex max-h-20 flex-wrap gap-1 overflow-y-auto">
               {questions.map((q, idx) => (
                 <button
@@ -177,11 +183,14 @@ export function McqExamShell({
                   type="button"
                   onClick={() => scrollToQuestion(idx)}
                   className={cn(
-                    'flex h-7 min-w-7 items-center justify-center rounded border text-[10px] font-semibold tabular-nums',
+                    'flex h-11 min-w-11 items-center justify-center rounded border text-[10px] font-semibold tabular-nums sm:h-10 sm:min-w-10',
                     answers[q.id]
-                      ? 'border-primary bg-primary text-primary-foreground'
+                      ? embedded
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-ink text-background'
                       : 'border-border bg-card text-muted-foreground',
                   )}
+                  aria-label={`Đi tới câu ${idx + 1}`}
                 >
                   {idx + 1}
                 </button>
@@ -189,19 +198,35 @@ export function McqExamShell({
             </div>
           </div>
 
-          <div className="px-4 py-6 md:px-8 md:py-8 lg:px-10">
+          <div
+            className={cn(
+              'px-4 py-6 md:px-8 md:py-8 lg:px-10',
+              !embedded && 'mx-auto w-full max-w-5xl',
+            )}
+          >
             {sections.map(([sectionName, sectionQs]) => (
               <section key={sectionName} className="mb-10">
-                <div className="rounded-t-md border-l-4 border-primary bg-primary px-4 py-3 text-primary-foreground">
-                  <h2 className="font-jp text-sm font-medium leading-snug md:text-base">
+                <div
+                  className={cn(
+                    'rounded-t-md border px-4 py-3',
+                    embedded
+                      ? 'border-l-4 border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-muted text-foreground',
+                  )}
+                >
+                  <h2 className="font-jp text-sm font-semibold leading-snug md:text-base">
                     {sectionName}
                   </h2>
                 </div>
 
-                <div className="rounded-b-md border border-t-0 border-border bg-card">
+                <div
+                  className={cn(
+                    'rounded-b-md border border-t-0 bg-card',
+                    embedded ? 'border-border' : 'border-border',
+                  )}
+                >
                   {sectionQs.map((q, qIdx) => {
-                    const idx = globalIndex;
-                    globalIndex += 1;
+                    const idx = questionIndexById.get(q.id) ?? 0;
                     const opts = q.options ?? [];
                     const selected = answers[q.id];
 
@@ -210,12 +235,20 @@ export function McqExamShell({
                         key={q.id}
                         id={questionDomId(idPrefix, idx)}
                         className={cn(
-                          'scroll-mt-28 border-b border-border px-4 py-5 last:border-b-0',
-                          qIdx % 2 === 1 && 'bg-muted/30',
+                          'scroll-mt-28 border-b px-4 py-5 last:border-b-0 md:px-6',
+                          embedded ? 'border-border' : 'border-border',
+                          qIdx % 2 === 1 && (embedded ? 'bg-muted/30' : 'bg-muted/60'),
                         )}
                       >
                         <div className="mb-4 flex gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-primary text-[11px] font-bold text-primary-foreground">
+                          <span
+                            className={cn(
+                              'flex h-7 w-7 shrink-0 items-center justify-center rounded border text-[11px] font-bold',
+                              embedded
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-border bg-surface-paper text-foreground',
+                            )}
+                          >
                             {idx + 1}
                           </span>
                           <p className="min-w-0 flex-1 font-jp text-[15px] leading-relaxed text-foreground md:text-base">
@@ -231,7 +264,9 @@ export function McqExamShell({
                                 'flex items-start gap-3 rounded-md border px-3 py-2.5 transition-colors',
                                 disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
                                 selected === opt.text
-                                  ? 'border-primary/40 bg-primary/10'
+                                  ? embedded
+                                    ? 'border-primary/40 bg-primary/10'
+                                    : 'border-border bg-muted'
                                   : 'border-transparent hover:border-border hover:bg-muted/50',
                               )}
                             >
@@ -264,7 +299,14 @@ export function McqExamShell({
         </main>
       </div>
 
-      <footer className="shrink-0 border-t border-primary/20 bg-primary text-primary-foreground">
+      <footer
+        className={cn(
+          'shrink-0',
+          embedded
+            ? 'border-t border-primary/20 bg-primary text-primary-foreground'
+            : 'border-t border-border bg-surface-paper text-foreground',
+        )}
+      >
         {footer}
       </footer>
     </div>

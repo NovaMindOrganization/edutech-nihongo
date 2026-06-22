@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
+import { LoadingState } from '@/components/usable/loading-state';
 import { getAccessToken } from '@/services/httpClient';
 import { paths } from '@/router/paths';
 
@@ -13,9 +14,11 @@ export function RequireAuth() {
 
   if (token && !user) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
-        Đang tải phiên đăng nhập…
-      </div>
+      <LoadingState
+        label="Đang tải phiên đăng nhập…"
+        variant="page"
+        className="border-0 bg-transparent"
+      />
     );
   }
 

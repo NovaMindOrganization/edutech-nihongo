@@ -45,6 +45,16 @@ export const paths = {
     studySetEdit: (id: string) => `/community/study-sets/${id}/edit`,
     communityCall: "/community/call",
     notebook: "/notebook",
+    notebookDefault: "/notebook",
+    notebookPool: (pool: "learned" | "collected") => `/notebook/${pool}/kanji`,
+    notebookSection: (
+      pool: "learned" | "collected",
+      type: "kanji" | "vocabulary" | "grammar",
+    ) => `/notebook/${pool}/${type}`,
+    notebookLearned: (type: "kanji" | "vocabulary" | "grammar") =>
+      `/notebook/learned/${type}`,
+    notebookCollected: (type: "kanji" | "vocabulary" | "grammar") =>
+      `/notebook/collected/${type}`,
     jlptHistory: "/insights/jlpt-history",
     mistakes: "/insights/mistakes",
   },

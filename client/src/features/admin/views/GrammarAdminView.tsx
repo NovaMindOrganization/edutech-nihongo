@@ -1,14 +1,19 @@
 import { motion } from 'framer-motion';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
+import { AdminListSkeleton, emptyStatePresets, ViewState } from '@/components/usable/states';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
+import {
+  AdminListPanel,
+  AdminPagination,
+  StaffListPageShell,
+} from '../components/admin-page-shell';
 import {
   AdminListFilters,
   AdminSearchFilter,
@@ -53,7 +58,10 @@ export function GrammarAdminView() {
   const [search, setSearch] = useState('');
   const [lessonId, setLessonId] = useState('');
 
+  const [loading, setLoading] = useState(false);
+
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await listGrammar({
         page,
@@ -66,6 +74,8 @@ export function GrammarAdminView() {
       setTotal(data.total);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Lỗi tải dữ liệu');
+    } finally {
+      setLoading(false);
     }
   }, [page, jlptLevel, search, lessonId]);
 
@@ -151,49 +161,78 @@ export function GrammarAdminView() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Ngữ pháp</h1>
-          <p className="text-sm text-muted-foreground">{total} mẫu</p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Thêm mẫu
-        </Button>
-      </div>
-
-      <AdminListFilters onReset={hasFilters ? resetFilters : undefined}>
-        <JlptLevelFilter
-          value={jlptLevel}
-          onChange={(v) => {
-            setJlptLevel(v);
-            setPage(1);
-          }}
-        />
-        <AdminSearchFilter
-          value={search}
-          placeholder="Mẫu, nghĩa, cấu trúc…"
-          onChange={(v) => {
-            setSearch(v);
-            setPage(1);
-          }}
-        />
-        <SourceLessonFilter
-          value={lessonId}
-          onChange={(v) => {
-            setLessonId(v);
-            setPage(1);
-          }}
-        />
-      </AdminListFilters>
-
-      <Card className="mt-6">
-        <CardContent className="divide-y divide-border/60 p-0">
-          {items.length === 0 ? (
-            <p className="p-5 text-sm text-muted-foreground">Không có kết quả.</p>
-          ) : (
-            items.map((item, i) => (
+    <>
+      <StaffListPageShell
+        title="Ngữ pháp"
+        description="Mẫu cấu trúc, ví dụ minh họa và quiz kiểm tra theo JLPT."
+        icon={BookOpen}
+        iconClassName="bg-brand-soft"
+        tone="brand"
+        chips={['Pattern', 'Ví dụ', 'Quiz']}
+        total={total}
+        secondaryStat={{ label: 'Trang này', value: items.length }}
+        createAction={
+          <Button onClick={openCreate} className="w-full">
+            <Plus className="size-4" />
+            Thêm mẫu
+          </Button>
+        }
+        filters={
+          <AdminListFilters onReset={hasFilters ? resetFilters : undefined} className="mt-0 border-0 bg-transparent p-0 shadow-none">
+            <JlptLevelFilter
+              value={jlptLevel}
+              onChange={(v) => {
+                setJlptLevel(v);
+                setPage(1);
+              }}
+            />
+            <AdminSearchFilter
+              value={search}
+              placeholder="Mẫu, nghĩa, cấu trúc…"
+              onChange={(v) => {
+                setSearch(v);
+                setPage(1);
+              }}
+            />
+            <SourceLessonFilter
+              value={lessonId}
+              onChange={(v) => {
+                setLessonId(v);
+                setPage(1);
+              }}
+            />
+          </AdminListFilters>
+        }
+        pagination={
+          <AdminPagination
+            page={page}
+            total={total}
+            pageSize={30}
+            onPrevious={() => setPage((p) => p - 1)}
+            onNext={() => setPage((p) => p + 1)}
+          />
+        }
+      >
+        <AdminListPanel>
+          <ViewState
+            loading={loading}
+            empty={!loading && items.length === 0}
+            loadingSkeleton={
+              <div className="p-5">
+                <AdminListSkeleton count={6} />
+              </div>
+            }
+            loadingLabel="Đang tải ngữ pháp…"
+            emptyEmbedded
+            {...emptyStatePresets.admin}
+            emptyTone="grammar"
+            emptyAction={
+              <Button type="button" size="sm" onClick={openCreate}>
+                Thêm ngữ pháp
+              </Button>
+            }
+          >
+            {items.map((item, i) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0 }}
@@ -217,22 +256,10 @@ export function GrammarAdminView() {
                   </Button>
                 </div>
               </motion.div>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="mt-4 flex justify-center gap-2">
-        <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-          Trước
-        </Button>
-        <span className="flex items-center text-sm">
-          Trang {page} / {Math.max(1, Math.ceil(total / 30))}
-        </span>
-        <Button variant="outline" disabled={page * 30 >= total} onClick={() => setPage((p) => p + 1)}>
-          Sau
-        </Button>
-      </div>
+            ))}
+          </ViewState>
+        </AdminListPanel>
+      </StaffListPageShell>
 
       <Dialog open={open} onOpenChange={setOpen} title={editing ? 'Sửa ngữ pháp' : 'Thêm ngữ pháp'}>
         <div className="grid gap-3">
@@ -395,6 +422,6 @@ export function GrammarAdminView() {
           <Button onClick={handleSave}>Lưu</Button>
         </div>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -1,8 +1,9 @@
-import { Volume2 } from 'lucide-react';
+﻿import { Volume2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InsetEmpty } from '@/components/usable/inset-empty';
 import { useSpeech } from '@/hooks/use-speech';
 import { studySetAssetUrl } from '@/features/student/services/studySetApi';
 
@@ -29,7 +30,7 @@ function VocabPanel({ items }: { items: StudySetItemRow[] }) {
         return (
           <div
             key={item.id}
-            className="rounded-lg border border-border/60 bg-gradient-to-br from-card to-[var(--nc-cream)]/40 p-4"
+            className="rounded-lg border border-border/60 bg-gradient-to-br from-card to-[var(--background)]/40 p-4"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -193,7 +194,15 @@ export function StudySetContentPanel({
 }) {
   const Panel = PANELS[type];
   if (!items.length) {
-    return <p className="text-sm text-muted-foreground">Chưa có nội dung loại này.</p>;
+    const tone =
+      type === 'kanji' ? 'kanji' : type === 'grammar' ? 'grammar' : type === 'vocabulary' ? 'vocabulary' : 'default';
+    return (
+      <InsetEmpty
+        tone={tone}
+        title="Chưa có nội dung loại này"
+        description="Thêm mục mới hoặc chọn tab khác trong study set."
+      />
+    );
   }
   return (
     <div>

@@ -405,6 +405,74 @@ export function generateReview(
   });
 }
 
+export function getNotebookLearned(
+  type: "kanji" | "vocabulary" | "grammar",
+  params: { lessonId?: string; level?: string } = {},
+) {
+  const q = new URLSearchParams();
+  if (params.lessonId) q.set("lessonId", params.lessonId);
+  if (params.level) q.set("level", params.level);
+  const qs = q.toString();
+  return apiFetch<{ items: Array<Record<string, unknown>> }>(
+    `/student/notebook/learned/${type}${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export function getNotebookCollected(
+  type: "kanji" | "vocabulary" | "grammar",
+  params: { level?: string } = {},
+) {
+  const q = new URLSearchParams();
+  if (params.level) q.set("level", params.level);
+  const qs = q.toString();
+  return apiFetch<{ items: Array<Record<string, unknown>> }>(
+    `/student/notebook/collected/${type}${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export function getNotebookLessons(type: "kanji" | "vocabulary" | "grammar") {
+  return apiFetch<{
+    lessons: Array<{
+      id: string;
+      title: string;
+      orderIndex: number;
+      course: { id: string; title: string; jlptLevel: string };
+    }>;
+  }>(`/student/notebook/lessons?type=${type}`);
+}
+
+export function generateNotebookReview(body: {
+  pool: "learned" | "collected";
+  type: "kanji" | "vocabulary" | "grammar";
+  mode: "random" | "lesson" | "pick";
+  count?: number;
+  lessonIds?: string[];
+  itemIds?: string[];
+}) {
+  return apiFetch<{
+    mode: string;
+    type: string;
+    pool: string;
+    items: Array<{
+      id: string;
+      itemType: string;
+      front: string;
+      back: string;
+      reading?: string;
+    }>;
+  }>("/student/review/generate", {
+    method: "POST",
+    body: JSON.stringify({
+      pool: body.pool,
+      type: body.type,
+      mode: body.mode,
+      count: body.count ?? 15,
+      lessonIds: body.lessonIds,
+      itemIds: body.itemIds,
+    }),
+  });
+}
+
 export function submitReview(
   results: Array<{ questionId: string; correct: boolean; answer?: string }>,
 ) {

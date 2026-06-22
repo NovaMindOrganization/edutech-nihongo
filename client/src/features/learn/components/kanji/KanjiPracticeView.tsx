@@ -1,5 +1,7 @@
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+﻿import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
+import { AppIcon } from '@/components/usable/app-icon';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 import type { KanjiItem } from '../../types/kanji.types';
@@ -19,7 +21,7 @@ type KanjiPracticeViewProps = {
   onPracticeComplete?: () => void;
 };
 
-const columnClass = 'min-w-0 bg-amber-50 p-6 lg:p-8';
+const columnClass = 'min-w-0 bg-amber-50 p-5 lg:p-7';
 
 export function KanjiPracticeView({
   kanji,
@@ -35,7 +37,7 @@ export function KanjiPracticeView({
     currentIndex != null && totalCount != null && totalCount > 0;
 
   return (
-    <div className="-mx-4 bg-slate-50 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+    <div className="-mx-4 bg-amber-50/40 px-4 py-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
       <div className="mx-auto w-full max-w-screen-xl">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -43,35 +45,41 @@ export function KanjiPracticeView({
               type="button"
               variant="ghost"
               size="sm"
-              className="-ml-2 gap-1.5 bg-white/80 text-base shadow-sm"
+              className="-ml-2 gap-1.5 bg-surface-paper/80 text-base shadow-premium card-lift"
               onClick={onBack}
             >
               <ArrowLeft className="size-5" />
               Quay lại
             </Button>
             {learned && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 shadow-sm">
+              <Badge className="gap-1.5 bg-emerald-50 text-emerald-700">
                 <CheckCircle2 className="size-4" />
                 Đã luyện xong
-              </span>
+              </Badge>
             )}
           </div>
           {showProgress && (
-            <p className="rounded-lg bg-white/80 px-3 py-1.5 text-sm font-medium tabular-nums text-muted-foreground shadow-sm">
+            <p className="rounded-lg border border-border bg-surface-paper/80 px-3 py-1.5 font-display text-sm font-extrabold tabular-nums text-muted-foreground shadow-premium card-lift">
               {currentIndex} / {totalCount}
             </p>
           )}
         </div>
 
-        <div className="overflow-hidden rounded-2xl bg-amber-50 shadow-2xl">
+        <div className="overflow-hidden rounded-xl border border-border bg-amber-50 shadow-premium-hover">
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             <section className={columnClass}>
               <KanjiInfoPanel key={`info-${kanji.id}`} kanji={kanji} />
             </section>
 
             <section
-              className={`${columnClass} flex flex-col items-center justify-center lg:min-h-[480px]`}
+              className={`${columnClass} flex flex-col items-center justify-center border-y-2 border-border bg-amber-50 lg:min-h-[480px] lg:border-x-2 lg:border-y-0`}
             >
+              <div className="mb-4 flex items-center gap-2">
+                <AppIcon icon={CheckCircle2} size="sm" className="bg-amber-200" />
+                <span className="font-display text-sm font-extrabold uppercase tracking-widest text-amber-900">
+                  Stroke Practice
+                </span>
+              </div>
               <KanjiDrawingBoard
                 key={`board-${kanji.id}`}
                 character={kanji.character}

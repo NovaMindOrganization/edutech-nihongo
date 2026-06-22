@@ -1,9 +1,10 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { Star, Volume2 } from 'lucide-react';
+﻿import { Star, Volume2 } from 'lucide-react';
 
-import { cn } from '@/utils/cn';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 import type { LessonVocabularyItem } from '../../services/vocabularyApi';
+import { FlipFlashcardFrame } from './FlipFlashcardFrame';
 
 type FlashcardCardProps = {
   card: LessonVocabularyItem;
@@ -12,54 +13,70 @@ type FlashcardCardProps = {
   cardKey: string;
   speaking: boolean;
   starred: boolean;
-  onReveal: () => void;
+  onFlip: () => void;
   onToggleStar: () => void;
   onPlayAudio: () => void;
 };
 
 const cornerBtnClass =
-  'absolute z-20 flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl transition-colors hover:bg-muted/90 active:bg-muted';
+  'absolute z-20 flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-border bg-surface-paper shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:bg-brand-soft active:translate-y-0';
 
 function FrontFace({ card }: { card: LessonVocabularyItem }) {
   const primaryText = card.reading ?? card.word;
   const kanjiText = card.reading ? card.word : null;
 
   return (
-    <div className="flex flex-col items-center justify-center px-10 text-center">
-      <p className="font-jp text-4xl font-bold tracking-wide text-foreground sm:text-5xl">{primaryText}</p>
+    <div className="flex max-w-full flex-col items-center justify-center px-5 text-center sm:px-10">
+      <Badge className="mb-6 bg-brand-soft text-brand">{card.jlptLevel}</Badge>
+      <p className="max-w-full break-words font-jp text-4xl font-black tracking-wide text-foreground [overflow-wrap:anywhere] sm:text-6xl">
+        {primaryText}
+      </p>
       {kanjiText && (
-        <p className="font-jp mt-4 text-xl text-muted-foreground/75 sm:text-2xl">{kanjiText}</p>
+        <p className="mt-4 max-w-full break-words font-jp text-2xl font-semibold text-muted-foreground/80 [overflow-wrap:anywhere] sm:text-3xl">
+          {kanjiText}
+        </p>
       )}
+      <p className="mt-8 rounded-2xl border border-dashed border-border bg-background/70 px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        Nhấn để xem nghĩa và ví dụ
+      </p>
     </div>
   );
 }
 
 function BackFace({ card }: { card: LessonVocabularyItem }) {
   const example =
-    card.exampleSentence?.trim() ||
-    card.exampleTranslation?.trim() ||
-    null;
+    card.exampleSentence?.trim() || card.exampleTranslation?.trim() || null;
   const exampleSub =
-    card.exampleSentence && card.exampleTranslation
-      ? card.exampleTranslation
-      : null;
+    card.exampleSentence && card.exampleTranslation ? card.exampleTranslation : null;
 
   return (
-    <div className="flex max-w-md flex-col items-center justify-center gap-4 px-10 text-center">
-      <p className="text-2xl font-bold leading-snug text-foreground sm:text-3xl">{card.meaning}</p>
+    <div className="flex max-w-lg flex-col items-center justify-center gap-4 px-5 text-center sm:px-10">
+      <Badge className="bg-tertiary text-tertiary-foreground">Meaning</Badge>
+      <p className="max-w-full break-words text-2xl font-extrabold leading-snug text-foreground [overflow-wrap:anywhere] sm:text-4xl">
+        {card.meaning}
+      </p>
       {example && (
-        <div className="space-y-1 border-t border-border/60 pt-4">
+        <div className="w-full space-y-2 rounded-xl border border-border bg-background/80 p-4 shadow-premium card-lift">
           {card.exampleSentence && (
-            <p className="font-jp text-base text-muted-foreground sm:text-lg">{card.exampleSentence}</p>
+            <p className="break-words font-jp text-base font-bold leading-8 text-foreground [overflow-wrap:anywhere] sm:text-xl">
+              {card.exampleSentence}
+            </p>
           )}
           {exampleSub && (
-            <p className="text-sm text-muted-foreground/80 sm:text-base">{exampleSub}</p>
+            <p className="border-t-2 border-dashed border-border pt-2 text-sm font-medium leading-6 text-muted-foreground sm:text-base">
+              {exampleSub}
+            </p>
           )}
           {!card.exampleSentence && card.exampleTranslation && (
-            <p className="text-sm text-muted-foreground/80 sm:text-base">{card.exampleTranslation}</p>
+            <p className="text-sm font-medium leading-6 text-muted-foreground sm:text-base">
+              {card.exampleTranslation}
+            </p>
           )}
         </div>
       )}
+      <p className="mt-4 rounded-2xl border border-dashed border-border bg-background/70 px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        Nhấn để lật lại
+      </p>
     </div>
   );
 }
@@ -71,126 +88,59 @@ export function FlashcardCard({
   cardKey,
   speaking,
   starred,
-  onReveal,
+  onFlip,
   onToggleStar,
   onPlayAudio,
 }: FlashcardCardProps) {
-  const slideVariants = {
-    enter: (dir: 'left' | 'right' | null) => ({
-      x: dir === 'left' ? 64 : dir === 'right' ? -64 : 0,
-      opacity: 0,
-    }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: 'left' | 'right' | null) => ({
-      x: dir === 'left' ? -64 : dir === 'right' ? 64 : 0,
-      opacity: 0,
-    }),
-  };
-
-  const faceClass = cn(
-    'absolute inset-0 flex flex-col rounded-[1.75rem] border [backface-visibility:hidden]',
-    'shadow-lg transition-shadow duration-200',
-  );
-
   return (
-    <div
-      className="group relative mx-auto w-full max-w-2xl px-1 sm:px-0"
-      style={{ perspective: 1600 }}
-    >
-      <AnimatePresence mode="wait" custom={slideDirection}>
-        <motion.div
-          key={cardKey}
-          custom={slideDirection}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className={cn(
-            'w-full cursor-pointer transition-transform duration-200 ease-out will-change-transform',
-            'group-hover:scale-[1.02]',
-          )}
-          onClick={() => {
-            if (!flipped) onReveal();
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label={
-            flipped ? 'Mặt sau — Space để lật lại hoặc chọn mức độ nhớ' : 'Mặt trước — nhấn để xem đáp án'
-          }
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              if (!flipped) onReveal();
-            }
-          }}
-        >
-          <div
-            className={cn(
-              'relative mx-auto min-h-[350px] w-full sm:min-h-[400px]',
-              '[transform-style:preserve-3d] transition-transform duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
-              flipped && '[transform:rotateY(180deg)]',
-            )}
+    <FlipFlashcardFrame
+      cardKey={cardKey}
+      slideDirection={slideDirection}
+      flipped={flipped}
+      onFlip={onFlip}
+      front={
+        <>
+          <button
+            type="button"
+            className={cn(cornerBtnClass, 'left-3 top-3 sm:left-4 sm:top-4')}
+            disabled={speaking}
+            aria-label={`Phát âm ${card.reading ?? card.word}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlayAudio();
+            }}
           >
-            {/* Front */}
-            <div
+            <Volume2
+              className={cn('size-6', speaking ? 'text-muted-foreground/50' : 'text-foreground')}
+            />
+          </button>
+          <button
+            type="button"
+            className={cn(cornerBtnClass, 'right-3 top-3 sm:right-4 sm:top-4')}
+            aria-label={starred ? 'Bỏ gắn sao' : 'Gắn sao'}
+            aria-pressed={starred}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleStar();
+            }}
+          >
+            <Star
               className={cn(
-                faceClass,
-                'border-border/80 bg-gradient-to-b from-card to-[var(--nc-cream)]/35',
-                'group-hover:shadow-xl',
+                'size-6',
+                starred ? 'fill-tertiary text-foreground' : 'text-muted-foreground/70',
               )}
-            >
-              <button
-                type="button"
-                className={cn(cornerBtnClass, 'left-3 top-3 sm:left-4 sm:top-4')}
-                disabled={speaking}
-                aria-label={`Phát âm ${card.reading ?? card.word}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPlayAudio();
-                }}
-              >
-                <Volume2
-                  className={cn('size-6', speaking ? 'text-muted-foreground/50' : 'text-muted-foreground')}
-                />
-              </button>
-              <button
-                type="button"
-                className={cn(cornerBtnClass, 'right-3 top-3 sm:right-4 sm:top-4')}
-                aria-label={starred ? 'Bỏ gắn sao' : 'Gắn sao'}
-                aria-pressed={starred}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleStar();
-                }}
-              >
-                <Star
-                  className={cn(
-                    'size-6',
-                    starred ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/70',
-                  )}
-                />
-              </button>
-              <div className="flex flex-1 items-center justify-center pb-6 pt-14">
-                <FrontFace card={card} />
-              </div>
-            </div>
-
-            {/* Back */}
-            <div
-              className={cn(
-                faceClass,
-                'border-primary/20 bg-gradient-to-b from-primary/[0.06] to-card',
-                '[transform:rotateY(180deg)]',
-              )}
-            >
-              <div className="flex flex-1 items-center justify-center py-10">
-                <BackFace card={card} />
-              </div>
-            </div>
+            />
+          </button>
+          <div className="flex flex-1 items-center justify-center pb-6 pt-14">
+            <FrontFace card={card} />
           </div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
+        </>
+      }
+      back={
+        <div className="flex flex-1 items-center justify-center py-10">
+          <BackFace card={card} />
+        </div>
+      }
+    />
   );
 }

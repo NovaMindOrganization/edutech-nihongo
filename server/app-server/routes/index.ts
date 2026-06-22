@@ -122,6 +122,9 @@ studentRouter.post(
   studentExt.submitMiniTest,
 );
 studentRouter.get('/notebook/vocabulary', studentExt.notebookVocabulary);
+studentRouter.get('/notebook/learned/:type', studentExt.notebookLearned);
+studentRouter.get('/notebook/collected/:type', studentExt.notebookCollected);
+studentRouter.get('/notebook/lessons', studentExt.notebookLessons);
 studentRouter.post('/mastery', studentExt.upsertMastery);
 studentRouter.post('/review/generate', validateBody(reviewGenerateSchema), studentExt.reviewGenerate);
 studentRouter.post('/review/submit', studentExt.reviewSubmit);

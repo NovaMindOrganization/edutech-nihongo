@@ -171,44 +171,42 @@ export function CheckoutView() {
             </div>
 
             <dl className="space-y-3 text-sm">
-              <div className="flex justify-between gap-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
                 <dt className="text-muted-foreground">Ngân hàng</dt>
                 <dd className="font-medium">{order.bankName}</dd>
               </div>
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <dt className="text-muted-foreground">Số tài khoản</dt>
-                <dd className="flex items-center gap-2 font-mono font-medium">
-                  {order.bankAccount}
+                <dd className="flex min-w-0 items-center gap-2 font-mono font-medium">
+                  <span className="min-w-0 break-all">{order.bankAccount}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="size-8"
                     onClick={() => copyText(order.bankAccount, 'số tài khoản')}
                   >
                     <Copy className="size-4" />
                   </Button>
                 </dd>
               </div>
-              <div className="flex justify-between gap-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
                 <dt className="text-muted-foreground">Chủ tài khoản</dt>
                 <dd className="font-medium">{order.accountName}</dd>
               </div>
-              <div className="flex justify-between gap-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
                 <dt className="text-muted-foreground">Số tiền</dt>
                 <dd className="font-display text-lg font-bold text-primary">
                   {formatVnd(order.amount)}
                 </dd>
               </div>
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <dt className="text-muted-foreground">Nội dung CK</dt>
-                <dd className="flex items-center gap-2 font-mono font-semibold text-primary">
-                  {order.paymentCode}
+                <dd className="flex min-w-0 items-center gap-2 font-mono font-semibold text-primary">
+                  <span className="min-w-0 break-all">{order.paymentCode}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="size-8"
                     onClick={() => copyText(order.paymentCode, 'nội dung')}
                   >
                     <Copy className="size-4" />

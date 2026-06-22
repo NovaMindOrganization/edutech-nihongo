@@ -1,9 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { UserRound, Users } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { AppIcon } from '@/components/usable/app-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  AdminPageShell,
+  AdminStatPill,
+  AdminToolbar,
+} from '../components/admin-page-shell';
 import {
   AdminListFilters,
   AdminSearchFilter,
@@ -21,6 +27,89 @@ import {
   updateUserRole,
   type AdminUserRow,
 } from '../services/systemAdminApi';
+
+const ROLE_LABELS: Record<string, string> = {
+  student: 'Học viên',
+  instructor: 'Giảng viên',
+  admin: 'Admin',
+};
+
+function UserRow({ user, onReload }: { user: AdminUserRow; onReload: () => void }) {
+  return (
+    <div className="flex flex-col gap-3 border-b border-border/70 px-4 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <AppIcon icon={UserRound} size="md" className="bg-brand-soft shrink-0" />
+        <div className="min-w-0">
+          <p className="truncate font-display text-sm font-extrabold">{user.email}</p>
+          <p className="mt-0.5 truncate text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            {ROLE_LABELS[user.role] ?? user.role}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {user.isBanned && (
+              <Badge className="border-0 bg-destructive/15 text-destructive">Đã cấm</Badge>
+            )}
+            {user.isSuspended && (
+              <Badge className="border-0 bg-tertiary text-tertiary-foreground">Tạm khóa</Badge>
+            )}
+            {!user.isBanned && !user.isSuspended && (
+              <Badge className="border-0 bg-quaternary/30 text-quaternary-foreground">Hoạt động</Badge>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+        <select
+          className="min-h-10 rounded-xl border border-border bg-surface-paper px-3 text-xs font-bold shadow-sm"
+          value={user.role}
+          onChange={(e) =>
+            updateUserRole(user.id, e.target.value).then(onReload).catch((err) =>
+              toast.error(err instanceof Error ? err.message : 'Lỗi'),
+            )
+          }
+        >
+          <option value="student">Học viên</option>
+          <option value="instructor">Giảng viên</option>
+          <option value="admin">Admin</option>
+        </select>
+        {!user.isBanned ? (
+          <Button size="sm" variant="outline" onClick={() => banUser(user.id).then(onReload)}>
+            Cấm
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" onClick={() => unbanUser(user.id).then(onReload)}>
+            Bỏ cấm
+          </Button>
+        )}
+        {!user.isSuspended ? (
+          <Button size="sm" variant="outline" onClick={() => suspendUser(user.id).then(onReload)}>
+            Khóa tạm
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" onClick={() => unsuspendUser(user.id).then(onReload)}>
+            Mở khóa
+          </Button>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            const password = window.prompt(`Mật khẩu mới cho ${user.email}:`);
+            if (!password || password.length < 8) {
+              toast.error('Mật khẩu tối thiểu 8 ký tự');
+              return;
+            }
+            resetUserPassword(user.id, password)
+              .then(() => toast.success('Đã reset mật khẩu'))
+              .catch((e) => toast.error(e instanceof Error ? e.message : 'Lỗi'));
+          }}
+        >
+          Reset MK
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function UsersAdminView() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
@@ -58,126 +147,92 @@ export function UsersAdminView() {
   }
 
   const hasFilters = Boolean(search.trim() || role || status);
+  const totalPages = Math.max(1, Math.ceil(total / 30));
 
-  async function handleResetPassword(user: AdminUserRow) {
-    const password = window.prompt(`Mật khẩu mới cho ${user.email}:`);
-    if (!password || password.length < 8) {
-      toast.error('Mật khẩu tối thiểu 8 ký tự');
-      return;
+  const roleCounts = useMemo(() => {
+    const counts = { student: 0, instructor: 0, admin: 0 };
+    for (const u of users) {
+      if (u.role in counts) counts[u.role as keyof typeof counts] += 1;
     }
-    try {
-      await resetUserPassword(user.id, password);
-      toast.success('Đã reset mật khẩu');
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Lỗi');
-    }
-  }
+    return counts;
+  }, [users]);
 
   return (
-    <div>
-      <h1 className="font-display text-2xl font-bold">Người dùng</h1>
-      <p className="text-sm text-muted-foreground">{total} tài khoản</p>
+    <AdminPageShell
+      title="Người dùng"
+      description="Quản lý tài khoản, phân quyền, khóa/mở và reset mật khẩu học viên."
+      icon={Users}
+      iconClassName="bg-quaternary"
+      tone="quaternary"
+      chips={['Học viên', 'Giảng viên', 'Admin', 'Phân quyền']}
+      footer="Thay đổi vai trò có hiệu lực ngay — cấm/tạm khóa chặn đăng nhập."
+      headerExtra={
+        <div className="grid grid-cols-2 gap-2">
+          <AdminStatPill label="Tổng tài khoản" value={total} accent="brand" />
+          <AdminStatPill label="Trang này" value={users.length} />
+        </div>
+      }
+    >
+      <div className="space-y-5">
+        <AdminToolbar>
+          <AdminListFilters onReset={hasFilters ? resetFilters : undefined} className="mt-0 border-0 bg-transparent p-0 shadow-none">
+            <AdminSearchFilter
+              value={search}
+              placeholder="Email, tên hiển thị…"
+              onChange={(v) => {
+                setSearch(v);
+                setPage(1);
+              }}
+            />
+            <UserRoleFilter
+              value={role}
+              onChange={(v) => {
+                setRole(v);
+                setPage(1);
+              }}
+            />
+            <UserStatusFilterSelect
+              value={status}
+              onChange={(v) => {
+                setStatus(v);
+                setPage(1);
+              }}
+            />
+          </AdminListFilters>
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-border/70 pt-4">
+            {Object.entries(roleCounts).map(([key, count]) => (
+              <span
+                key={key}
+                className="rounded-full border border-border bg-surface-paper px-3 py-1 text-xs font-bold text-muted-foreground"
+              >
+                {ROLE_LABELS[key] ?? key}: {count}
+              </span>
+            ))}
+          </div>
+        </AdminToolbar>
 
-      <AdminListFilters onReset={hasFilters ? resetFilters : undefined}>
-        <AdminSearchFilter
-          value={search}
-          placeholder="Email, tên hiển thị…"
-          onChange={(v) => {
-            setSearch(v);
-            setPage(1);
-          }}
-        />
-        <UserRoleFilter
-          value={role}
-          onChange={(v) => {
-            setRole(v);
-            setPage(1);
-          }}
-        />
-        <UserStatusFilterSelect
-          value={status}
-          onChange={(v) => {
-            setStatus(v);
-            setPage(1);
-          }}
-        />
-      </AdminListFilters>
-
-      <Card className="mt-6">
-        <CardContent className="divide-y p-0">
+        <div className="overflow-hidden rounded-2xl border border-border/70 bg-surface-paper/50 shadow-premium card-lift">
           {users.length === 0 ? (
-            <p className="px-5 py-4 text-sm text-muted-foreground">Không có kết quả.</p>
+            <p className="px-5 py-10 text-center text-sm font-medium text-muted-foreground">
+              Không có kết quả phù hợp bộ lọc.
+            </p>
           ) : (
-            users.map((u) => (
-              <div key={u.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
-                <span className="min-w-[180px] flex-1 text-sm">{u.email}</span>
-                <select
-                  className="rounded-md border border-input bg-background px-2 py-1 text-xs"
-                  value={u.role}
-                  onChange={(e) =>
-                    updateUserRole(u.id, e.target.value).then(load).catch((err) =>
-                      toast.error(err instanceof Error ? err.message : 'Lỗi'),
-                    )
-                  }
-                >
-                  <option value="student">student</option>
-                  <option value="instructor">instructor</option>
-                  <option value="admin">admin</option>
-                </select>
-                {u.isBanned && <Badge variant="outline">Banned</Badge>}
-                {u.isSuspended && <Badge variant="outline">Suspended</Badge>}
-                <div className="flex flex-wrap gap-1">
-                  {!u.isBanned ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => banUser(u.id).then(load)}
-                    >
-                      Ban
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" onClick={() => unbanUser(u.id).then(load)}>
-                      Unban
-                    </Button>
-                  )}
-                  {!u.isSuspended ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => suspendUser(u.id).then(load)}
-                    >
-                      Suspend
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => unsuspendUser(u.id).then(load)}
-                    >
-                      Unsuspend
-                    </Button>
-                  )}
-                  <Button size="sm" variant="ghost" onClick={() => handleResetPassword(u)}>
-                    Reset MK
-                  </Button>
-                </div>
-              </div>
-            ))
+            users.map((u) => <UserRow key={u.id} user={u} onReload={load} />)
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      <div className="mt-4 flex justify-center gap-2">
-        <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-          Trước
-        </Button>
-        <span className="flex items-center text-sm">
-          Trang {page} / {Math.max(1, Math.ceil(total / 30))}
-        </span>
-        <Button variant="outline" disabled={page * 30 >= total} onClick={() => setPage((p) => p + 1)}>
-          Sau
-        </Button>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+            Trước
+          </Button>
+          <span className="text-sm font-bold text-muted-foreground">
+            Trang {page} / {totalPages}
+          </span>
+          <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+            Sau
+          </Button>
+        </div>
       </div>
-    </div>
+    </AdminPageShell>
   );
 }

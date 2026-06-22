@@ -1,15 +1,18 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
+import { uiBase } from './recipes';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+  cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', uiBase.interactive),
   {
     variants: {
       variant: {
-        default: 'bg-primary/15 text-primary',
-        secondary: 'bg-secondary text-secondary-foreground',
-        outline: 'border border-border text-foreground',
+        default: 'bg-brand-soft text-brand border border-brand-muted/60',
+        secondary: 'bg-secondary text-secondary-foreground border border-pink/30',
+        outline: 'bg-background text-foreground border border-border',
+        success: 'bg-quaternary text-quaternary-foreground border border-green/30',
+        warning: 'bg-tertiary text-tertiary-foreground border border-yellow/40',
       },
     },
     defaultVariants: { variant: 'default' },
