@@ -89,10 +89,14 @@ model User {
 model Course {
   id           String   @id @default(uuid())
   title        String
+  slug         String?  @unique
+  subtitle     String?
+  level        String?
   jlptLevel    String   @map("jlpt_level")
   description  String?
   thumbnailUrl String?  @map("thumbnail_url")
   price        Decimal  @default(0) @db.Decimal(10, 2)
+  sortOrder    Int      @default(100) @map("sort_order")
   isPublished  Boolean  @default(false) @map("is_published")
   createdById  String?  @map("created_by")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -107,14 +111,20 @@ model Course {
 }
 
 model Lesson {
-  id            String   @id @default(uuid())
-  courseId      String   @map("course_id")
-  title         String
-  orderIndex    Int      @map("order_index")
-  passThreshold Int      @default(70) @map("pass_threshold")
-  isBonus       Boolean  @default(false) @map("is_bonus")
-  speakingPrompt String? @map("speaking_prompt")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id               String   @id @default(uuid())
+  courseId         String   @map("course_id")
+  title            String
+  slug             String?
+  description      String?
+  objective        String?
+  lessonType       String?  @map("lesson_type")
+  estimatedMinutes Int?     @map("estimated_minutes")
+  orderIndex       Int      @map("order_index")
+  passThreshold    Int      @default(70) @map("pass_threshold")
+  isBonus          Boolean  @default(false) @map("is_bonus")
+  speakingPrompt   String?  @map("speaking_prompt")
+  finalTask        Json?    @map("final_task")
+  createdAt        DateTime @default(now()) @map("created_at")
 
   course         Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
   vocabularyItems Vocabulary[]        @relation("LessonVocabularyItems")
@@ -142,6 +152,8 @@ model Vocabulary {
   topic               String?
   audioUrl            String?  @map("audio_url")
   partOfSpeech        String?  @map("part_of_speech")
+  memoryTip           String?  @map("memory_tip")
+  orderIndex          Int      @default(0) @map("order_index")
   courseId            String?  @map("course_id")
   lessonId            String?  @map("lesson_id")
   createdById         String?  @map("created_by")

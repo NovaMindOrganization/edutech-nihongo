@@ -1,5 +1,5 @@
 ﻿import { BookOpen, CheckCircle2, ClipboardCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -11,20 +11,29 @@ import { paths } from '@/router/paths';
 
 import { LessonContext } from '../context/lesson-context';
 
-const tabs = [
-  { to: 'speaking', label: 'Nghe nói (AI)', path: (id: string) => paths.learn.lessonSpeaking(id) },
-  { to: 'vocabulary', label: 'Từ vựng', path: (id: string) => paths.learn.lessonVocabulary(id) },
-  { to: 'grammar', label: 'Ngữ pháp', path: (id: string) => paths.learn.lessonGrammar(id) },
-  { to: 'dialogue', label: 'Hội thoại', path: (id: string) => paths.learn.lessonDialogue(id) },
-  { to: 'kanji', label: 'Kanji', path: (id: string) => paths.learn.lessonKanji(id) },
-] as const;
-
-function LessonModuleTabs({ lessonId }: { lessonId: string }) {
+function LessonModuleTabs({
+  lessonId,
+  data,
+}: {
+  lessonId: string;
+  data: LessonPayload;
+}) {
   const tabClass = (isActive: boolean) =>
     cn(
       'inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-extrabold transition-colors',
       isActive ? 'bg-brand text-white' : 'text-muted-foreground hover:text-foreground',
     );
+
+  const tabs = useMemo(() => {
+    const items = [
+      { to: paths.learn.lessonOverview(lessonId), label: 'Tổng quan' },
+      { to: paths.learn.lessonVocabulary(lessonId), label: 'Từ vựng', show: data.vocabulary.length > 0 },
+      { to: paths.learn.lessonGrammar(lessonId), label: 'Ngữ pháp', show: data.grammar.length > 0 },
+      { to: paths.learn.lessonDialogue(lessonId), label: 'Hội thoại', show: data.conversations.length > 0 },
+      { to: paths.learn.lessonKanji(lessonId), label: 'Kanji', show: data.kanji.length > 0 },
+    ];
+    return items.filter((item) => item.show !== false);
+  }, [data, lessonId]);
 
   return (
     <nav
@@ -32,12 +41,17 @@ function LessonModuleTabs({ lessonId }: { lessonId: string }) {
       aria-label="Nội dung bài học"
     >
       {tabs.map((tab) => (
-        <NavLink key={tab.to} to={tab.path(lessonId)} className={({ isActive }) => tabClass(isActive)}>
+        <NavLink key={tab.to} to={tab.to} className={({ isActive }) => tabClass(isActive)}>
           {tab.label}
         </NavLink>
       ))}
-      <NavLink to={paths.learn.miniTest(lessonId)} className={({ isActive }) => tabClass(isActive)}>
-        MiniTest
+      {!data.lesson.isBonus ? (
+        <NavLink to={paths.learn.miniTest(lessonId)} className={({ isActive }) => tabClass(isActive)}>
+          MiniTest
+        </NavLink>
+      ) : null}
+      <NavLink to={paths.learn.lessonSpeaking(lessonId)} className={({ isActive }) => tabClass(isActive)}>
+        Luyện nói
       </NavLink>
     </nav>
   );
@@ -65,23 +79,36 @@ export function LessonShellView() {
         ? 'Đang học'
         : 'Đã khóa';
 
+  const levelLabel =
+    data.lesson.course.jlptLevel === 'JPD1'
+      ? 'Foundation'
+      : data.lesson.course.jlptLevel;
+
   return (
     <LessonContext.Provider value={data}>
       <PageShell
         className={pageContentClass}
-        eyebrow="Bài học"
-        subtitle={`Tiết ${data.lesson.orderIndex} · ${data.lesson.course.jlptLevel}`}
+        eyebrow={data.lesson.isBonus ? 'Bài phụ trợ' : 'Bài học'}
+        subtitle={`Tiết ${data.lesson.orderIndex} · ${levelLabel}`}
         title={data.lesson.title}
-        description="Đọc ví dụ trước, sau đó dùng audio, quiz hoặc công cụ luyện tập hỗ trợ."
+        description={data.lesson.objective ?? 'Đọc ví dụ trước, sau đó dùng flashcard, quiz hoặc luyện hội thoại.'}
         icon={BookOpen}
         iconClassName="bg-tertiary"
         tone="secondary"
-        chips={['Ngữ pháp', 'Từ vựng', 'Kanji', 'MiniTest']}
+        chips={
+          data.lesson.estimatedMinutes
+            ? [`~${data.lesson.estimatedMinutes} phút`, 'Từ vựng', 'Ngữ pháp']
+            : ['Ngữ pháp', 'Từ vựng', 'Kanji']
+        }
         backLink={{
           to: courseId ? paths.learn.course(courseId) : paths.learn.hub,
           label: data.lesson.course.title,
         }}
-        footer={`MiniTest: ${data.progress.miniTestScore ?? 'chưa làm'} / ${data.lesson.passThreshold} điểm để mở bài tiếp theo.`}
+        footer={
+          data.lesson.isBonus
+            ? 'Bài phụ trợ — học tùy chọn, không bắt buộc để mở bài tiếp theo.'
+            : `MiniTest: ${data.progress.miniTestScore ?? 'chưa làm'} / ${data.lesson.passThreshold} điểm để mở bài tiếp theo.`
+        }
         headerExtra={
           <div className="rounded-xl border border-border bg-background p-4 shadow-premium card-lift">
             <div className="flex items-center gap-3">
@@ -98,16 +125,18 @@ export function LessonShellView() {
                 <p className="font-bold">{progressLabel}</p>
               </div>
             </div>
-            <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <AppIcon icon={ClipboardCheck} size="sm" className="bg-tertiary" />
-              MiniTest: {data.progress.miniTestScore ?? 'chưa làm'} / {data.lesson.passThreshold}
-            </div>
+            {!data.lesson.isBonus ? (
+              <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                <AppIcon icon={ClipboardCheck} size="sm" className="bg-tertiary" />
+                MiniTest: {data.progress.miniTestScore ?? 'chưa làm'} / {data.lesson.passThreshold}
+              </div>
+            ) : null}
           </div>
         }
       >
         <div className="space-y-5">
           <section className="rounded-xl border border-border bg-background p-4 shadow-premium card-lift">
-            <LessonModuleTabs lessonId={lessonId} />
+            <LessonModuleTabs lessonId={lessonId} data={data} />
           </section>
           <div className="rounded-2xl border border-border/70 bg-surface-paper/50 p-4 md:p-6">
             <Outlet />

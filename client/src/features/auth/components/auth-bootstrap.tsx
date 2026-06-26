@@ -8,12 +8,15 @@ import { useAuthStore } from '../store/authStore';
 
 export function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const setSession = useAuthStore((s) => s.setSession);
+  const setSessionReady = useAuthStore((s) => s.setSessionReady);
   const logout = useAuthStore((s) => s.logout);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    setSessionReady(false);
     const token = getAccessToken();
     if (!token) {
+      setSessionReady(true);
       setReady(true);
       return;
     }
@@ -28,8 +31,11 @@ export function AuthBootstrap({ children }: { children: React.ReactNode }) {
         setAccessToken(null);
         logout();
       })
-      .finally(() => setReady(true));
-  }, [setSession, logout]);
+      .finally(() => {
+        setSessionReady(true);
+        setReady(true);
+      });
+  }, [setSession, setSessionReady, logout]);
 
   if (!ready) {
     return (

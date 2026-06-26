@@ -1,5 +1,3 @@
-import { Outlet } from 'react-router-dom';
-
 import { AnimatedOutlet } from '@/components/motion';
 import { AppHeader } from '@/components/usable/app-header';
 import { AppBreadcrumbs } from '@/components/usable/breadcrumbs';
@@ -10,11 +8,7 @@ export function LearnLayout() {
   const user = useAuthStore((s) => s.user);
 
   if (user) {
-    return (
-      <StudentSidebarShell>
-        <Outlet />
-      </StudentSidebarShell>
-    );
+    return <StudentSidebarShell />;
   }
 
   return (

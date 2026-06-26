@@ -4,7 +4,7 @@ import { AppError } from '../utils/app-error.js';
 export async function listPublishedCourses() {
   return db.course.findMany({
     where: { isPublished: true },
-    orderBy: { jlptLevel: 'asc' },
+    orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
     include: {
       lessons: { orderBy: { orderIndex: 'asc' }, select: { id: true, title: true, orderIndex: true, isBonus: true } },
     },
@@ -20,7 +20,7 @@ export async function listAllCourses() {
 
 export async function listAllCoursesWithLessons() {
   return db.course.findMany({
-    orderBy: { jlptLevel: 'asc' },
+    orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
     include: {
       lessons: { orderBy: { orderIndex: 'asc' }, select: { id: true, title: true, orderIndex: true, isBonus: true } },
     },

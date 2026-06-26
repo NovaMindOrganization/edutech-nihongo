@@ -14,7 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { PageTransition } from '@/components/motion';
@@ -236,7 +236,8 @@ function StudentSidebarPanel({
   );
 }
 
-export function StudentSidebarShell({ children }: { children: React.ReactNode }) {
+export function StudentSidebarShell() {
+  const outlet = useOutlet();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const logout = useAuthStore((s) => s.logout);
@@ -316,7 +317,7 @@ export function StudentSidebarShell({ children }: { children: React.ReactNode })
         />
 
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 py-6 md:px-6 md:py-8 lg:px-8">
-          <PageTransition>{children}</PageTransition>
+          <PageTransition>{outlet}</PageTransition>
         </main>
       </div>
 

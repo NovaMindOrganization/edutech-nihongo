@@ -8,6 +8,7 @@ export type LessonVocabularyItem = {
   word: string;
   reading: string | null;
   meaning: string;
+  memoryTip?: string | null;
   exampleSentence: string | null;
   exampleTranslation: string | null;
   audioUrl: string | null;

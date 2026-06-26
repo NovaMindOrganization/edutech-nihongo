@@ -1,6 +1,6 @@
 ﻿import { motion } from 'framer-motion';
 import { BookOpen, CheckCircle2, GraduationCap, Lock, Play } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -24,6 +24,10 @@ type LessonRow = {
   id: string;
   title: string;
   orderIndex: number;
+  isBonus?: boolean;
+  lessonType?: string | null;
+  objective?: string | null;
+  estimatedMinutes?: number | null;
   progress?: { status: string };
 };
 
@@ -32,53 +36,89 @@ export function CourseDetailView() {
   const user = useAuthStore((s) => s.user);
   const [lessons, setLessons] = useState<LessonRow[]>([]);
   const [courseTitle, setCourseTitle] = useState('');
+  const [courseSubtitle, setCourseSubtitle] = useState('');
   const [jlptLevel, setJlptLevel] = useState('');
   const [enrolled, setEnrolled] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    let outlineLessons: LessonRow[];
-
-    try {
-      const outline = await getPublicCourseOutline(courseId);
-      setCourseTitle(outline.title);
-      setJlptLevel(outline.jlptLevel);
-      outlineLessons = outline.lessons.map((l) => ({
-        id: l.id,
-        title: l.title,
-        orderIndex: l.orderIndex,
-      }));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Không tải khóa học');
+  useEffect(() => {
+    if (!courseId) {
+      setLoading(false);
       return;
     }
 
-    try {
-      const data = await getCourseLessons(courseId);
-      setLessons(data);
-      setEnrolled(true);
-    } catch (err) {
-      const notEnrolled =
-        err instanceof ApiRequestError &&
-        (err.code === 'NOT_ENROLLED' || err.status === 403);
-      if (!notEnrolled && err instanceof Error) {
-        toast.error(err.message);
-      }
-      setLessons(outlineLessons);
-      setEnrolled(false);
-    }
-  }, [courseId]);
+    let cancelled = false;
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      void load();
-    });
-  }, [load]);
+    async function load() {
+      setLoading(true);
+      setLessons([]);
+      setCourseTitle('');
+      setCourseSubtitle('');
+      setJlptLevel('');
+      setEnrolled(false);
+
+      try {
+        let outlineLessons: LessonRow[] = [];
+
+        try {
+          const outline = await getPublicCourseOutline(courseId);
+          if (cancelled) return;
+          if (!outline) {
+            toast.error('Không tìm thấy khóa học');
+            return;
+          }
+
+          setCourseTitle(outline.title);
+          setJlptLevel(outline.jlptLevel);
+          setCourseSubtitle(outline.subtitle ?? '');
+          outlineLessons = outline.lessons.map((l) => ({
+            id: l.id,
+            title: l.title,
+            orderIndex: l.orderIndex,
+            isBonus: l.isBonus,
+            lessonType: l.lessonType,
+          }));
+        } catch (e) {
+          if (!cancelled) {
+            toast.error(e instanceof Error ? e.message : 'Không tải được khóa học');
+          }
+          return;
+        }
+
+        try {
+          const data = await getCourseLessons(courseId);
+          if (cancelled) return;
+          setLessons(data);
+          setEnrolled(true);
+        } catch (err) {
+          if (cancelled) return;
+          const notEnrolled =
+            err instanceof ApiRequestError &&
+            (err.code === 'NOT_ENROLLED' || err.status === 403);
+          if (!notEnrolled && err instanceof Error) {
+            toast.error(err.message);
+          }
+          setLessons(outlineLessons);
+          setEnrolled(false);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId]);
 
   async function handleEnroll() {
     try {
       await enrollCourse(courseId);
       toast.success('Đã ghi danh — Bài đầu tiên đã mở khóa');
-      load();
+      const data = await getCourseLessons(courseId);
+      setLessons(data);
+      setEnrolled(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Ghi danh thất bại — hãy đăng nhập');
     }
@@ -90,18 +130,78 @@ export function CourseDetailView() {
     return <AppIcon icon={Lock} size="md" className="bg-muted" />;
   };
 
-  const completedCount = lessons.filter((lesson) => lesson.progress?.status === 'completed').length;
-  const activeCount = lessons.filter((lesson) => lesson.progress?.status === 'active').length;
-  const lockedCount = lessons.filter((lesson) => lesson.progress?.status === 'locked').length;
-  const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
+  const mainLessons = lessons.filter((l) => !l.isBonus);
+  const supportLessons = lessons.filter((l) => l.isBonus);
+  const progressBase = mainLessons.length > 0 ? mainLessons : lessons;
+  const completedCount = progressBase.filter((lesson) => lesson.progress?.status === 'completed').length;
+  const activeCount = progressBase.filter((lesson) => lesson.progress?.status === 'active').length;
+  const lockedCount = progressBase.filter((lesson) => lesson.progress?.status === 'locked').length;
+  const progressPercent =
+    progressBase.length > 0 ? Math.round((completedCount / progressBase.length) * 100) : 0;
+
+  function renderLessonRow(lesson: LessonRow, i: number) {
+    const status = lesson.progress?.status;
+    const isFirst = i === 0;
+
+    if (!enrolled) {
+      return (
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-background px-4 py-4 shadow-premium card-lift sm:flex-row sm:items-center">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-tertiary font-display text-sm font-extrabold shadow-premium card-lift">
+            {lesson.orderIndex + 1}
+          </span>
+          <span className="flex-1 font-display font-bold leading-snug">{lesson.title}</span>
+          {isFirst && (
+            <Link to={`/learn/lessons/${lesson.id}/preview`}>
+              <Button size="sm" variant="outline">
+                Xem trước
+              </Button>
+            </Link>
+          )}
+        </div>
+      );
+    }
+
+    if (!lesson.isBonus && status === 'locked') {
+      return (
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-muted/50 px-4 py-4 opacity-80">
+          {statusIcon(status)}
+          <span className="flex-1 text-sm font-bold leading-snug">{lesson.title}</span>
+          <Badge variant="outline">Khóa</Badge>
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        to={paths.learn.lessonOverview(lesson.id)}
+        className={cn(
+          'depth-interactive flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-4 shadow-premium card-lift',
+          status === 'completed' && 'bg-quaternary/15',
+        )}
+      >
+        {statusIcon(status ?? 'active')}
+        <span className="flex-1 font-display font-bold leading-snug">{lesson.title}</span>
+        <Badge
+          className={status === 'completed' ? 'bg-quaternary text-quaternary-foreground' : undefined}
+          variant={lesson.isBonus ? 'outline' : undefined}
+        >
+          {lesson.isBonus ? 'Phụ trợ' : status === 'completed' ? 'Xong' : 'Đang học'}
+        </Badge>
+      </Link>
+    );
+  }
 
   return (
     <PageShell
       className={cn(pageContentClass, 'max-w-6xl')}
       eyebrow="Khóa học"
-      subtitle={jlptLevel || undefined}
+      subtitle={courseSubtitle || jlptLevel || undefined}
       title={courseTitle || 'Chi tiết khóa học'}
-      description="Danh sách bài học theo thứ tự mở khóa — tập trung bài đang mở và ôn lại bài đã hoàn thành khi cần."
+      description={
+        jlptLevel === 'JPD1'
+          ? 'Khóa nhập môn FPT — 2 bài phụ trợ và 3 bài chính theo tình huống thực tế.'
+          : 'Danh sách bài học theo thứ tự mở khóa — tập trung bài đang mở và ôn lại bài đã hoàn thành khi cần.'
+      }
       icon={GraduationCap}
       iconClassName="bg-quaternary"
       tone="quaternary"
@@ -174,59 +274,47 @@ export function CourseDetailView() {
               </p>
             </div>
           </div>
+          {supportLessons.length > 0 ? (
+            <div className="mb-6 space-y-3">
+              <h3 className="font-display text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
+                Bài phụ trợ
+              </h3>
+              <ul className="space-y-3">
+                {supportLessons.map((lesson, i) => (
+                  <motion.li
+                    key={lesson.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.03 }}
+                  >
+                    {renderLessonRow(lesson, i)}
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <ul className="space-y-3">
-            {lessons.map((lesson, i) => {
-              const status = lesson.progress?.status;
-              const isFirst = i === 0;
-              return (
+            {loading ? (
+              <li className="rounded-xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center text-sm font-medium text-muted-foreground">
+                Đang tải danh sách bài học…
+              </li>
+            ) : (mainLessons.length > 0 ? mainLessons : lessons).length === 0 ? (
+              <li className="rounded-xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center text-sm font-medium text-muted-foreground">
+                Chưa có bài học trong khóa này.
+              </li>
+            ) : (
+              (mainLessons.length > 0 ? mainLessons : lessons).map((lesson, i) => (
                 <motion.li
                   key={lesson.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
                 >
-                  {!enrolled ? (
-                    <div className="flex flex-col gap-3 rounded-xl border border-border bg-background px-4 py-4 shadow-premium card-lift sm:flex-row sm:items-center">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-tertiary font-display text-sm font-extrabold shadow-premium card-lift">
-                        {i + 1}
-                      </span>
-                      <span className="flex-1 font-display font-bold leading-snug">{lesson.title}</span>
-                      {isFirst && (
-                        <Link to={`/learn/lessons/${lesson.id}/preview`}>
-                          <Button size="sm" variant="outline">
-                            Xem trước
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
-                  ) : status === 'locked' ? (
-                    <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-muted/50 px-4 py-4 opacity-80">
-                      {statusIcon(status)}
-                      <span className="flex-1 text-sm font-bold leading-snug">{lesson.title}</span>
-                      <Badge variant="outline">Khóa</Badge>
-                    </div>
-                  ) : (
-                    <Link
-                      to={paths.learn.lessonGrammar(lesson.id)}
-                      className={cn(
-                        'depth-interactive flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-4 shadow-premium card-lift',
-                        status === 'completed' && 'bg-quaternary/15',
-                      )}
-                    >
-                      {statusIcon(status ?? 'active')}
-                      <span className="flex-1 font-display font-bold leading-snug">{lesson.title}</span>
-                      <Badge
-                        className={
-                          status === 'completed' ? 'bg-quaternary text-quaternary-foreground' : undefined
-                        }
-                      >
-                        {status === 'completed' ? 'Xong' : 'Đang học'}
-                      </Badge>
-                    </Link>
-                  )}
+                  {renderLessonRow(lesson, i)}
                 </motion.li>
-              );
-            })}
+              ))
+            )}
           </ul>
         </section>
       </div>

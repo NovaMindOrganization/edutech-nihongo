@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import type { LessonVocabularyItem } from '../../services/vocabularyApi';
+import { getVocabDisplay } from '../vocabulary/vocab-display';
 import { FlipFlashcardFrame } from './FlipFlashcardFrame';
 
 type FlashcardCardProps = {
@@ -22,20 +23,18 @@ const cornerBtnClass =
   'absolute z-20 flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-border bg-surface-paper shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:bg-brand-soft active:translate-y-0';
 
 function FrontFace({ card }: { card: LessonVocabularyItem }) {
-  const primaryText = card.reading ?? card.word;
-  const kanjiText = card.reading ? card.word : null;
+  const { primaryText, kanjiText } = getVocabDisplay(card);
 
   return (
     <div className="flex max-w-full flex-col items-center justify-center px-5 text-center sm:px-10">
-      <Badge className="mb-6 bg-brand-soft text-brand">{card.jlptLevel}</Badge>
       <p className="max-w-full break-words font-jp text-4xl font-black tracking-wide text-foreground [overflow-wrap:anywhere] sm:text-6xl">
         {primaryText}
       </p>
-      {kanjiText && (
+      {kanjiText ? (
         <p className="mt-4 max-w-full break-words font-jp text-2xl font-semibold text-muted-foreground/80 [overflow-wrap:anywhere] sm:text-3xl">
           {kanjiText}
         </p>
-      )}
+      ) : null}
       <p className="mt-8 rounded-2xl border border-dashed border-border bg-background/70 px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
         Nhấn để xem nghĩa và ví dụ
       </p>
@@ -74,6 +73,12 @@ function BackFace({ card }: { card: LessonVocabularyItem }) {
           )}
         </div>
       )}
+      {card.memoryTip ? (
+        <p className="w-full rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2 text-left text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Cách ghi nhớ: </span>
+          {card.memoryTip}
+        </p>
+      ) : null}
       <p className="mt-4 rounded-2xl border border-dashed border-border bg-background/70 px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
         Nhấn để lật lại
       </p>
@@ -92,6 +97,8 @@ export function FlashcardCard({
   onToggleStar,
   onPlayAudio,
 }: FlashcardCardProps) {
+  const { speechText } = getVocabDisplay(card);
+
   return (
     <FlipFlashcardFrame
       cardKey={cardKey}
@@ -104,7 +111,7 @@ export function FlashcardCard({
             type="button"
             className={cn(cornerBtnClass, 'left-3 top-3 sm:left-4 sm:top-4')}
             disabled={speaking}
-            aria-label={`Phát âm ${card.reading ?? card.word}`}
+            aria-label={`Phát âm ${speechText}`}
             onClick={(e) => {
               e.stopPropagation();
               onPlayAudio();
