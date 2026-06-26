@@ -1,8 +1,8 @@
-﻿import { Check, Filter, Loader2, Volume2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+﻿import { Loader2, Volume2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
+import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
 
@@ -36,85 +36,22 @@ export function FlashcardHeader({
   onSourceChange,
   onAutoPlayChange,
 }: FlashcardHeaderProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDocClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
-  }, [menuOpen]);
-
   return (
     <header className="space-y-4 rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift">
-      <div className="flex items-center gap-3">
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
         <Link
           to={paths.learn.lessonVocabulary(lessonId)}
-          className="shrink-0 text-sm font-bold text-primary hover:underline"
+          className="text-sm font-bold text-primary hover:underline"
         >
           ← Từ vựng
         </Link>
-        <div className="min-w-0 flex-1 text-center">
+        <div className="min-w-0 text-center">
           <Badge className="bg-quaternary text-quaternary-foreground">Flashcards</Badge>
-          <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-foreground">{progressLabel}</p>
+          <p className="mt-1 font-display text-sm font-extrabold tabular-nums text-foreground">
+            {progressLabel}
+          </p>
         </div>
-        <div className="relative shrink-0" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className={cn(
-              'flex size-11 items-center justify-center rounded-lg border border-border',
-              'bg-background text-foreground shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:bg-brand-soft',
-              menuOpen && 'bg-brand text-white',
-            )}
-            aria-label="Bộ lọc từ vựng"
-            aria-expanded={menuOpen}
-            aria-haspopup="listbox"
-          >
-            {loading ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <Filter className="size-5" />
-            )}
-          </button>
-
-          {menuOpen && (
-            <div
-              role="listbox"
-              aria-label="Lọc từ vựng"
-              className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-surface-paper py-2 shadow-premium-hover"
-            >
-              <p className="px-3 py-2 font-display text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Hiển thị</p>
-              {FILTER_OPTIONS.map((opt) => {
-                const active = source === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    role="option"
-                    aria-selected={active}
-                    onClick={() => {
-                      onSourceChange(opt.id);
-                      setMenuOpen(false);
-                    }}
-                    className={cn(
-                      'flex w-full items-center justify-between px-3 py-2.5 text-sm font-bold transition-colors',
-                      active ? 'bg-primary/10 text-primary' : 'hover:bg-tertiary/20',
-                    )}
-                  >
-                    {opt.label}
-                    {active && <Check className="size-4" />}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <div className="size-11" aria-hidden />
       </div>
 
       <div className="space-y-2">
@@ -130,7 +67,7 @@ export function FlashcardHeader({
           />
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-0.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <label className="flex cursor-pointer items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
               <Volume2 className="size-3.5" />
@@ -155,11 +92,31 @@ export function FlashcardHeader({
               />
             </button>
           </label>
-          {/* <p className="text-xs text-muted-foreground">
-            Bộ lọc: {activeLabel}
-            <span className="mx-1.5 text-border">·</span>
-            <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px]">A</kbd> nghe
-          </p> */}
+
+          <div className="flex items-center gap-2 sm:min-w-[200px] sm:justify-end">
+            <label htmlFor="flashcard-vocab-filter" className="shrink-0 text-xs font-bold text-muted-foreground">
+              Hiển thị
+            </label>
+            <div className="relative min-w-0 flex-1 sm:max-w-[180px]">
+              {loading ? (
+                <Loader2 className="pointer-events-none absolute right-9 top-1/2 z-10 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+              ) : null}
+              <Select
+                id="flashcard-vocab-filter"
+                value={source}
+                disabled={loading}
+                onChange={(event) => onSourceChange(event.target.value as VocabSourceFilter)}
+                className="h-9 w-full py-1.5 text-sm font-semibold"
+                aria-label="Lọc từ vựng"
+              >
+                {FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
     </header>

@@ -2,17 +2,18 @@ import type { VocabularyProgressStatus } from '@prisma/client';
 
 import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
+import { assertStudentLessonAccess } from '../utils/lesson-access.js';
 import { loadLessonVocabulary } from './lesson.service.js';
 
 export type VocabSourceFilter = 'all' | 'starred' | 'unmastered' | 'mastered';
 
 async function assertLessonUnlocked(userId: string, lessonId: string) {
-  const progress = await db.userLessonProgress.findUnique({
-    where: { userId_lessonId: { userId, lessonId } },
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    select: { id: true, courseId: true, isBonus: true },
   });
-  if (!progress || progress.status === 'locked') {
-    throw new AppError('Lesson is locked', 403, 'LESSON_LOCKED');
-  }
+  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  await assertStudentLessonAccess(userId, lesson);
 }
 
 export async function listLessonVocabularyWithProgress(
@@ -49,6 +50,7 @@ export async function listLessonVocabularyWithProgress(
       meaning: v.meaning,
       exampleSentence: v.exampleSentence,
       exampleTranslation: v.exampleTranslation,
+      memoryTip: v.memoryTip,
       audioUrl: v.audioUrl,
       jlptLevel: v.jlptLevel,
       progress: progress

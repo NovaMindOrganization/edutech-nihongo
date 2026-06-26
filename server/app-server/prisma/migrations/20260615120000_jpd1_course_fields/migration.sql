@@ -1,0 +1,18 @@
+-- JPD1 course extensions (Foundation track before N5)
+
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "slug" TEXT;
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "subtitle" TEXT;
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "level" TEXT;
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "sort_order" INTEGER NOT NULL DEFAULT 100;
+
+CREATE UNIQUE INDEX IF NOT EXISTS "courses_slug_key" ON "courses"("slug");
+
+ALTER TABLE "lessons" ADD COLUMN IF NOT EXISTS "slug" TEXT;
+ALTER TABLE "lessons" ADD COLUMN IF NOT EXISTS "description" TEXT;
+ALTER TABLE "lessons" ADD COLUMN IF NOT EXISTS "objective" TEXT;
+ALTER TABLE "lessons" ADD COLUMN IF NOT EXISTS "lesson_type" TEXT;
+ALTER TABLE "lessons" ADD COLUMN IF NOT EXISTS "estimated_minutes" INTEGER;
+ALTER TABLE "lessons" ADD COLUMN IF NOT EXISTS "final_task" JSONB;
+
+ALTER TABLE "vocabulary" ADD COLUMN IF NOT EXISTS "memory_tip" TEXT;
+ALTER TABLE "vocabulary" ADD COLUMN IF NOT EXISTS "order_index" INTEGER NOT NULL DEFAULT 0;

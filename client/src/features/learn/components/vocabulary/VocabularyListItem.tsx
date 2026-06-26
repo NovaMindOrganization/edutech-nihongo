@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import type { LessonVocabularyItem } from '../../services/vocabularyApi';
+import { getVocabDisplay } from './vocab-display';
 
 const iconBtnClass =
   'flex size-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-border bg-surface-paper shadow-premium card-lift transition-all hover:-translate-y-0.5 hover:bg-brand-soft active:translate-x-0 active:translate-y-0 disabled:opacity-50';
@@ -23,11 +24,10 @@ export function VocabularyListItem({
 }: VocabularyListItemProps) {
   const mastered = item.progress?.status === 'mastered';
   const starred = item.progress?.isStarred ?? false;
-  const primaryText = item.reading ?? item.word;
-  const kanjiText = item.reading ? item.word : null;
   const example = item.exampleSentence?.trim() || item.exampleTranslation?.trim() || null;
   const exampleSub =
     item.exampleSentence && item.exampleTranslation ? item.exampleTranslation : null;
+  const { primaryText, kanjiText, speechText } = getVocabDisplay(item);
 
   return (
     <article
@@ -39,26 +39,25 @@ export function VocabularyListItem({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-4">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-brand-soft text-brand">{item.jlptLevel}</Badge>
-            {mastered && (
+          {mastered ? (
+            <div className="flex flex-wrap items-center gap-2">
               <Badge className="gap-1 bg-quaternary text-quaternary-foreground">
                 <Check className="size-3.5 stroke-[2.5]" aria-hidden />
                 Đã thuộc
               </Badge>
-            )}
-          </div>
+            </div>
+          ) : null}
 
-          <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-start">
+          <div className={cn('grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-start', mastered ? 'mt-3' : '')}>
             <div className="min-w-0">
               <p className="font-jp truncate text-2xl font-bold text-foreground sm:text-3xl">
                 {primaryText}
               </p>
-              {kanjiText && (
+              {kanjiText ? (
                 <p className="mt-1 truncate font-jp text-base font-medium text-muted-foreground sm:text-lg">
                   {kanjiText}
                 </p>
-              )}
+              ) : null}
             </div>
 
             <div className="min-w-0">
@@ -89,6 +88,12 @@ export function VocabularyListItem({
                   )}
                 </div>
               )}
+              {item.memoryTip ? (
+                <p className="mt-2 rounded-lg bg-muted/40 px-2.5 py-2 text-xs leading-relaxed text-muted-foreground">
+                  <span className="font-semibold text-foreground">Cách ghi nhớ: </span>
+                  {item.memoryTip}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -98,7 +103,7 @@ export function VocabularyListItem({
             type="button"
             className={iconBtnClass}
             disabled={speaking}
-            aria-label={`Phát âm ${primaryText}`}
+            aria-label={`Phát âm ${speechText}`}
             onClick={onPlayAudio}
           >
             <Volume2 className="size-5 text-foreground" />

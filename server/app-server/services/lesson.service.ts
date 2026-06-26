@@ -3,12 +3,13 @@ import type { LessonProgressStatus, Vocabulary } from "@prisma/client";
 import { db } from "../config/db.js";
 import { assertCourseEnrollmentAllowed } from "./pricing-plan.service.js";
 import { AppError } from "../utils/app-error.js";
+import { assertStudentLessonAccess } from "../utils/lesson-access.js";
 
 /** Vocabulary by lesson_id FK; falls back to junction if legacy rows lack FK. */
 export async function loadLessonVocabulary(lessonId: string): Promise<Vocabulary[]> {
   const direct = await db.vocabulary.findMany({
     where: { lessonId },
-    orderBy: { word: "asc" },
+    orderBy: [{ orderIndex: "asc" }, { word: "asc" }],
   });
   if (direct.length > 0) return direct;
 
@@ -180,6 +181,58 @@ export async function assignQuestionsToLesson(
   return { count: questionIds.length };
 }
 
+export async function ensureStudentCourseProgress(
+  userId: string,
+  courseId: string,
+  lessons: Array<{ id: string; isBonus: boolean; orderIndex: number }>,
+) {
+  const bonusLessons = lessons.filter((l) => l.isBonus);
+  const mainLessons = lessons.filter((l) => !l.isBonus);
+
+  for (const lesson of bonusLessons) {
+    await db.userLessonProgress.upsert({
+      where: { userId_lessonId: { userId, lessonId: lesson.id } },
+      create: { userId, lessonId: lesson.id, status: "active" },
+      update: { status: "active" },
+    });
+  }
+
+  if (mainLessons.length === 0) return;
+
+  const existingMain = await db.userLessonProgress.findMany({
+    where: { userId, lessonId: { in: mainLessons.map((l) => l.id) } },
+  });
+  const mainProgressMap = new Map(existingMain.map((p) => [p.lessonId, p]));
+
+  const anyMainStarted = mainLessons.some((lesson) => {
+    const row = mainProgressMap.get(lesson.id);
+    return row?.status === "active" || row?.status === "completed";
+  });
+
+  for (let i = 0; i < mainLessons.length; i++) {
+    const lesson = mainLessons[i];
+    const existing = mainProgressMap.get(lesson.id);
+
+    if (!existing) {
+      await db.userLessonProgress.create({
+        data: {
+          userId,
+          lessonId: lesson.id,
+          status: i === 0 ? "active" : "locked",
+        },
+      });
+      continue;
+    }
+
+    if (i === 0 && existing.status === "locked" && !anyMainStarted) {
+      await db.userLessonProgress.update({
+        where: { id: existing.id },
+        data: { status: "active" },
+      });
+    }
+  }
+}
+
 export async function getStudentLessonsWithProgress(
   userId: string,
   courseId: string,
@@ -199,31 +252,35 @@ export async function getStudentLessonsWithProgress(
   });
   if (!course) throw new AppError("Course not found", 404, "NOT_FOUND");
 
+  await ensureStudentCourseProgress(userId, courseId, course.lessons);
+
   const progress = await db.userLessonProgress.findMany({
     where: { userId, lessonId: { in: course.lessons.map((l) => l.id) } },
   });
   const progressMap = new Map(progress.map((p) => [p.lessonId, p]));
 
-  return course.lessons.map((lesson) => ({
-    ...lesson,
-    progress: progressMap.get(lesson.id) ?? {
-      status: "locked" as LessonProgressStatus,
-    },
-  }));
+  return course.lessons.map((lesson) => {
+    if (lesson.isBonus) {
+      return {
+        ...lesson,
+        progress: progressMap.get(lesson.id) ?? {
+          status: "active" as LessonProgressStatus,
+        },
+      };
+    }
+    return {
+      ...lesson,
+      progress: progressMap.get(lesson.id) ?? {
+        status: "locked" as LessonProgressStatus,
+      },
+    };
+  });
 }
 
 export async function getLessonContentForStudent(
   userId: string,
   lessonId: string,
 ) {
-  const progress = await db.userLessonProgress.findUnique({
-    where: { userId_lessonId: { userId, lessonId } },
-  });
-
-  if (!progress || progress.status === "locked") {
-    throw new AppError("Lesson is locked", 403, "LESSON_LOCKED");
-  }
-
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
     include: {
@@ -260,16 +317,43 @@ export async function getLessonContentForStudent(
 
   if (!lesson) throw new AppError("Lesson not found", 404, "NOT_FOUND");
 
+  const courseLessons = await db.lesson.findMany({
+    where: { courseId: lesson.courseId },
+    orderBy: { orderIndex: "asc" },
+    select: { id: true, isBonus: true, orderIndex: true },
+  });
+  await ensureStudentCourseProgress(userId, lesson.courseId, courseLessons);
+
+  await assertStudentLessonAccess(userId, lesson);
+
+  const progress =
+    (await db.userLessonProgress.findUnique({
+      where: { userId_lessonId: { userId, lessonId } },
+    })) ??
+    (lesson.isBonus
+      ? { status: "active" as LessonProgressStatus, miniTestScore: null }
+      : null);
+
+  if (!lesson.isBonus && (!progress || progress.status === "locked")) {
+    throw new AppError("Lesson is locked", 403, "LESSON_LOCKED");
+  }
+
   const vocabulary = await loadLessonVocabulary(lessonId);
 
   return {
     lesson: {
       id: lesson.id,
       title: lesson.title,
+      slug: lesson.slug,
+      description: lesson.description,
+      objective: lesson.objective,
+      lessonType: lesson.lessonType,
+      estimatedMinutes: lesson.estimatedMinutes,
       orderIndex: lesson.orderIndex,
       passThreshold: lesson.passThreshold,
       isBonus: lesson.isBonus,
       speakingPrompt: lesson.speakingPrompt,
+      finalTask: lesson.finalTask,
       course: {
         id: lesson.course.id,
         title: lesson.course.title,
@@ -280,7 +364,7 @@ export async function getLessonContentForStudent(
     grammar: lesson.grammar.map((lg) => lg.grammar),
     kanji: lesson.kanji.map((lk) => lk.kanji),
     conversations: lesson.conversations.map((lc) => lc.conversation),
-    progress,
+    progress: progress ?? { status: "active" as LessonProgressStatus },
   };
 }
 
@@ -292,7 +376,7 @@ export async function enrollAndInitProgress(
   const course = await db.course.findUnique({
     where: { id: courseId },
     include: {
-      lessons: { where: { isBonus: false }, orderBy: { orderIndex: "asc" } },
+      lessons: { orderBy: { orderIndex: "asc" } },
     },
   });
   if (!course) throw new AppError("Course not found", 404, "NOT_FOUND");
@@ -310,15 +394,8 @@ export async function enrollAndInitProgress(
     update: {},
   });
 
-  const mainLessons = course.lessons;
-  for (let i = 0; i < mainLessons.length; i++) {
-    const status: LessonProgressStatus = i === 0 ? "active" : "locked";
-    await db.userLessonProgress.upsert({
-      where: { userId_lessonId: { userId, lessonId: mainLessons[i].id } },
-      create: { userId, lessonId: mainLessons[i].id, status },
-      update: {},
-    });
-  }
+  await ensureStudentCourseProgress(userId, courseId, course.lessons);
 
-  return { enrolled: true, lessonsInitialized: mainLessons.length };
+  const mainCount = course.lessons.filter((l) => !l.isBonus).length;
+  return { enrolled: true, lessonsInitialized: mainCount };
 }

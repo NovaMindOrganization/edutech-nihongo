@@ -3,13 +3,20 @@ import { apiFetch } from "@/services/httpClient";
 export type PublicCourse = {
   id: string;
   title: string;
+  slug?: string | null;
+  subtitle?: string | null;
+  level?: string | null;
   jlptLevel: string;
   description: string | null;
+  sortOrder?: number;
   lessons: Array<{
     id: string;
     title: string;
     orderIndex: number;
     isBonus: boolean;
+    lessonType?: string | null;
+    objective?: string | null;
+    estimatedMinutes?: number | null;
   }>;
 };
 
@@ -59,9 +66,16 @@ export function getPublicCourseOutline(courseId: string) {
   return apiFetch<{
     id: string;
     title: string;
+    subtitle?: string | null;
     jlptLevel: string;
     description: string | null;
-    lessons: Array<{ id: string; title: string; orderIndex: number }>;
+    lessons: Array<{
+      id: string;
+      title: string;
+      orderIndex: number;
+      isBonus?: boolean;
+      lessonType?: string | null;
+    }>;
   }>(`/public/courses/${courseId}/outline`);
 }
 
@@ -154,12 +168,24 @@ export type LessonPayload = {
   lesson: {
     id: string;
     title: string;
+    slug?: string | null;
+    description?: string | null;
+    objective?: string | null;
+    lessonType?: string | null;
+    estimatedMinutes?: number | null;
     orderIndex: number;
     passThreshold: number;
+    isBonus?: boolean;
     speakingPrompt?: string | null;
     course: { id: string; title: string; jlptLevel: string };
   };
-  vocabulary: Array<{ id: string; word: string; reading: string | null; meaning: string }>;
+  vocabulary: Array<{
+    id: string;
+    word: string;
+    reading: string | null;
+    meaning: string;
+    memoryTip?: string | null;
+  }>;
   grammar: Array<{
     id: string;
     title: string;

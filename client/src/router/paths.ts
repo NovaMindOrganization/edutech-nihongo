@@ -19,6 +19,7 @@ export const paths = {
     lessonVocabularyFlashcards: (id: string) =>
       `/learn/lessons/${id}/vocabulary/flashcards`,
     lessonGrammar: (id: string) => `/learn/lessons/${id}/grammar`,
+    lessonOverview: (id: string) => `/learn/lessons/${id}/overview`,
     lessonDialogue: (id: string) => `/learn/lessons/${id}/dialogue`,
     lessonKanji: (id: string) => `/learn/lessons/${id}/kanji`,
     miniTest: (lessonId: string) => `/learn/lessons/${lessonId}/mini-test`,

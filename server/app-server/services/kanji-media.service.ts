@@ -13,6 +13,7 @@ import { AppError } from "../utils/app-error.js";
 import { getS3Client } from "../utils/s3.js";
 import {
   buildKanjiMemoryObjectKey,
+  buildKanjiMemoryObjectKeyCandidates,
   KANJI_MEMORY_BUCKET,
   normalizeKanjiMemoryStoragePath,
 } from "../utils/kanji-memory-storage.js";
@@ -123,14 +124,17 @@ function resolveKanjiMemoryObjectKeys(kanji: {
   slug: string;
   jlptLevel: string;
 }): string[] {
-  const keys = new Set<string>();
+  const keys = buildKanjiMemoryObjectKeyCandidates(kanji);
   if (kanji.memoryImageUrl) {
-    keys.add(getObjectKeyFromMemoryImageUrl(kanji.memoryImageUrl, kanji.id));
+    const legacyKey = getObjectKeyFromMemoryImageUrl(
+      kanji.memoryImageUrl,
+      kanji.id,
+    );
+    if (!keys.includes(legacyKey)) {
+      keys.unshift(legacyKey);
+    }
   }
-  if (kanji.slug) {
-    keys.add(buildKanjiMemoryObjectKey(kanji.jlptLevel, kanji.slug));
-  }
-  return [...keys];
+  return keys;
 }
 
 export type KanjiMemoryImageResult =

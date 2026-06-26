@@ -767,7 +767,27 @@ async function main() {
 
   await seedRadicals(admin.id);
 
+  const { seedJpd1Course } = await import("../scripts/seed-jpd1.js");
+  const jpd1 = await seedJpd1Course({ db, adminId: admin.id });
+
+  const { syncKanjiMemoryImagesFromMinio } = await import(
+    "../scripts/sync-kanji-memory-images.js"
+  );
+  await syncKanjiMemoryImagesFromMinio({ db });
+
+  await enrollDemoJpd1(jpd1.courseId, admin.id);
+
   console.log("[seed] Done.");
+}
+
+async function enrollDemoJpd1(jpd1CourseId: string, adminId: string) {
+  const { enrollAndInitProgress } = await import("../services/lesson.service.js");
+  for (const email of ["student.n5@nihongocoach.com", "student.n4@nihongocoach.com"]) {
+    const user = await db.user.findUnique({ where: { email }, select: { id: true } });
+    if (!user) continue;
+    await enrollAndInitProgress(user.id, jpd1CourseId, { skipAccessCheck: true });
+  }
+  void adminId;
 }
 
 main()

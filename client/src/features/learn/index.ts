@@ -7,6 +7,7 @@ export { LessonVocabularyView } from './views/LessonVocabularyView';
 export { VocabularyList } from './components/vocabulary/VocabularyList';
 export { VocabularyFlashcardView } from './views/VocabularyFlashcardView';
 export { LessonGrammarView } from './views/LessonGrammarView';
+export { LessonOverviewView } from './views/LessonOverviewView';
 export { LessonDialogueView } from './views/LessonDialogueView';
 export { LessonKanjiView } from './views/LessonKanjiView';
 export { KanjiHubView } from './views/KanjiHubView';

@@ -31,6 +31,7 @@ import {
   LearnHubView,
   LessonDialogueView,
   LessonGrammarView,
+  LessonOverviewView,
   LessonKanjiView,
   LessonPreviewView,
   LessonVocabularyView,
@@ -173,7 +174,8 @@ export function AppRouter() {
               path="/learn/lessons/:lessonId"
               element={<LessonShellView />}
             >
-              <Route index element={<Navigate to="grammar" replace />} />
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<LessonOverviewView />} />
               <Route path="speaking" element={<LessonSpeakingView />} />
               <Route path="vocabulary" element={<LessonVocabularyView />} />
               <Route

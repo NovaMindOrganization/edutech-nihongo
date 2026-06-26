@@ -1,5 +1,6 @@
 ﻿import { BookOpenCheck, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { HubLinkCard, HubLinkCardTag } from '@/components/usable/hub-link-card';
@@ -10,6 +11,7 @@ import {
   ViewState,
 } from '@/components/usable/states';
 import { useAuthStore } from '@/features/auth';
+import { getAccessToken } from '@/services/httpClient';
 import { getDashboard } from '@/features/student/services/studentApi';
 import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
@@ -58,8 +60,8 @@ function CourseCard({
   progress?: CourseProgress;
 }) {
   const description = enrolled && progress
-    ? `${course.jlptLevel} · ${progress.percent}% hoàn thành · ${course.lessons.length} bài`
-    : `${course.jlptLevel} · ${course.lessons.length} bài học`;
+    ? `${course.subtitle ?? course.jlptLevel} · ${progress.percent}% hoàn thành · ${course.lessons.length} bài`
+    : `${course.subtitle ?? course.jlptLevel} · ${course.lessons.length} bài học`;
 
   return (
     <HubLinkCard
@@ -82,6 +84,8 @@ function CourseCard({
 
 export function LearnHubView() {
   const user = useAuthStore((s) => s.user);
+  const sessionReady = useAuthStore((s) => s.sessionReady);
+  const location = useLocation();
   const [courses, setCourses] = useState<PublicCourse[]>([]);
   const [enrolledIds, setEnrolledIds] = useState<Set<string>>(() => new Set());
   const [progressByCourse, setProgressByCourse] = useState<Map<string, CourseProgress>>(
@@ -90,6 +94,9 @@ export function LearnHubView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = getAccessToken();
+    if (token && !sessionReady) return;
+
     let cancelled = false;
 
     async function load() {
@@ -129,16 +136,23 @@ export function LearnHubView() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, location.key, sessionReady]);
 
-  const { enrolledCourses, availableCourses } = useMemo(() => {
+  const { enrolledCourses, availableCourses, foundationCourses } = useMemo(() => {
     const enrolled: PublicCourse[] = [];
     const available: PublicCourse[] = [];
+    const foundation: PublicCourse[] = [];
     for (const course of courses) {
+      const isFoundation = course.jlptLevel === 'JPD1' || course.level === 'Beginner';
+      if (isFoundation) foundation.push(course);
       if (enrolledIds.has(course.id)) enrolled.push(course);
       else available.push(course);
     }
-    return { enrolledCourses: enrolled, availableCourses: available };
+    return {
+      enrolledCourses: enrolled,
+      availableCourses: available,
+      foundationCourses: foundation,
+    };
   }, [courses, enrolledIds]);
 
   const showEnrollmentSections = Boolean(user);
@@ -146,12 +160,12 @@ export function LearnHubView() {
   return (
     <PageShell
       eyebrow="Học"
-      title="Khóa học JLPT"
-      description="N5, N4, N3… Mỗi khóa gồm nhiều tiết: nghe nói AI, ngữ pháp, hội thoại, kanji."
+      title="Khóa học"
+      description="Bắt đầu với JPD1 (nhập môn), sau đó tiếp tục N5, N4… Mỗi khóa có từ vựng, ngữ pháp, hội thoại và kanji."
       icon={Sparkles}
       iconClassName="bg-quaternary"
       tone="quaternary"
-      chips={['N5', 'N4', 'N3', 'Nghe · Nói · Kanji']}
+      chips={['JPD1', 'N5', 'N4', 'Flashcard · Quiz']}
       footer={
         user
           ? 'Khóa đã ghi danh hiển thị tiến độ — chọn khóa chưa ghi danh để xem lộ trình và đăng ký.'
@@ -166,6 +180,23 @@ export function LearnHubView() {
         {...emptyStatePresets.courses}
       >
         <div className="space-y-10">
+          {foundationCourses.length > 0 ? (
+            <CourseSection
+              title="Nền tảng — JPD1"
+              description="Khóa nhập môn cho sinh viên mới, đặt trước lộ trình JLPT N5."
+            >
+              {foundationCourses.map((course, index) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  index={index}
+                  enrolled={enrolledIds.has(course.id)}
+                  progress={progressByCourse.get(course.id)}
+                />
+              ))}
+            </CourseSection>
+          ) : null}
+
           {showEnrollmentSections ? (
             <>
               {enrolledCourses.length > 0 ? (

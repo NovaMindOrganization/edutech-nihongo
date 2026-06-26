@@ -27,10 +27,19 @@ export const getLanding = asyncHandler(async (_req: Request, res: Response) => {
 export const listCourses = asyncHandler(async (_req: Request, res: Response) => {
   const courses = await db.course.findMany({
     where: { isPublished: true },
+    orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
     include: {
       lessons: {
         orderBy: { orderIndex: 'asc' },
-        select: { id: true, title: true, orderIndex: true, isBonus: true },
+        select: {
+          id: true,
+          title: true,
+          orderIndex: true,
+          isBonus: true,
+          lessonType: true,
+          objective: true,
+          estimatedMinutes: true,
+        },
       },
     },
   });
@@ -41,7 +50,18 @@ export const getCourseOutline = asyncHandler(async (req: Request, res: Response)
   const course = await db.course.findUnique({
     where: { id: String(req.params.id), isPublished: true },
     include: {
-      lessons: { orderBy: { orderIndex: 'asc' }, select: { id: true, title: true, orderIndex: true } },
+      lessons: {
+        orderBy: { orderIndex: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          orderIndex: true,
+          isBonus: true,
+          lessonType: true,
+          objective: true,
+          estimatedMinutes: true,
+        },
+      },
     },
   });
   res.json({ success: true, data: course });
