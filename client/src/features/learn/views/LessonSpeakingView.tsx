@@ -1,5 +1,5 @@
 ﻿import { Bot, CheckCircle2, Gauge, Mic, Send, Sparkles, Volume2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { AppIcon } from '@/components/usable/app-icon';
@@ -8,11 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useSpeech } from '@/hooks/use-speech';
-import { postLessonSpeaking } from '@/features/student/services/studentApi';
+import { postLessonSpeaking, postLessonSpeakingStart } from '@/features/student/services/studentApi';
 import {
   postPronunciationAssessment,
   type PronunciationAssessment,
 } from '@/features/student/services/speechApi';
+import {
+  formatPronunciationFeedback,
+  isPronunciationConfigError,
+} from '../utils/pronunciation-feedback';
 import { useLessonData } from '../context/lesson-context';
 
 export function LessonSpeakingView() {
@@ -25,6 +29,32 @@ export function LessonSpeakingView() {
   const [pronunciation, setPronunciation] = useState<PronunciationAssessment | null>(null);
   const [pronunciationReference, setPronunciationReference] = useState('');
   const [loading, setLoading] = useState(false);
+  const [starting, setStarting] = useState(true);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await postLessonSpeakingStart(lesson.lesson.id);
+        if (cancelled) return;
+        setSessionId(res.sessionId);
+        setHistory([{ role: 'assistant', content: res.AI_Reply }]);
+        setLastCorrection(res.Correction);
+      } catch {
+        if (!cancelled) toast.error('Không mở được phiên luyện nói');
+      } finally {
+        if (!cancelled) setStarting(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lesson.lesson.id]);
 
   async function send() {
     if (!text.trim()) return;
@@ -95,10 +125,13 @@ export function LessonSpeakingView() {
       if (pronunciationResult) {
         setPronunciation(pronunciationResult);
         setPronunciationReference(referenceText);
-        if (pronunciationResult.error) {
-          toast.error(pronunciationResult.feedbackVi || 'Chưa chấm được phát âm');
+        const feedback = formatPronunciationFeedback(
+          pronunciationResult.error ?? pronunciationResult.feedbackVi,
+        );
+        if (pronunciationResult.error || isPronunciationConfigError(feedback)) {
+          toast.error(feedback);
         } else {
-          toast.message(`Pronunciation: ${Math.round(pronunciationResult.overallScore)}/100`);
+          toast.message(`Phát âm: ${Math.round(pronunciationResult.overallScore)}/100`);
         }
       }
       if (res.Correction) toast.message(`Gợi ý: ${res.Correction}`);
@@ -144,12 +177,21 @@ export function LessonSpeakingView() {
       </CardHeader>
       <CardContent className="space-y-4 bg-background p-4 sm:p-6">
         <div className="max-h-80 space-y-3 overflow-y-auto rounded-xl border border-border bg-surface-paper p-4 text-sm shadow-premium card-lift">
-          {history.length === 0 && (
+          {starting && history.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-border bg-background/75 p-5 text-center">
+              <AppIcon icon={Mic} size="lg" className="mx-auto mb-3 bg-tertiary" />
+              <p className="font-display text-lg font-extrabold">Đang mở phiên luyện nói…</p>
+              <p className="mt-1 font-medium text-muted-foreground">
+                Sensei sẽ chào và giao nhiệm vụ đầu tiên theo bài học.
+              </p>
+            </div>
+          )}
+          {!starting && history.length === 0 && (
             <div className="rounded-3xl border border-dashed border-border bg-background/75 p-5 text-center">
               <AppIcon icon={Mic} size="lg" className="mx-auto mb-3 bg-tertiary" />
               <p className="font-display text-lg font-extrabold">Bắt đầu hội thoại</p>
               <p className="mt-1 font-medium text-muted-foreground">
-                Hãy nói hoặc nhập câu tiếng Nhật liên quan đến bài học này.
+                Hãy nói hoặc nhập câu tiếng Nhật theo hướng dẫn của Sensei.
               </p>
             </div>
           )}
@@ -194,7 +236,7 @@ export function LessonSpeakingView() {
           <div className="rounded-xl border border-border bg-tertiary/20 p-4 shadow-premium card-lift">
             <div className="mb-2 flex items-center gap-2">
               <AppIcon icon={CheckCircle2} size="sm" className="bg-tertiary" />
-              <p className="font-display text-sm font-extrabold">Grammar / Pronunciation Feedback</p>
+              <p className="font-display text-sm font-extrabold">Gợi ý ngữ pháp</p>
             </div>
             <p className="text-sm font-semibold leading-6 text-foreground">{lastCorrection}</p>
           </div>
@@ -206,7 +248,7 @@ export function LessonSpeakingView() {
               <div className="flex items-start gap-2">
                 <AppIcon icon={Gauge} size="sm" className="bg-secondary" />
                 <div>
-                  <p className="font-display text-sm font-extrabold">Pronunciation Assessment</p>
+                  <p className="font-display text-sm font-extrabold">Chấm phát âm</p>
                   {pronunciationReference && (
                     <p className="mt-1 font-jp text-sm font-semibold leading-6 text-muted-foreground">
                       {pronunciationReference}
@@ -214,24 +256,34 @@ export function LessonSpeakingView() {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-display text-2xl font-extrabold">
-                  {Math.round(pronunciation.overallScore)}
-                </span>
-                <span className="text-xs font-bold text-muted-foreground">/100</span>
-                <Badge
-                  className={
-                    pronunciation.passed
-                      ? 'bg-tertiary text-foreground'
-                      : 'bg-secondary text-foreground'
-                  }
-                >
-                  {pronunciation.passed ? 'Đạt' : 'Luyện thêm'}
-                </Badge>
-              </div>
+              {!isPronunciationConfigError(
+                pronunciation.error ?? pronunciation.feedbackVi,
+              ) && (
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-2xl font-extrabold">
+                    {Math.round(pronunciation.overallScore)}
+                  </span>
+                  <span className="text-xs font-bold text-muted-foreground">/100</span>
+                  <Badge
+                    className={
+                      pronunciation.passed
+                        ? 'bg-tertiary text-foreground'
+                        : 'bg-secondary text-foreground'
+                    }
+                  >
+                    {pronunciation.passed ? 'Đạt' : 'Luyện thêm'}
+                  </Badge>
+                </div>
+              )}
             </div>
-            <p className="mt-3 text-sm font-semibold leading-6 text-foreground">
-              {pronunciation.feedbackVi}
+            <p
+              className={`mt-3 text-sm font-semibold leading-6 ${
+                isPronunciationConfigError(pronunciation.error ?? pronunciation.feedbackVi)
+                  ? 'text-destructive'
+                  : 'text-foreground'
+              }`}
+            >
+              {formatPronunciationFeedback(pronunciation.error ?? pronunciation.feedbackVi)}
             </p>
             {pronunciation.transcript && (
               <p className="mt-2 text-xs font-medium text-muted-foreground">

@@ -7,7 +7,8 @@
     "build:client": "pnpm --dir client build",
     "db:setup": "pnpm --dir server/app-server db:setup",
     "dev:app-server": "pnpm --dir server/app-server dev",
-    "build:app-server": "pnpm --dir server/app-server build"
+    "build:app-server": "pnpm --dir server/app-server build",
+    "dev:ai-server": "cd server/ai-server && conda run --no-capture-output -n edutech-nihongo python -m uvicorn app.main:app --reload --port 8000"
   },
   "dependencies": {
     "multer": "^2.1.1",

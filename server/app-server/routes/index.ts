@@ -111,6 +111,7 @@ studentRouter.get('/orders/:id', payment.getOrder);
 studentRouter.post('/courses/:courseId/enroll', student.enrollCourse);
 studentRouter.get('/courses/:courseId/lessons', student.getCourseLessons);
 studentRouter.get('/lessons/:id', student.getLesson);
+studentRouter.post('/lessons/:lessonId/speaking/start', studentExt.lessonSpeakingStart);
 studentRouter.post('/lessons/:lessonId/speaking/message', studentExt.lessonSpeakingMessage);
 studentRouter.get('/courses/:courseId/kanji', studentExt.courseKanji);
 studentRouter.get('/kanji/handbook', studentExt.handbookKanji);

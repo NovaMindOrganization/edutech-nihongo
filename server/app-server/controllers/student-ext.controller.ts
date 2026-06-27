@@ -131,6 +131,11 @@ export const lessonSpeakingMessage = asyncHandler(async (req: Request, res: Resp
   res.json({ success: true, data });
 });
 
+export const lessonSpeakingStart = asyncHandler(async (req: Request, res: Response) => {
+  const data = await aiClient.startLessonSpeakingSession(req.user!.id, req.params.lessonId);
+  res.json({ success: true, data });
+});
+
 export const speechTts = asyncHandler(async (req: Request, res: Response) => {
   const buf = await aiClient.synthesizeSpeech(req.body.text, req.body.voice);
   res.json({

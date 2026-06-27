@@ -61,6 +61,8 @@ def _normalize_translate_reply(raw: str | None) -> str:
 class LessonContext(BaseModel):
     lesson_title: str = ''
     jlpt_level: str = 'N5'
+    lesson_objective: str | None = None
+    lesson_description: str | None = None
     speaking_prompt: str | None = None
     vocabulary: list[str] = Field(default_factory=list)
     grammar: list[str] = Field(default_factory=list)
@@ -184,9 +186,27 @@ def lesson_speaking(body: LessonSpeakingRequest) -> SpeakingResponse:
 
 
 def _lesson_extra(ctx: LessonContext) -> str:
-    return (
-        f'Lesson: {ctx.lesson_title} ({ctx.jlpt_level}). '
-        f'Focus vocabulary: {", ".join(ctx.vocabulary[:12])}. '
-        f'Grammar patterns: {", ".join(ctx.grammar[:8])}. '
-        f'Teacher prompt: {ctx.speaking_prompt or "Practice lesson topics only."}'
+    vocab = ", ".join(ctx.vocabulary[:20]) or "(none)"
+    grammar = ", ".join(ctx.grammar[:10]) or "(none)"
+    teacher = ctx.speaking_prompt or "Practice only what this lesson teaches."
+    objective = ctx.lesson_objective or ""
+    description = ctx.lesson_description or ""
+    scope_lines = [
+        f"Lesson: {ctx.lesson_title} ({ctx.jlpt_level})",
+        f"Speaking scenario (authoritative): {teacher}",
+    ]
+    if objective:
+        scope_lines.append(f"Lesson objective: {objective}")
+    if description:
+        scope_lines.append(f"Lesson description: {description}")
+    scope_lines.extend(
+        [
+            f"Allowed vocabulary (prefer these words): {vocab}",
+            f"Allowed grammar patterns: {grammar}",
+            "STRICT SCOPE: Ask and answer ONLY within this lesson's scenario, vocabulary, and grammar.",
+            "Do NOT introduce new topics (weather, travel, random hobbies, future lessons).",
+            "If the student goes off-topic: briefly acknowledge in Japanese, then redirect to the current lesson task.",
+            "Advance step-by-step through the speaking scenario only; do not re-ask info already in history.",
+        ]
     )
+    return "\n".join(scope_lines)

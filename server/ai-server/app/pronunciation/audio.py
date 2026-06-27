@@ -1,7 +1,6 @@
 import base64
 import math
 import mimetypes
-import shutil
 import struct
 import subprocess
 import tempfile
@@ -11,6 +10,7 @@ from pathlib import Path
 from typing import Iterator
 
 from app.core.config import Settings
+from app.core.ffmpeg_util import resolve_ffmpeg_binary
 from app.pronunciation.errors import (
     AudioPayloadTooLargeError,
     AudioProcessingUnavailableError,
@@ -75,7 +75,8 @@ def prepare_audio_bytes(audio_bytes: bytes, mime_type: str, settings: Settings) 
         allowed = ", ".join(sorted(SUPPORTED_MIME_TYPES))
         raise InvalidAudioError(f"unsupported mime_type; allowed values: {allowed}")
 
-    if shutil.which("ffmpeg") is None:
+    ffmpeg = resolve_ffmpeg_binary()
+    if ffmpeg is None:
         raise AudioProcessingUnavailableError("ffmpeg is required to normalize audio")
 
     with tempfile.TemporaryDirectory(prefix="pa-audio-") as temp_dir:
@@ -84,7 +85,7 @@ def prepare_audio_bytes(audio_bytes: bytes, mime_type: str, settings: Settings) 
         normalized_path = temp_path / "normalized.wav"
         source_path.write_bytes(audio_bytes)
 
-        normalize_audio(source_path, normalized_path, settings)
+        normalize_audio(source_path, normalized_path, settings, ffmpeg)
         validate_wav(normalized_path, settings)
         yield normalized_path
 
@@ -100,9 +101,18 @@ def resolve_upload_mime_type(filename: str | None, content_type: str | None) -> 
     return (content_type or "").lower()
 
 
-def normalize_audio(source_path: Path, normalized_path: Path, settings: Settings) -> None:
+def normalize_audio(
+    source_path: Path,
+    normalized_path: Path,
+    settings: Settings,
+    ffmpeg_bin: str | None = None,
+) -> None:
+    ffmpeg = ffmpeg_bin or resolve_ffmpeg_binary()
+    if not ffmpeg:
+        raise AudioProcessingUnavailableError("ffmpeg is required to normalize audio")
+
     command = [
-        "ffmpeg",
+        ffmpeg,
         "-hide_banner",
         "-loglevel",
         "error",

@@ -5,6 +5,7 @@ import { db } from '../config/db.js';
 import { incrRateLimit } from '../config/redis.js';
 import { getConfigValue } from './config.service.js';
 import { getLlmRuntimePayload } from './llm-config.service.js';
+import { loadLessonVocabulary } from './lesson.service.js';
 import { AppError } from '../utils/app-error.js';
 
 type AiLlmResponse = {
@@ -109,31 +110,10 @@ export async function sendLessonSpeakingMessage(
     return { ...FALLBACK_REPLY, rateLimited: true };
   }
 
-  const lesson = await db.lesson.findUnique({
-    where: { id: lessonId },
-    include: {
-      course: { select: { jlptLevel: true, title: true } },
-      grammar: { take: 5, include: { grammar: true } },
-    },
-  });
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
-
-  const lessonVocab = await db.vocabulary.findMany({
-    where: { lessonId },
-    orderBy: { word: 'asc' },
-    take: 8,
-  });
+  const { lesson, lessonContext } = await loadLessonSpeakingContext(lessonId);
 
   const sessionId = input.sessionId ?? crypto.randomUUID();
   let parsed = FALLBACK_REPLY;
-
-  const lessonContext = {
-    lesson_title: lesson.title,
-    jlpt_level: lesson.course.jlptLevel,
-    speaking_prompt: lesson.speakingPrompt,
-    vocabulary: lessonVocab.map((v) => v.word),
-    grammar: lesson.grammar.map((g) => g.grammar.pattern),
-  };
 
   try {
     const data = await aiPost('/api/v1/speaking/lesson', {
@@ -148,8 +128,56 @@ export async function sendLessonSpeakingMessage(
     parsed = FALLBACK_REPLY;
   }
 
-  await persistSpeakingTurn(userId, sessionId, input.text, parsed, 'ai_speaking_lesson', lessonId);
-  return { ...parsed, sessionId, transcript: input.text, lessonId };
+  await persistSpeakingTurn(userId, sessionId, input.text, parsed, 'ai_speaking_lesson', lesson.id);
+  return { ...parsed, sessionId, transcript: input.text, lessonId: lesson.id };
+}
+
+export async function startLessonSpeakingSession(userId: string, lessonId: string) {
+  const ok = await checkSpeakingLimit(userId);
+  if (!ok) {
+    return { ...FALLBACK_REPLY, rateLimited: true };
+  }
+
+  const { lesson, lessonContext } = await loadLessonSpeakingContext(lessonId);
+  const sessionId = crypto.randomUUID();
+  let parsed = FALLBACK_REPLY;
+
+  try {
+    const data = await aiPost('/api/v1/speaking/lesson/start', lessonContext);
+    if (data?.AI_Reply) {
+      parsed = { AI_Reply: data.AI_Reply, Correction: data.Correction ?? null };
+    }
+  } catch {
+    parsed = FALLBACK_REPLY;
+  }
+
+  await persistSpeakingTurn(userId, sessionId, '[SESSION_START]', parsed, 'ai_speaking_lesson', lesson.id);
+  return { ...parsed, sessionId, transcript: '', lessonId: lesson.id };
+}
+
+async function loadLessonSpeakingContext(lessonId: string) {
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    include: {
+      course: { select: { jlptLevel: true, title: true } },
+      grammar: { take: 10, include: { grammar: true } },
+    },
+  });
+  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+
+  const lessonVocab = await loadLessonVocabulary(lessonId);
+
+  const lessonContext = {
+    lesson_title: lesson.title,
+    jlpt_level: lesson.course.jlptLevel,
+    lesson_objective: lesson.objective,
+    lesson_description: lesson.description,
+    speaking_prompt: lesson.speakingPrompt,
+    vocabulary: lessonVocab.slice(0, 20).map((v) => v.word),
+    grammar: lesson.grammar.map((g) => g.grammar.pattern),
+  };
+
+  return { lesson, lessonContext };
 }
 
 async function persistSpeakingTurn(

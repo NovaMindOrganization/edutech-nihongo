@@ -237,6 +237,18 @@ export function getLesson(id: string) {
   return apiFetch<LessonPayload>(`/student/lessons/${id}`);
 }
 
+export function postLessonSpeakingStart(lessonId: string) {
+  return apiFetch<{
+    AI_Reply: string;
+    Correction: string | null;
+    sessionId: string;
+    transcript: string;
+  }>(`/student/lessons/${lessonId}/speaking/start`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
 export function postLessonSpeaking(
   lessonId: string,
   body: {
