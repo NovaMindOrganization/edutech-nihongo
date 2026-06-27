@@ -224,6 +224,100 @@ export async function transcribeSpeech(
   }
 }
 
+type PronunciationAssessmentRaw = {
+  overall_score?: number;
+  passed?: boolean;
+  feedback_vi?: string;
+  transcript?: string | null;
+  engine?: string;
+  duration_ms?: number | null;
+  raw_scores?: Record<string, number | null>;
+  words?: Array<{ word: string; accuracy_score?: number | null; error_type?: string | null }>;
+};
+
+export type PronunciationAssessmentDto = {
+  overallScore: number;
+  passed: boolean;
+  feedbackVi: string;
+  transcript: string | null;
+  engine: string;
+  durationMs: number | null;
+  rawScores: Record<string, number | null>;
+  words: Array<{ word: string; accuracyScore: number | null; errorType: string | null }>;
+  error?: string | null;
+};
+
+function mapPronunciationAssessment(data: PronunciationAssessmentRaw): PronunciationAssessmentDto {
+  return {
+    overallScore: Number(data.overall_score ?? 0),
+    passed: Boolean(data.passed),
+    feedbackVi: data.feedback_vi ?? '',
+    transcript: data.transcript ?? null,
+    engine: data.engine ?? 'none',
+    durationMs: data.duration_ms ?? null,
+    rawScores: data.raw_scores ?? {},
+    words: (data.words ?? []).map((word) => ({
+      word: word.word,
+      accuracyScore: word.accuracy_score ?? null,
+      errorType: word.error_type ?? null,
+    })),
+    error: null,
+  };
+}
+
+function pronunciationErrorMessage(err: unknown) {
+  if (!axios.isAxiosError(err)) {
+    return err instanceof Error ? err.message : 'Pronunciation assessment failed';
+  }
+
+  const body = err.response?.data as
+    | {
+        detail?: { message?: string } | string;
+        error?: { message?: string };
+        message?: string;
+      }
+    | undefined;
+  if (typeof body?.detail === 'object' && body.detail?.message) return body.detail.message;
+  if (typeof body?.detail === 'string') return body.detail;
+  return body?.error?.message ?? body?.message ?? err.message;
+}
+
+export async function assessPronunciation(input: {
+  referenceText: string;
+  audioBase64: string;
+  language?: string;
+  mimeType?: string;
+  passThreshold?: number;
+}): Promise<PronunciationAssessmentDto> {
+  try {
+    const { data } = await axios.post<PronunciationAssessmentRaw>(
+      `${env.aiServerUrl}/api/v1/speech/pronunciation/assess`,
+      {
+        reference_text: input.referenceText,
+        audio_base64: input.audioBase64,
+        language: input.language ?? 'ja',
+        mime_type: input.mimeType ?? 'audio/webm',
+        pass_threshold: input.passThreshold ?? 70,
+      },
+      { timeout: 90_000 },
+    );
+    return mapPronunciationAssessment(data);
+  } catch (err) {
+    const message = pronunciationErrorMessage(err);
+    return {
+      overallScore: 0,
+      passed: false,
+      feedbackVi: message,
+      transcript: null,
+      engine: 'none',
+      durationMs: null,
+      rawScores: {},
+      words: [],
+      error: message,
+    };
+  }
+}
+
 export async function translateCommunityText(text: string, targetLang = 'vi') {
   const trimmed = text.trim();
   if (!trimmed) return { translation: '', error: 'Empty text' };

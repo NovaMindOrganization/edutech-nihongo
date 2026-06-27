@@ -188,6 +188,9 @@ export function useSpeech() {
     text: string;
     engine?: string;
     liveText: string;
+    audioBase64?: string;
+    mimeType?: string;
+    audioSize?: number;
   }> => {
     const recorder = mediaRef.current;
     const liveText = liveTranscript || liveFinalRef.current;
@@ -213,6 +216,8 @@ export function useSpeech() {
             text: liveText.trim(),
             liveText: liveText.trim(),
             engine: 'browser',
+            mimeType: mime,
+            audioSize: blob.size,
           });
           return;
         }
@@ -226,12 +231,22 @@ export function useSpeech() {
           );
           const merged = (text?.trim() || liveText).trim();
           setLiveTranscript(merged);
-          resolve({ text: merged, engine: engine ?? 'server', liveText: liveText.trim() });
+          resolve({
+            text: merged,
+            engine: engine ?? 'server',
+            liveText: liveText.trim(),
+            audioBase64: b64,
+            mimeType: mime,
+            audioSize: blob.size,
+          });
         } catch {
           resolve({
             text: liveText.trim(),
             liveText: liveText.trim(),
             engine: 'browser',
+            audioBase64: b64,
+            mimeType: mime,
+            audioSize: blob.size,
           });
         }
       };

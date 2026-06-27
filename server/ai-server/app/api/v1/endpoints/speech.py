@@ -1,12 +1,23 @@
 import asyncio
 import base64
 import io
+import time
 
-from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pathlib import Path
+
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.config import settings
 from app.core.stt import transcribe_audio
+from app.pronunciation.audio import prepare_audio, prepare_audio_bytes, resolve_upload_mime_type
+from app.pronunciation.engines import get_engine
+from app.pronunciation.errors import (
+    AppError,
+    AudioPayloadTooLargeError,
+    InvalidAudioError,
+    InvalidRequestError,
+)
 
 router = APIRouter(prefix='/speech', tags=['speech'])
 
@@ -46,6 +57,39 @@ class SttConfigResponse(BaseModel):
     min_audio_bytes: int
     max_duration_sec: int
     live_stt_hint: str
+
+
+class PronunciationAssessmentRequest(BaseModel):
+    reference_text: str = Field(min_length=1)
+    audio_base64: str = Field(min_length=1)
+    language: str = 'ja'
+    mime_type: str = 'audio/webm'
+    pass_threshold: float = Field(default=70, ge=0, le=100)
+
+    @field_validator('reference_text', 'audio_base64', 'language', 'mime_type')
+    @classmethod
+    def strip_required_strings(cls, value: str) -> str:
+        trimmed = value.strip()
+        if not trimmed:
+            raise ValueError('must not be empty')
+        return trimmed
+
+
+class PronunciationWordScore(BaseModel):
+    word: str
+    accuracy_score: float | None = None
+    error_type: str | None = None
+
+
+class PronunciationAssessmentResponse(BaseModel):
+    overall_score: float
+    passed: bool
+    feedback_vi: str
+    transcript: str | None = None
+    engine: str
+    duration_ms: int | None = None
+    raw_scores: dict[str, float | None] = Field(default_factory=dict)
+    words: list[PronunciationWordScore] = Field(default_factory=list)
 
 
 async def _edge_tts_bytes(text: str, voice: str) -> bytes | None:
@@ -143,4 +187,110 @@ def speech_to_text(body: SttRequest) -> SttResponse:
         confidence=confidence,
         engine=engine,
         interim_supported=True,
+    )
+
+
+@router.post('/pronunciation/assess', response_model=PronunciationAssessmentResponse)
+async def assess_pronunciation(
+    body: PronunciationAssessmentRequest,
+) -> PronunciationAssessmentResponse:
+    started_at = time.perf_counter()
+    try:
+        with prepare_audio(body.audio_base64, body.mime_type, settings) as wav_path:
+            return await _assess_pronunciation_wav(
+                wav_path,
+                body.reference_text,
+                body.language,
+                body.pass_threshold,
+                started_at,
+            )
+    except AppError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={'error': exc.error_code, 'message': exc.message},
+        ) from exc
+
+
+@router.post('/pronunciation/assess/upload', response_model=PronunciationAssessmentResponse)
+async def assess_pronunciation_upload(
+    reference_text: str = Form(...),
+    audio_file: UploadFile = File(...),
+    language: str = Form('ja'),
+    pass_threshold: float = Form(70, ge=0, le=100),
+) -> PronunciationAssessmentResponse:
+    started_at = time.perf_counter()
+    try:
+        reference_text = _strip_required_form_value(reference_text, 'reference_text')
+        language = _strip_required_form_value(language, 'language')
+        audio_bytes = await _read_upload_audio_bytes(audio_file)
+        mime_type = resolve_upload_mime_type(audio_file.filename, audio_file.content_type)
+
+        with prepare_audio_bytes(audio_bytes, mime_type, settings) as wav_path:
+            return await _assess_pronunciation_wav(
+                wav_path,
+                reference_text,
+                language,
+                pass_threshold,
+                started_at,
+            )
+    except AppError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={'error': exc.error_code, 'message': exc.message},
+        ) from exc
+
+
+async def _read_upload_audio_bytes(audio_file: UploadFile) -> bytes:
+    audio_bytes = await audio_file.read(settings.max_audio_base64_bytes + 1)
+    if len(audio_bytes) > settings.max_audio_base64_bytes:
+        raise AudioPayloadTooLargeError(
+            f'audio file exceeds limit of {settings.max_audio_base64_bytes} bytes',
+        )
+    if not audio_bytes:
+        raise InvalidAudioError('audio file is empty')
+    return audio_bytes
+
+
+def _strip_required_form_value(value: str, field_name: str) -> str:
+    stripped = value.strip()
+    if not stripped:
+        raise InvalidRequestError(f'{field_name} is required')
+    return stripped
+
+
+async def _assess_pronunciation_wav(
+    wav_path: Path,
+    reference_text: str,
+    language: str,
+    pass_threshold: float,
+    started_at: float,
+) -> PronunciationAssessmentResponse:
+    engine = get_engine(settings)
+    result = await asyncio.to_thread(
+        engine.assess,
+        wav_path,
+        reference_text,
+        language,
+        pass_threshold,
+    )
+
+    duration_ms = int((time.perf_counter() - started_at) * 1000)
+    overall_score = max(0.0, min(100.0, result.overall_score))
+
+    return PronunciationAssessmentResponse(
+        overall_score=overall_score,
+        passed=overall_score >= pass_threshold,
+        feedback_vi=result.feedback_vi,
+        transcript=result.transcript,
+        engine=engine.name,
+        duration_ms=duration_ms,
+        raw_scores=result.raw_scores,
+        words=[
+            PronunciationWordScore(
+                word=word.word,
+                accuracy_score=word.accuracy_score,
+                error_type=word.error_type,
+            )
+            for word in result.words
+        ],
     )

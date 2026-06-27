@@ -158,6 +158,17 @@ export const speechStt = asyncHandler(async (req: Request, res: Response) => {
   res.json({ success: true, data });
 });
 
+export const speechPronunciationAssess = asyncHandler(async (req: Request, res: Response) => {
+  const data = await aiClient.assessPronunciation({
+    referenceText: String(req.body.referenceText ?? req.body.reference_text ?? ''),
+    audioBase64: String(req.body.audioBase64 ?? req.body.audio_base64 ?? req.body.audio ?? ''),
+    language: String(req.body.language ?? 'ja'),
+    mimeType: String(req.body.mimeType ?? req.body.mime_type ?? 'audio/webm'),
+    passThreshold: Number(req.body.passThreshold ?? req.body.pass_threshold ?? 70),
+  });
+  res.json({ success: true, data });
+});
+
 export const aiSpeakingStart = asyncHandler(async (req: Request, res: Response) => {
   const data = await aiClient.startSpeakingSession(req.user!.id);
   res.json({ success: true, data });

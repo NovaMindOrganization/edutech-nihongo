@@ -133,6 +133,7 @@ studentRouter.post('/ai-speaking/message', studentExt.aiSpeakingMessage);
 studentRouter.get('/speech/stt/config', studentExt.speechSttConfig);
 studentRouter.post('/speech/tts', studentExt.speechTts);
 studentRouter.post('/speech/stt', studentExt.speechStt);
+studentRouter.post('/speech/pronunciation/assess', studentExt.speechPronunciationAssess);
 studentRouter.get('/jlpt-sim/exams', studentExt.jlptListExams);
 studentRouter.get('/jlpt-sim/active', studentExt.jlptGetActiveSession);
 studentRouter.get('/jlpt-sim/history', studentExt.jlptHistory);

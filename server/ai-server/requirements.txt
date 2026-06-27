@@ -25,3 +25,5 @@ sentence-transformers>=2.3.0
 # Speech (optional — graceful fallback if missing)
 edge-tts>=6.1.0
 faster-whisper>=1.0.0
+azure-cognitiveservices-speech>=1.38.0,<2.0.0
+python-multipart>=0.0.20,<1.0.0

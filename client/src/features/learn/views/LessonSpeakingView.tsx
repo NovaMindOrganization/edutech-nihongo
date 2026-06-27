@@ -1,4 +1,4 @@
-﻿import { Bot, CheckCircle2, Mic, Send, Sparkles, Volume2 } from 'lucide-react';
+﻿import { Bot, CheckCircle2, Gauge, Mic, Send, Sparkles, Volume2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -9,6 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useSpeech } from '@/hooks/use-speech';
 import { postLessonSpeaking } from '@/features/student/services/studentApi';
+import {
+  postPronunciationAssessment,
+  type PronunciationAssessment,
+} from '@/features/student/services/speechApi';
 import { useLessonData } from '../context/lesson-context';
 
 export function LessonSpeakingView() {
@@ -18,6 +22,8 @@ export function LessonSpeakingView() {
   const [sessionId, setSessionId] = useState<string | undefined>();
   const [history, setHistory] = useState<Array<{ role: string; content: string }>>([]);
   const [lastCorrection, setLastCorrection] = useState<string | null>(null);
+  const [pronunciation, setPronunciation] = useState<PronunciationAssessment | null>(null);
+  const [pronunciationReference, setPronunciationReference] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function send() {
@@ -48,28 +54,53 @@ export function LessonSpeakingView() {
   async function toggleMic() {
     try {
       if (!recording) {
+        setPronunciation(null);
         await startRecording();
         toast.message('Đang ghi âm…');
         return;
       }
-      const { text: transcript } = await stopRecording();
-      if (!transcript.trim()) {
+      const recorded = await stopRecording();
+      const transcript = recorded.text.trim();
+      const referenceText = (text.trim() || transcript).trim();
+      const spokenText = transcript || referenceText;
+      if (!spokenText) {
         toast.error('Không nhận dạng được');
         return;
       }
       setLoading(true);
-      const res = await postLessonSpeaking(lesson.lesson.id, {
-        text: transcript,
+      const lessonMessage = postLessonSpeaking(lesson.lesson.id, {
+        text: spokenText,
         sessionId,
         conversationHistory: history,
       });
+      const assessment =
+        recorded.audioBase64 && referenceText
+          ? postPronunciationAssessment({
+              referenceText,
+              audioBase64: recorded.audioBase64,
+              language: 'ja',
+              mimeType: recorded.mimeType ?? 'audio/webm',
+              passThreshold: 70,
+            })
+          : Promise.resolve(null);
+
+      const [res, pronunciationResult] = await Promise.all([lessonMessage, assessment]);
       setSessionId(res.sessionId);
       setHistory((h) => [
         ...h,
-        { role: 'user', content: transcript },
+        { role: 'user', content: spokenText },
         { role: 'assistant', content: res.AI_Reply },
       ]);
       setLastCorrection(res.Correction);
+      if (pronunciationResult) {
+        setPronunciation(pronunciationResult);
+        setPronunciationReference(referenceText);
+        if (pronunciationResult.error) {
+          toast.error(pronunciationResult.feedbackVi || 'Chưa chấm được phát âm');
+        } else {
+          toast.message(`Pronunciation: ${Math.round(pronunciationResult.overallScore)}/100`);
+        }
+      }
       if (res.Correction) toast.message(`Gợi ý: ${res.Correction}`);
     } catch {
       toast.error('Không ghi âm được');
@@ -166,6 +197,47 @@ export function LessonSpeakingView() {
               <p className="font-display text-sm font-extrabold">Grammar / Pronunciation Feedback</p>
             </div>
             <p className="text-sm font-semibold leading-6 text-foreground">{lastCorrection}</p>
+          </div>
+        )}
+
+        {pronunciation && (
+          <div className="rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-2">
+                <AppIcon icon={Gauge} size="sm" className="bg-secondary" />
+                <div>
+                  <p className="font-display text-sm font-extrabold">Pronunciation Assessment</p>
+                  {pronunciationReference && (
+                    <p className="mt-1 font-jp text-sm font-semibold leading-6 text-muted-foreground">
+                      {pronunciationReference}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-display text-2xl font-extrabold">
+                  {Math.round(pronunciation.overallScore)}
+                </span>
+                <span className="text-xs font-bold text-muted-foreground">/100</span>
+                <Badge
+                  className={
+                    pronunciation.passed
+                      ? 'bg-tertiary text-foreground'
+                      : 'bg-secondary text-foreground'
+                  }
+                >
+                  {pronunciation.passed ? 'Đạt' : 'Luyện thêm'}
+                </Badge>
+              </div>
+            </div>
+            <p className="mt-3 text-sm font-semibold leading-6 text-foreground">
+              {pronunciation.feedbackVi}
+            </p>
+            {pronunciation.transcript && (
+              <p className="mt-2 text-xs font-medium text-muted-foreground">
+                Transcript: <span className="font-jp">{pronunciation.transcript}</span>
+              </p>
+            )}
           </div>
         )}
 
