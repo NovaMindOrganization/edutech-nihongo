@@ -7,6 +7,7 @@ from pathlib import Path
 import httpx
 
 from app.core.config import settings
+from app.core.ffmpeg_util import resolve_ffmpeg_binary
 from app.core.llm import _gemini_generate
 
 logger = logging.getLogger(__name__)
@@ -19,10 +20,14 @@ def _webm_to_wav(audio_bytes: bytes) -> bytes | None:
         webm_path = Path(tmp) / 'input.webm'
         wav_path = Path(tmp) / 'audio.wav'
         webm_path.write_bytes(audio_bytes)
+        ffmpeg = resolve_ffmpeg_binary()
+        if not ffmpeg:
+            logger.warning('ffmpeg not found — STT may fail for webm')
+            return None
         try:
             proc = subprocess.run(
                 [
-                    'ffmpeg',
+                    ffmpeg,
                     '-y',
                     '-i',
                     str(webm_path),

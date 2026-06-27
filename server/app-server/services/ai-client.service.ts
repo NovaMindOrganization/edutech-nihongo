@@ -5,6 +5,7 @@ import { db } from '../config/db.js';
 import { incrRateLimit } from '../config/redis.js';
 import { getConfigValue } from './config.service.js';
 import { getLlmRuntimePayload } from './llm-config.service.js';
+import { loadLessonVocabulary } from './lesson.service.js';
 import { AppError } from '../utils/app-error.js';
 
 type AiLlmResponse = {
@@ -109,31 +110,10 @@ export async function sendLessonSpeakingMessage(
     return { ...FALLBACK_REPLY, rateLimited: true };
   }
 
-  const lesson = await db.lesson.findUnique({
-    where: { id: lessonId },
-    include: {
-      course: { select: { jlptLevel: true, title: true } },
-      grammar: { take: 5, include: { grammar: true } },
-    },
-  });
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
-
-  const lessonVocab = await db.vocabulary.findMany({
-    where: { lessonId },
-    orderBy: { word: 'asc' },
-    take: 8,
-  });
+  const { lesson, lessonContext } = await loadLessonSpeakingContext(lessonId);
 
   const sessionId = input.sessionId ?? crypto.randomUUID();
   let parsed = FALLBACK_REPLY;
-
-  const lessonContext = {
-    lesson_title: lesson.title,
-    jlpt_level: lesson.course.jlptLevel,
-    speaking_prompt: lesson.speakingPrompt,
-    vocabulary: lessonVocab.map((v) => v.word),
-    grammar: lesson.grammar.map((g) => g.grammar.pattern),
-  };
 
   try {
     const data = await aiPost('/api/v1/speaking/lesson', {
@@ -148,8 +128,56 @@ export async function sendLessonSpeakingMessage(
     parsed = FALLBACK_REPLY;
   }
 
-  await persistSpeakingTurn(userId, sessionId, input.text, parsed, 'ai_speaking_lesson', lessonId);
-  return { ...parsed, sessionId, transcript: input.text, lessonId };
+  await persistSpeakingTurn(userId, sessionId, input.text, parsed, 'ai_speaking_lesson', lesson.id);
+  return { ...parsed, sessionId, transcript: input.text, lessonId: lesson.id };
+}
+
+export async function startLessonSpeakingSession(userId: string, lessonId: string) {
+  const ok = await checkSpeakingLimit(userId);
+  if (!ok) {
+    return { ...FALLBACK_REPLY, rateLimited: true };
+  }
+
+  const { lesson, lessonContext } = await loadLessonSpeakingContext(lessonId);
+  const sessionId = crypto.randomUUID();
+  let parsed = FALLBACK_REPLY;
+
+  try {
+    const data = await aiPost('/api/v1/speaking/lesson/start', lessonContext);
+    if (data?.AI_Reply) {
+      parsed = { AI_Reply: data.AI_Reply, Correction: data.Correction ?? null };
+    }
+  } catch {
+    parsed = FALLBACK_REPLY;
+  }
+
+  await persistSpeakingTurn(userId, sessionId, '[SESSION_START]', parsed, 'ai_speaking_lesson', lesson.id);
+  return { ...parsed, sessionId, transcript: '', lessonId: lesson.id };
+}
+
+async function loadLessonSpeakingContext(lessonId: string) {
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    include: {
+      course: { select: { jlptLevel: true, title: true } },
+      grammar: { take: 10, include: { grammar: true } },
+    },
+  });
+  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+
+  const lessonVocab = await loadLessonVocabulary(lessonId);
+
+  const lessonContext = {
+    lesson_title: lesson.title,
+    jlpt_level: lesson.course.jlptLevel,
+    lesson_objective: lesson.objective,
+    lesson_description: lesson.description,
+    speaking_prompt: lesson.speakingPrompt,
+    vocabulary: lessonVocab.slice(0, 20).map((v) => v.word),
+    grammar: lesson.grammar.map((g) => g.grammar.pattern),
+  };
+
+  return { lesson, lessonContext };
 }
 
 async function persistSpeakingTurn(
@@ -221,6 +249,100 @@ export async function transcribeSpeech(
     return data as { text: string; confidence?: number; engine?: string };
   } catch {
     return { text: '', confidence: 0, engine: 'none' };
+  }
+}
+
+type PronunciationAssessmentRaw = {
+  overall_score?: number;
+  passed?: boolean;
+  feedback_vi?: string;
+  transcript?: string | null;
+  engine?: string;
+  duration_ms?: number | null;
+  raw_scores?: Record<string, number | null>;
+  words?: Array<{ word: string; accuracy_score?: number | null; error_type?: string | null }>;
+};
+
+export type PronunciationAssessmentDto = {
+  overallScore: number;
+  passed: boolean;
+  feedbackVi: string;
+  transcript: string | null;
+  engine: string;
+  durationMs: number | null;
+  rawScores: Record<string, number | null>;
+  words: Array<{ word: string; accuracyScore: number | null; errorType: string | null }>;
+  error?: string | null;
+};
+
+function mapPronunciationAssessment(data: PronunciationAssessmentRaw): PronunciationAssessmentDto {
+  return {
+    overallScore: Number(data.overall_score ?? 0),
+    passed: Boolean(data.passed),
+    feedbackVi: data.feedback_vi ?? '',
+    transcript: data.transcript ?? null,
+    engine: data.engine ?? 'none',
+    durationMs: data.duration_ms ?? null,
+    rawScores: data.raw_scores ?? {},
+    words: (data.words ?? []).map((word) => ({
+      word: word.word,
+      accuracyScore: word.accuracy_score ?? null,
+      errorType: word.error_type ?? null,
+    })),
+    error: null,
+  };
+}
+
+function pronunciationErrorMessage(err: unknown) {
+  if (!axios.isAxiosError(err)) {
+    return err instanceof Error ? err.message : 'Pronunciation assessment failed';
+  }
+
+  const body = err.response?.data as
+    | {
+        detail?: { message?: string } | string;
+        error?: { message?: string };
+        message?: string;
+      }
+    | undefined;
+  if (typeof body?.detail === 'object' && body.detail?.message) return body.detail.message;
+  if (typeof body?.detail === 'string') return body.detail;
+  return body?.error?.message ?? body?.message ?? err.message;
+}
+
+export async function assessPronunciation(input: {
+  referenceText: string;
+  audioBase64: string;
+  language?: string;
+  mimeType?: string;
+  passThreshold?: number;
+}): Promise<PronunciationAssessmentDto> {
+  try {
+    const { data } = await axios.post<PronunciationAssessmentRaw>(
+      `${env.aiServerUrl}/api/v1/speech/pronunciation/assess`,
+      {
+        reference_text: input.referenceText,
+        audio_base64: input.audioBase64,
+        language: input.language ?? 'ja',
+        mime_type: input.mimeType ?? 'audio/webm',
+        pass_threshold: input.passThreshold ?? 70,
+      },
+      { timeout: 90_000 },
+    );
+    return mapPronunciationAssessment(data);
+  } catch (err) {
+    const message = pronunciationErrorMessage(err);
+    return {
+      overallScore: 0,
+      passed: false,
+      feedbackVi: message,
+      transcript: null,
+      engine: 'none',
+      durationMs: null,
+      rawScores: {},
+      words: [],
+      error: message,
+    };
   }
 }
 

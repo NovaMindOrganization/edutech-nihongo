@@ -20,6 +20,24 @@ export type SttResult = {
   interimSupported?: boolean;
 };
 
+export type PronunciationWordScore = {
+  word: string;
+  accuracyScore: number | null;
+  errorType: string | null;
+};
+
+export type PronunciationAssessment = {
+  overallScore: number;
+  passed: boolean;
+  feedbackVi: string;
+  transcript: string | null;
+  engine: string;
+  durationMs: number | null;
+  rawScores: Record<string, number | null>;
+  words: PronunciationWordScore[];
+  error?: string | null;
+};
+
 type SttConfigRaw = SttConfig & {
   default_language?: string;
   whisper_model?: string;
@@ -68,5 +86,18 @@ export function postSpeechStt(
   return apiFetch<SttResult>('/student/speech/stt', {
     method: 'POST',
     body: JSON.stringify({ audio, language, mimeType, allowGeminiFallback }),
+  });
+}
+
+export function postPronunciationAssessment(input: {
+  referenceText: string;
+  audioBase64: string;
+  language?: string;
+  mimeType?: string;
+  passThreshold?: number;
+}) {
+  return apiFetch<PronunciationAssessment>('/student/speech/pronunciation/assess', {
+    method: 'POST',
+    body: JSON.stringify(input),
   });
 }

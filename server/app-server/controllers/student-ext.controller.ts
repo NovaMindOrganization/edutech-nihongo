@@ -131,6 +131,11 @@ export const lessonSpeakingMessage = asyncHandler(async (req: Request, res: Resp
   res.json({ success: true, data });
 });
 
+export const lessonSpeakingStart = asyncHandler(async (req: Request, res: Response) => {
+  const data = await aiClient.startLessonSpeakingSession(req.user!.id, req.params.lessonId);
+  res.json({ success: true, data });
+});
+
 export const speechTts = asyncHandler(async (req: Request, res: Response) => {
   const buf = await aiClient.synthesizeSpeech(req.body.text, req.body.voice);
   res.json({
@@ -155,6 +160,17 @@ export const speechStt = asyncHandler(async (req: Request, res: Response) => {
     req.body.mimeType ?? 'audio/webm',
     req.body.allowGeminiFallback !== false,
   );
+  res.json({ success: true, data });
+});
+
+export const speechPronunciationAssess = asyncHandler(async (req: Request, res: Response) => {
+  const data = await aiClient.assessPronunciation({
+    referenceText: String(req.body.referenceText ?? req.body.reference_text ?? ''),
+    audioBase64: String(req.body.audioBase64 ?? req.body.audio_base64 ?? req.body.audio ?? ''),
+    language: String(req.body.language ?? 'ja'),
+    mimeType: String(req.body.mimeType ?? req.body.mime_type ?? 'audio/webm'),
+    passThreshold: Number(req.body.passThreshold ?? req.body.pass_threshold ?? 70),
+  });
   res.json({ success: true, data });
 });
 

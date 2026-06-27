@@ -27,6 +27,16 @@ class Settings(BaseSettings):
     stt_min_audio_bytes: int = 500
     stt_max_duration_sec: int = 120
 
+    # Pronunciation assessment (Azure Speech)
+    pa_engine: str = 'azure'
+    azure_speech_key: str | None = None
+    azure_speech_region: str | None = None
+    max_audio_base64_bytes: int = 2 * 1024 * 1024
+    min_audio_seconds: float = 1.0
+    max_audio_seconds: float = 10.0
+    silence_rms_threshold: float = 80.0
+    ffmpeg_timeout_seconds: int = 20
+
     # TTS (Edge)
     edge_tts_voice: str = 'ja-JP-NanamiNeural'
 
