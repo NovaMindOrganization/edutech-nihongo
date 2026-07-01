@@ -66,6 +66,12 @@ const staffNavSections: NavSection[] = [
         end: true,
         roles: ["admin", "instructor"],
       },
+      {
+        to: paths.admin.feedbacks,
+        label: "Góp ý bài học",
+        icon: MessageSquare,
+        roles: ["instructor"],
+      },
     ],
   },
   {
@@ -96,6 +102,7 @@ const staffNavSections: NavSection[] = [
       { to: paths.admin.users, label: "Người dùng", icon: Users, roles: ["admin"] },
       { to: paths.admin.pricing, label: "Gói & giá", icon: CreditCard, roles: ["admin"] },
       { to: paths.admin.reports, label: "Báo cáo", icon: Flag, roles: ["admin"] },
+      { to: paths.admin.feedbacks, label: "Phản hồi học viên", icon: MessageSquare, roles: ["admin"] },
       { to: paths.admin.analytics, label: "Thống kê", icon: BarChart3, roles: ["admin"] },
       { to: paths.admin.config, label: "Cấu hình", icon: Settings, roles: ["admin"] },
     ],

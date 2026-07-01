@@ -14,9 +14,10 @@ const INSTRUCTOR_SEGMENTS = new Set([
   'mock-exams',
   'questions',
   'study-sets',
+  'feedbacks',
 ]);
 
-const ADMIN_SEGMENTS = new Set(['users', 'config', 'pricing', 'reports', 'analytics']);
+const ADMIN_SEGMENTS = new Set(['users', 'config', 'pricing', 'reports', 'analytics', 'feedbacks']);
 
 function staffPathSegment(pathname: string): string | null {
   if (!pathname.startsWith(paths.admin.dashboard)) return null;

@@ -58,6 +58,8 @@ export const paths = {
       `/notebook/collected/${type}`,
     jlptHistory: "/insights/jlpt-history",
     mistakes: "/insights/mistakes",
+    feedback: "/feedback",
+    feedbackDetail: (id: string) => `/feedback/${id}`,
   },
   admin: {
     dashboard: "/admin",
@@ -79,6 +81,8 @@ export const paths = {
     config: "/admin/config",
     pricing: "/admin/pricing",
     reports: "/admin/reports",
+    feedbacks: "/admin/feedbacks",
+    feedbackDetail: (id: string) => `/admin/feedbacks/${id}`,
     analytics: "/admin/analytics",
   },
 } as const;

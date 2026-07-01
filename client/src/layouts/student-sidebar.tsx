@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   Mic,
   NotebookPen,
   ScanText,
@@ -13,7 +14,7 @@ import {
   Shield,
   Users,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -30,7 +31,7 @@ import {
   SidebarScrollNav,
   SidebarSection,
   SidebarShell,
-  SidebarUserCard,
+  TopbarUserBadge,
 } from '@/components/usable/sidebar';
 import { StudentProfileDialog } from '@/components/usable/student-profile-dialog';
 import { studentNavTree } from '@/components/usable/student-nav-menu';
@@ -39,6 +40,11 @@ import { Button } from '@/components/ui/button';
 import { Drawer } from '@/components/ui/drawer';
 import { logoutApi, useAuthStore } from '@/features/auth';
 import { isStaffRole } from '@/features/auth/utils/auth-routes';
+import {
+  FeedbackQuickDialog,
+  type FeedbackQuickDialogInitial,
+} from '@/features/feedback/components/FeedbackQuickDialog';
+import { FeedbackQuickContext } from '@/features/feedback/feedback-quick-context';
 import { paths } from '@/router/paths';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
@@ -53,6 +59,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   [paths.student.jlptSim]: ClipboardCheck,
   [paths.student.jlptHistory]: History,
   [paths.student.mistakes]: History,
+  [paths.student.feedback]: MessageSquare,
   [paths.student.ocr]: ScanText,
   [paths.student.studySets]: Users,
   [paths.student.communityCall]: Mic,
@@ -70,6 +77,9 @@ function groupHasActiveChild(pathname: string, children: { to: string }[]) {
 }
 
 function activeNavLabel(pathname: string) {
+  if (studentNavPathMatches(pathname, paths.student.feedback)) {
+    return 'Góp ý của tôi';
+  }
   for (const entry of studentNavTree) {
     if ('children' in entry) {
       const activeChild = entry.children.find((child) =>
@@ -99,7 +109,6 @@ function StudentSidebarPanel({
   const { pathname } = useLocation();
   const user = useAuthStore((s) => s.user);
   const staff = user ? isStaffRole(user.role) : false;
-  const displayName = user?.displayName?.trim() || user?.email.split('@')[0] || 'Học viên';
 
   const primaryItems = studentNavTree.filter(
     (entry) => !('children' in entry) && entry.to === paths.student.dashboard,
@@ -208,10 +217,12 @@ function StudentSidebarPanel({
 
       {user && (
         <SidebarFooter>
-          <SidebarUserCard
-            name={displayName}
-            email={user.email}
-            onClick={onOpenProfile}
+          <SidebarNavItem
+            to={paths.student.feedback}
+            icon={MessageSquare}
+            label="Góp ý của tôi"
+            onNavigate={onNavigate}
+            isPathActive={navMatch(paths.student.feedback)}
           />
           <SidebarFooterDivider />
           <div className="space-y-0.5">
@@ -240,10 +251,21 @@ export function StudentSidebarShell() {
   const outlet = useOutlet();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [feedbackQuickOpen, setFeedbackQuickOpen] = useState(false);
+  const [feedbackQuickInitial, setFeedbackQuickInitial] = useState<FeedbackQuickDialogInitial>({});
   const currentLabel = useMemo(() => activeNavLabel(pathname), [pathname]);
+  const displayName = user?.displayName?.trim() || user?.email.split('@')[0] || 'Học viên';
+
+  const openFeedback = useCallback((initial?: FeedbackQuickDialogInitial) => {
+    setFeedbackQuickInitial(initial ?? {});
+    setFeedbackQuickOpen(true);
+  }, []);
+
+  const feedbackQuickValue = useMemo(() => ({ openFeedback }), [openFeedback]);
 
   async function handleLogout() {
     try {
@@ -262,6 +284,7 @@ export function StudentSidebarShell() {
   );
 
   return (
+    <FeedbackQuickContext.Provider value={feedbackQuickValue}>
     <div className="flex h-screen overflow-hidden bg-background">
       <aside className={asideClass}>
         <StudentSidebarPanel
@@ -304,15 +327,20 @@ export function StudentSidebarShell() {
             </Button>
           }
           actions={
-            <Link
-              to={paths.student.dashboard}
-              className="hidden items-center gap-2 rounded-xl border border-border/60 bg-white px-3 py-2 font-display text-xs font-semibold text-foreground shadow-sm transition-all hover:border-brand-soft hover:shadow-md sm:inline-flex"
-            >
-              <span className="flex size-6 items-center justify-center rounded-lg bg-brand text-[10px] font-bold text-white">
-                日
-              </span>
-              NihongoCoach
-            </Link>
+            <>
+              {user ? (
+                <TopbarUserBadge name={displayName} email={user.email} />
+              ) : null}
+              <Link
+                to={paths.student.dashboard}
+                className="hidden items-center gap-2 rounded-xl border border-border/60 bg-white px-3 py-2 font-display text-xs font-semibold text-foreground shadow-sm transition-all hover:border-brand-soft hover:shadow-md sm:inline-flex"
+              >
+                <span className="flex size-6 items-center justify-center rounded-lg bg-brand text-[10px] font-bold text-white">
+                  日
+                </span>
+                NihongoCoach
+              </Link>
+            </>
           }
         />
 
@@ -326,6 +354,31 @@ export function StudentSidebarShell() {
         onOpenChange={setProfileOpen}
         onLogout={handleLogout}
       />
+
+      <FeedbackQuickDialog
+        open={feedbackQuickOpen}
+        onOpenChange={(open) => {
+          setFeedbackQuickOpen(open);
+          if (!open) setFeedbackQuickInitial({});
+        }}
+        {...feedbackQuickInitial}
+      />
+
+      <button
+        type="button"
+        onClick={() => openFeedback()}
+        aria-label="Góp ý"
+        title="Góp ý"
+        className={cn(
+          'fixed z-40 flex size-14 items-center justify-center rounded-full',
+          'bg-brand text-white shadow-lg shadow-brand/30',
+          'transition-transform hover:scale-105 hover:bg-brand-hover active:scale-95',
+          'bottom-5 right-5 md:bottom-6 md:right-6',
+        )}
+      >
+        <MessageSquare className="size-6" strokeWidth={2} aria-hidden />
+      </button>
     </div>
+    </FeedbackQuickContext.Provider>
   );
 }

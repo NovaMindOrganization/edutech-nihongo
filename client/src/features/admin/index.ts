@@ -17,4 +17,6 @@ export { StudySetAdminDetailView } from "./views/StudySetAdminDetailView";
 export { RadicalsAdminView } from "./views/RadicalsAdminView";
 export { PricingAdminView } from "./views/PricingAdminView";
 export { ReportsAdminView } from "./views/ReportsAdminView";
+export { FeedbackAdminRouteView } from "./views/FeedbackAdminRouteView";
+export { FeedbackStaffDetailView } from "./views/FeedbackStaffDetailView";
 export { AnalyticsAdminView } from "./views/AnalyticsAdminView";
