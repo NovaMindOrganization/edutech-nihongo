@@ -7,6 +7,7 @@ import {
   hashRefreshToken,
   signAccessToken,
 } from '../utils/jwt.js';
+import { consumeRegistrationVerificationToken } from './registration-otp.service.js';
 
 const SALT_ROUNDS = 12;
 const REFRESH_DAYS = 7;
@@ -39,16 +40,24 @@ async function issueSession(user: {
   return { user: sanitizeUser(user), accessToken, refreshToken: refreshRaw };
 }
 
-export async function registerUser(input: { email: string; password: string; displayName?: string }) {
-  const existing = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });
+export async function registerUser(input: {
+  email: string;
+  password: string;
+  displayName?: string;
+  emailVerificationToken: string;
+}) {
+  const email = input.email.toLowerCase();
+  const existing = await db.user.findUnique({ where: { email } });
   if (existing) {
     throw new AppError('Email already registered', 409, 'EMAIL_EXISTS');
   }
 
+  await consumeRegistrationVerificationToken(email, input.emailVerificationToken);
+
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
   const user = await db.user.create({
     data: {
-      email: input.email.toLowerCase(),
+      email,
       passwordHash,
       displayName: input.displayName,
       role: 'student',

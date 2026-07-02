@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { env } from '../config/env.js';
 import * as authService from '../services/auth.service.js';
 import * as passwordResetService from '../services/password-reset.service.js';
+import * as registrationOtpService from '../services/registration-otp.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
 const REFRESH_COOKIE = 'refreshToken';
@@ -31,6 +32,18 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.registerUser((req.validatedBody ?? req.body) as never);
   setRefreshCookie(res, result.refreshToken);
   res.status(201).json({ success: true, data: authPayload(result) });
+});
+
+export const sendRegisterOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = (req.validatedBody ?? req.body) as { email: string };
+  const data = await registrationOtpService.sendRegistrationOtp(email);
+  res.json({ success: true, data });
+});
+
+export const verifyRegisterOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = (req.validatedBody ?? req.body) as { email: string; otp: string };
+  const data = await registrationOtpService.verifyRegistrationOtp(email, otp);
+  res.json({ success: true, data });
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {

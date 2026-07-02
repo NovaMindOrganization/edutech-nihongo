@@ -37,6 +37,21 @@ export const env = {
   sepayBankBin: process.env.SEPAY_BANK_BIN ?? '970436',
   paymentCodePrefix: process.env.PAYMENT_CODE_PREFIX ?? 'NIHONGO',
   orderExpiryMinutes: Number(process.env.ORDER_EXPIRY_MINUTES ?? 30),
+  smtpHost: process.env.SMTP_HOST ?? '',
+  smtpPort: Number(process.env.SMTP_PORT ?? 587),
+  smtpSecure: process.env.SMTP_SECURE === 'true',
+  smtpStartTls: process.env.SMTP_STARTTLS !== 'false',
+  smtpUser: process.env.SMTP_USER ?? '',
+  smtpPass: process.env.SMTP_PASS ?? '',
+  smtpFrom: process.env.SMTP_FROM ?? process.env.SMTP_USER ?? 'NihongoCoach <no-reply@localhost>',
+  registrationOtpTtlSeconds: Number(process.env.REGISTRATION_OTP_TTL_SECONDS ?? 600),
+  registrationOtpVerifyTokenTtlSeconds: Number(
+    process.env.REGISTRATION_OTP_VERIFY_TOKEN_TTL_SECONDS ?? 900,
+  ),
+  registrationOtpResendCooldownSeconds: Number(
+    process.env.REGISTRATION_OTP_RESEND_COOLDOWN_SECONDS ?? 60,
+  ),
+  registrationOtpMaxAttempts: Number(process.env.REGISTRATION_OTP_MAX_ATTEMPTS ?? 5),
 } as const;
 
 const WEAK_JWT_SECRETS = new Set([
