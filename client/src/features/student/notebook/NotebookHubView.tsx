@@ -15,7 +15,7 @@ export function NotebookHubView() {
       badgeClassName="bg-brand-soft text-brand"
       tone="brand"
       chips={['Kanji', 'Từ vựng', 'Ngữ pháp', 'Ôn tập']}
-      footer="Lộ trình học lấy từ khóa bạn đang theo; Sưu tập riêng gom mục từ OCR và yêu thích."
+      footer="Lộ trình học lấy từ khóa bạn đang theo; Sưu tập riêng là các sổ tay cá nhân có ghi chú."
     >
       <NotebookPoolHub />
     </PageShell>

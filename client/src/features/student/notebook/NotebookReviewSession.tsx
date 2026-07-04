@@ -11,7 +11,8 @@ import { GenericFlashcardCard } from '@/features/learn/components/flashcard/Gene
 import { useFlashcardKeyboard } from '@/features/learn/hooks/use-flashcard-keyboard';
 import type { SlideDirection } from '@/features/learn/hooks/use-flashcard-session';
 import { useSpeech } from '@/hooks/use-speech';
-import { generateNotebookReview } from '@/features/student/services/studentApi';
+import { generateNotebookReview, upsertMastery } from '@/features/student/services/studentApi';
+import { formatApiErrorMessage } from '@/services/httpClient';
 import {
   POOL_LABELS,
   TYPE_LABELS,
@@ -27,11 +28,46 @@ type FlashcardItem = {
   reading?: string;
 };
 
+function emptyReviewHint(
+  mode: NotebookReviewMode,
+  pool: NotebookPool,
+  type: NotebookType,
+): string {
+  if (mode === 'unlearned') {
+    if (type === 'kanji') return 'Tất cả kanji trong tab này đã được đánh dấu thuộc.';
+    if (type === 'vocabulary') return 'Tất cả từ vựng trong tab này đã được đánh dấu thuộc.';
+    if (type === 'grammar') return 'Tất cả mẫu ngữ pháp trong tab này đã được đánh dấu thuộc.';
+  }
+  if (mode === 'learned') {
+    if (type === 'kanji') {
+      return 'Chưa có kanji nào được đánh dấu thuộc — hãy ôn flashcard và bấm「Đã thuộc」.';
+    }
+    if (type === 'vocabulary') {
+      return 'Chưa có từ vựng nào được đánh dấu thuộc — hãy ôn flashcard và bấm「Đã thuộc」.';
+    }
+    if (type === 'grammar') {
+      return 'Chưa có mẫu ngữ pháp nào được đánh dấu thuộc — hãy ôn flashcard và bấm「Đã thuộc」.';
+    }
+  }
+  if (mode === 'pick') {
+    return type === 'grammar'
+      ? 'Không tìm thấy mẫu ngữ pháp đã chọn. Hãy chọn lại trong danh sách.'
+      : 'Không tìm thấy mục đã chọn. Hãy chọn lại trong danh sách.';
+  }
+  if (mode === 'lesson') {
+    return 'Các bài đã chọn chưa có nội dung phù hợp để ôn.';
+  }
+  return pool === 'learned'
+    ? 'Hoàn thành thêm bài học để có nội dung ôn tập.'
+    : 'Chưa có mục nào trong sưu tập.';
+}
+
 type NotebookReviewSessionProps = {
   open: boolean;
   onClose: () => void;
   pool: NotebookPool;
   type: NotebookType;
+  notebookId?: string;
   mode: NotebookReviewMode;
   lessonIds?: string[];
   itemIds?: string[];
@@ -42,6 +78,7 @@ export function NotebookReviewSession({
   onClose,
   pool,
   type,
+  notebookId,
   mode,
   lessonIds,
   itemIds,
@@ -51,6 +88,7 @@ export function NotebookReviewSession({
   const [flipped, setFlipped] = useState(false);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>(null);
   const [loading, setLoading] = useState(false);
+  const [emptyHint, setEmptyHint] = useState<string | null>(null);
   const { playTts, speaking } = useSpeech();
 
   const load = useCallback(async () => {
@@ -63,24 +101,19 @@ export function NotebookReviewSession({
         count: 15,
         lessonIds,
         itemIds,
+        notebookId,
       });
       setItems(res.items);
       setIndex(0);
       setFlipped(false);
       setSlideDirection(null);
-      if (res.items.length === 0) {
-        toast.message(
-          pool === 'learned'
-            ? 'Hoàn thành thêm bài học để có nội dung ôn tập'
-            : 'Chưa có mục nào trong sưu tập',
-        );
-      }
+      setEmptyHint(res.items.length === 0 ? emptyReviewHint(mode, pool, type) : null);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Không thể bắt đầu ôn tập');
+      toast.error(formatApiErrorMessage(e, 'Không thể bắt đầu ôn tập'));
     } finally {
       setLoading(false);
     }
-  }, [pool, type, mode, lessonIds, itemIds]);
+  }, [pool, type, mode, lessonIds, itemIds, notebookId]);
 
   useEffect(() => {
     if (!open) return;
@@ -127,12 +160,36 @@ export function NotebookReviewSession({
     }
   }, [index, items.length]);
 
+  const persistMastery = useCallback(
+    (itemId: string, isLearned: boolean) => {
+      if (type !== 'kanji' && type !== 'vocabulary' && type !== 'grammar') return;
+      void upsertMastery({
+        itemId,
+        itemType: type,
+        isLearned,
+      }).catch((e) => {
+        toast.error(e instanceof Error ? e.message : 'Không lưu được tiến độ');
+      });
+    },
+    [type],
+  );
+
+  const handleMarkLearning = useCallback(() => {
+    if (current) persistMastery(current.id, false);
+    advance();
+  }, [advance, current, persistMastery]);
+
+  const handleMarkMastered = useCallback(() => {
+    if (current) persistMastery(current.id, true);
+    advance();
+  }, [advance, current, persistMastery]);
+
   useFlashcardKeyboard({
     enabled: open && Boolean(studyActive),
     onFlip: toggleFlip,
     onPlayAudio: playCurrentAudio,
-    onMarkLearning: flipped ? advance : undefined,
-    onMarkMastered: flipped ? advance : undefined,
+    onMarkLearning: flipped ? handleMarkLearning : undefined,
+    onMarkMastered: flipped ? handleMarkMastered : undefined,
   });
 
   if (!open) return null;
@@ -177,7 +234,16 @@ export function NotebookReviewSession({
           )}
 
           {!loading && items.length === 0 && (
-            <EmptyState {...emptyStatePresets.flashcards} size="md" />
+            <EmptyState
+              {...emptyStatePresets.flashcards}
+              description={emptyHint ?? emptyStatePresets.flashcards.description}
+              action={
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Quay lại danh sách
+                </Button>
+              }
+              size="md"
+            />
           )}
 
           {finished && items.length > 0 && (
@@ -217,8 +283,8 @@ export function NotebookReviewSession({
               />
               <FlashcardControls
                 flipped={flipped}
-                onLearning={advance}
-                onMastered={advance}
+                onLearning={handleMarkLearning}
+                onMastered={handleMarkMastered}
               />
             </motion.div>
           )}

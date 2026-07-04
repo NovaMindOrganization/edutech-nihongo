@@ -72,6 +72,7 @@ export function getPublicCourseOutline(courseId: string) {
     lessons: Array<{
       id: string;
       title: string;
+      slug?: string | null;
       orderIndex: number;
       isBonus?: boolean;
       lessonType?: string | null;
@@ -142,7 +143,10 @@ export function getCourseLessons(courseId: string) {
     Array<{
       id: string;
       title: string;
+      slug?: string | null;
       orderIndex: number;
+      isBonus?: boolean;
+      lessonType?: string | null;
       progress: { status: string; miniTestScore?: number | null };
     }>
   >(`/student/courses/${courseId}/lessons`);
@@ -177,6 +181,7 @@ export type LessonPayload = {
     passThreshold: number;
     isBonus?: boolean;
     speakingPrompt?: string | null;
+    speakingStepCount?: number | null;
     course: { id: string; title: string; jlptLevel: string };
   };
   vocabulary: Array<{
@@ -208,6 +213,13 @@ export type LessonPayload = {
       choices: string[];
       answer: number;
     }> | null;
+    drills: Array<{
+      labelVi: string;
+      modelJa: string;
+      segments?: JapaneseSegment[];
+      vi?: string;
+      hintVi?: string;
+    }> | null;
   }>;
   kanji: Array<{
     id: string;
@@ -237,13 +249,24 @@ export function getLesson(id: string) {
   return apiFetch<LessonPayload>(`/student/lessons/${id}`);
 }
 
+export type LessonSpeakingResponse = {
+  AI_Reply: string;
+  Correction: string | null;
+  sessionId: string;
+  transcript: string;
+  Guide_Vi?: string | null;
+  Model_Answer?: string | null;
+  stepIndex?: number;
+  stepTotal?: number;
+  stepTasks?: string[];
+  sessionMode?: 'scripted' | 'llm';
+  completed?: boolean;
+  lessonId?: string;
+  rateLimited?: boolean;
+};
+
 export function postLessonSpeakingStart(lessonId: string) {
-  return apiFetch<{
-    AI_Reply: string;
-    Correction: string | null;
-    sessionId: string;
-    transcript: string;
-  }>(`/student/lessons/${lessonId}/speaking/start`, {
+  return apiFetch<LessonSpeakingResponse>(`/student/lessons/${lessonId}/speaking/start`, {
     method: 'POST',
     body: JSON.stringify({}),
   });
@@ -257,12 +280,7 @@ export function postLessonSpeaking(
     conversationHistory?: Array<{ role: string; content: string }>;
   },
 ) {
-  return apiFetch<{
-    AI_Reply: string;
-    Correction: string | null;
-    sessionId: string;
-    transcript: string;
-  }>(`/student/lessons/${lessonId}/speaking/message`, {
+  return apiFetch<LessonSpeakingResponse>(`/student/lessons/${lessonId}/speaking/message`, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -410,7 +428,7 @@ export function getNotebookVocabulary(params: {
 
 export function upsertMastery(body: {
   itemId: string;
-  itemType: "vocabulary" | "kanji";
+  itemType: "vocabulary" | "kanji" | "grammar";
   isLearned?: boolean;
   isFavorite?: boolean;
   note?: string;
@@ -451,9 +469,10 @@ export function getNotebookLearned(
   if (params.lessonId) q.set("lessonId", params.lessonId);
   if (params.level) q.set("level", params.level);
   const qs = q.toString();
-  return apiFetch<{ items: Array<Record<string, unknown>> }>(
-    `/student/notebook/learned/${type}${qs ? `?${qs}` : ""}`,
-  );
+  return apiFetch<{
+    items: Array<Record<string, unknown>>;
+    levels?: string[];
+  }>(`/student/notebook/learned/${type}${qs ? `?${qs}` : ""}`);
 }
 
 export function getNotebookCollected(
@@ -479,13 +498,111 @@ export function getNotebookLessons(type: "kanji" | "vocabulary" | "grammar") {
   }>(`/student/notebook/lessons?type=${type}`);
 }
 
+export function listUserNotebooks() {
+  return apiFetch<{
+    notebooks: Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      isDefault: boolean;
+      itemCount: number;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+  }>("/student/notebooks");
+}
+
+export function createUserNotebook(body: { title: string; description?: string }) {
+  return apiFetch<{ notebook: Record<string, unknown> }>("/student/notebooks", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateUserNotebook(
+  notebookId: string,
+  body: { title?: string; description?: string | null },
+) {
+  return apiFetch<{ notebook: Record<string, unknown> }>(`/student/notebooks/${notebookId}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteUserNotebook(notebookId: string) {
+  return apiFetch<{ deleted: boolean }>(`/student/notebooks/${notebookId}`, {
+    method: "DELETE",
+  });
+}
+
+export function getUserNotebookContent(
+  notebookId: string,
+  type: "kanji" | "vocabulary" | "grammar",
+  params: { level?: string } = {},
+) {
+  const q = new URLSearchParams();
+  if (params.level) q.set("level", params.level);
+  const qs = q.toString();
+  return apiFetch<{
+    items: Array<Record<string, unknown>>;
+    levels?: string[];
+  }>(`/student/notebooks/${notebookId}/content/${type}${qs ? `?${qs}` : ""}`);
+}
+
+export function addUserNotebookItem(
+  notebookId: string,
+  body: {
+    itemId: string;
+    itemType: "kanji" | "vocabulary" | "grammar";
+    note?: string;
+    lessonId?: string;
+  },
+) {
+  return apiFetch<{ item: Record<string, unknown>; created: boolean }>(
+    `/student/notebooks/${notebookId}/items`,
+    { method: "POST", body: JSON.stringify(body) },
+  );
+}
+
+export function updateUserNotebookItemNote(
+  notebookId: string,
+  entryId: string,
+  note: string | null,
+) {
+  return apiFetch<{ item: Record<string, unknown> }>(
+    `/student/notebooks/${notebookId}/items/${entryId}`,
+    { method: "PATCH", body: JSON.stringify({ note }) },
+  );
+}
+
+export function removeUserNotebookItem(
+  notebookId: string,
+  body: { itemId: string; itemType: "kanji" | "vocabulary" | "grammar" },
+) {
+  return apiFetch<{ removed: boolean }>(`/student/notebooks/${notebookId}/items`, {
+    method: "DELETE",
+    body: JSON.stringify(body),
+  });
+}
+
+export function getItemNotebookMembership(
+  itemId: string,
+  itemType: "kanji" | "vocabulary" | "grammar",
+) {
+  const q = new URLSearchParams({ itemId, itemType });
+  return apiFetch<{ notebookIds: string[] }>(
+    `/student/notebooks/items/membership?${q}`,
+  );
+}
+
 export function generateNotebookReview(body: {
   pool: "learned" | "collected";
   type: "kanji" | "vocabulary" | "grammar";
-  mode: "random" | "lesson" | "pick";
+  mode: "random" | "lesson" | "pick" | "unlearned" | "learned";
   count?: number;
   lessonIds?: string[];
   itemIds?: string[];
+  notebookId?: string;
 }) {
   return apiFetch<{
     mode: string;

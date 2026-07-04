@@ -2,12 +2,13 @@ import type { Jpd1LessonSeed } from "./types.js";
 
 export const lessonSupportNumbers: Jpd1LessonSeed = {
   orderIndex: 1,
-  slug: "so-dem-co-ban",
+  slug: "bai-1-so-dem",
   title: "Số đếm cơ bản",
-  description: "Đếm từ 0–10, số lớn và cách đọc tiền yên.",
+  description: "Đếm từ 0–10, số lớn và cách đọc tiền yên — Tiết 2 (Bài 1).",
   objective: "Đọc được số cơ bản và giá tiền bằng 円.",
   lessonType: "support",
-  isBonus: true,
+  isBonus: false,
+  passThreshold: 60,
   estimatedMinutes: 25,
   vocabulary: [
     { word: "ぜろ", reading: "ぜろ", meaning: "0", memoryTip: "ゼロ — số không." },
@@ -25,8 +26,40 @@ export const lessonSupportNumbers: Jpd1LessonSeed = {
     { word: "せん", reading: "せん", meaning: "1000", memoryTip: "3000: さんぜん, 8000: はっせん." },
     { word: "まん", reading: "まん", meaning: "10000" },
     { word: "えん", reading: "えん", meaning: "yên (tiền Nhật)", memoryTip: "Gắn sau số: 100えん = 100 yên." },
+    { word: "三百円", reading: "さんびゃくえん", meaning: "300 yên (viết bằng kanji)", memoryTip: "Ôn さんびゃく + えん — kanji chi tiết ở cuối Bài 2." },
+    { word: "五階", reading: "ごかい", meaning: "Tầng 5 (kanji)", memoryTip: "五 = 5, 階 = tầng — gặp lại ở Bài 2 ST1." },
   ],
   grammar: [
+    {
+      title: "Kanji số — xem trước",
+      pattern: "一・二・三… / 百・千・万・円",
+      meaningVi: "Cách viết số bằng chữ Hán (học kỹ ở tiết Kanji cuối Bài 2)",
+      usage:
+        "Âm đọc giữ nguyên: さんびゃくえん = 三百円. Kanji giúp đọc giá, biển báo tầng trong siêu thị và trung tâm thương mại.",
+      examples: [
+        {
+          segments: [{ kanji: "三百", reading: "さんびゃく" }, { text: "円" }],
+          vi: "300 yên",
+        },
+        {
+          segments: [{ kanji: "五", reading: "ご" }, { text: "階" }],
+          vi: "Tầng 5",
+        },
+        {
+          segments: [{ text: "レストランは" }, { kanji: "五", reading: "ご" }, { text: "階です。" }],
+          vi: "Nhà hàng ở tầng 5.",
+        },
+      ],
+      quiz: [
+        {
+          question: {
+            segments: [{ kanji: "三百", reading: "さんびゃく" }, { text: "円" }],
+          },
+          choices: ["300 yên", "3000 yên", "30 yên", "30000 yên"],
+          answer: 0,
+        },
+      ],
+    },
     {
       title: "Đọc số tiền",
       pattern: "数字 + 円（えん）",
@@ -58,4 +91,56 @@ export const lessonSupportNumbers: Jpd1LessonSeed = {
   ],
   kanji: [],
   speakingPrompt: "Luyện đọc to các số từ 1 đến 10, sau đó nói giá: 350えん, 800えん.",
+  speakingSteps: [
+    {
+      id: 1,
+      taskVi: "Số 1",
+      guideVi: "Bước 1 — Đọc số 1.",
+      modelJa: "いち",
+      aiReply: "いち",
+      acceptPattern: "いち|一",
+      praiseVi: "Tốt!",
+      hintVi: "Nói: いち",
+    },
+    {
+      id: 2,
+      taskVi: "Số 5",
+      guideVi: "Bước 2 — Đọc số 5.",
+      modelJa: "ご",
+      aiReply: "ご",
+      acceptPattern: "ご|五",
+      praiseVi: "Hay!",
+      hintVi: "Nói: ご",
+    },
+    {
+      id: 3,
+      taskVi: "Số 10",
+      guideVi: "Bước 3 — Đọc số 10.",
+      modelJa: "じゅう",
+      aiReply: "じゅう",
+      acceptPattern: "じゅう|十",
+      praiseVi: "Đúng!",
+      hintVi: "Nói: じゅう",
+    },
+    {
+      id: 4,
+      taskVi: "Giá 100 yên",
+      guideVi: "Bước 4 — Nói giá 100 yên.",
+      modelJa: "100えんです。",
+      aiReply: "100えんです。",
+      acceptPattern: "100.*えん",
+      praiseVi: "Giỏi!",
+      hintVi: "Nói: 100えんです。",
+    },
+    {
+      id: 5,
+      taskVi: "Hỏi giá",
+      guideVi: "Bước 5 — Hỏi giá đơn giản.",
+      modelJa: "いくらですか。",
+      aiReply: "いくらですか。",
+      acceptPattern: "いくら",
+      praiseVi: "Hoàn thành!",
+      hintVi: "Nói: いくらですか。",
+    },
+  ],
 };

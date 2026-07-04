@@ -4,6 +4,19 @@ import { db } from "../config/db.js";
 import { assertCourseEnrollmentAllowed } from "./pricing-plan.service.js";
 import { AppError } from "../utils/app-error.js";
 import { assertStudentLessonAccess } from "../utils/lesson-access.js";
+import { isJpd1OpenAccessCourse } from "../utils/jpd1-open-access.js";
+import { isJpd2OpenAccessCourse } from "../utils/jpd2-open-access.js";
+
+async function isIntroCourseOpenAccess(courseId: string): Promise<boolean> {
+  return (
+    (await isJpd1OpenAccessCourse(courseId)) || (await isJpd2OpenAccessCourse(courseId))
+  );
+}
+
+function isSupportLesson(lesson: { isBonus: boolean; lessonType: string | null }): boolean {
+  return lesson.isBonus || lesson.lessonType === "support";
+}
+import { parseSpeakingSteps } from "./lesson-speaking-script.service.js";
 
 /** Vocabulary by lesson_id FK; falls back to junction if legacy rows lack FK. */
 export async function loadLessonVocabulary(lessonId: string): Promise<Vocabulary[]> {
@@ -184,12 +197,18 @@ export async function assignQuestionsToLesson(
 export async function ensureStudentCourseProgress(
   userId: string,
   courseId: string,
-  lessons: Array<{ id: string; isBonus: boolean; orderIndex: number }>,
+  lessons: Array<{
+    id: string;
+    isBonus: boolean;
+    lessonType: string | null;
+    orderIndex: number;
+  }>,
 ) {
-  const bonusLessons = lessons.filter((l) => l.isBonus);
-  const mainLessons = lessons.filter((l) => !l.isBonus);
+  const unlockAllIntro = await isIntroCourseOpenAccess(courseId);
+  const freeAccessLessons = lessons.filter((l) => isSupportLesson(l));
+  const mainLessons = lessons.filter((l) => !isSupportLesson(l));
 
-  for (const lesson of bonusLessons) {
+  for (const lesson of freeAccessLessons) {
     await db.userLessonProgress.upsert({
       where: { userId_lessonId: { userId, lessonId: lesson.id } },
       create: { userId, lessonId: lesson.id, status: "active" },
@@ -218,8 +237,16 @@ export async function ensureStudentCourseProgress(
         data: {
           userId,
           lessonId: lesson.id,
-          status: i === 0 ? "active" : "locked",
+          status: unlockAllIntro || i === 0 ? "active" : "locked",
         },
+      });
+      continue;
+    }
+
+    if (unlockAllIntro && existing.status === "locked") {
+      await db.userLessonProgress.update({
+        where: { id: existing.id },
+        data: { status: "active" },
       });
       continue;
     }
@@ -260,7 +287,7 @@ export async function getStudentLessonsWithProgress(
   const progressMap = new Map(progress.map((p) => [p.lessonId, p]));
 
   return course.lessons.map((lesson) => {
-    if (lesson.isBonus) {
+    if (isSupportLesson(lesson)) {
       return {
         ...lesson,
         progress: progressMap.get(lesson.id) ?? {
@@ -320,7 +347,7 @@ export async function getLessonContentForStudent(
   const courseLessons = await db.lesson.findMany({
     where: { courseId: lesson.courseId },
     orderBy: { orderIndex: "asc" },
-    select: { id: true, isBonus: true, orderIndex: true },
+    select: { id: true, isBonus: true, lessonType: true, orderIndex: true },
   });
   await ensureStudentCourseProgress(userId, lesson.courseId, courseLessons);
 
@@ -330,11 +357,13 @@ export async function getLessonContentForStudent(
     (await db.userLessonProgress.findUnique({
       where: { userId_lessonId: { userId, lessonId } },
     })) ??
-    (lesson.isBonus
+    (lesson.isBonus || lesson.lessonType === "support"
       ? { status: "active" as LessonProgressStatus, miniTestScore: null }
       : null);
 
-  if (!lesson.isBonus && (!progress || progress.status === "locked")) {
+  const introOpen = await isIntroCourseOpenAccess(lesson.courseId);
+  const isFreeAccess = isSupportLesson(lesson);
+  if (!isFreeAccess && !introOpen && (!progress || progress.status === "locked")) {
     throw new AppError("Lesson is locked", 403, "LESSON_LOCKED");
   }
 
@@ -353,6 +382,9 @@ export async function getLessonContentForStudent(
       passThreshold: lesson.passThreshold,
       isBonus: lesson.isBonus,
       speakingPrompt: lesson.speakingPrompt,
+      speakingStepCount: parseSpeakingSteps(
+        (lesson as { speakingSteps?: unknown }).speakingSteps as import('@prisma/client').Prisma.JsonValue,
+      ).length || null,
       finalTask: lesson.finalTask,
       course: {
         id: lesson.course.id,

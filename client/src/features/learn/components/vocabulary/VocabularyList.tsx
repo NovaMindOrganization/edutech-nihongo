@@ -16,9 +16,10 @@ type VocabularyListProps = {
   lessonId: string;
   /** Fallback khi API chưa trả title */
   fallbackTitle?: string;
+  focusId?: string | null;
 };
 
-export function VocabularyList({ lessonId, fallbackTitle }: VocabularyListProps) {
+export function VocabularyList({ lessonId, fallbackTitle, focusId }: VocabularyListProps) {
   const { playTts, speaking } = useSpeech();
   const { items, lessonTitle, loading, total, masteredCount, masteredPercent, toggleStar } =
     useVocabularyList(lessonId);
@@ -65,9 +66,11 @@ export function VocabularyList({ lessonId, fallbackTitle }: VocabularyListProps)
       ) : (
         <ul className="mt-2 space-y-3" aria-label="Danh sách từ vựng">
           {items.map((item) => (
-            <li key={item.id}>
+            <li key={item.id} id={`vocab-${item.id}`}>
               <VocabularyListItem
                 item={item}
+                lessonId={lessonId}
+                highlighted={focusId === item.id}
                 speaking={speaking}
                 onPlayAudio={() => playItemAudio(item)}
                 onToggleStar={() =>

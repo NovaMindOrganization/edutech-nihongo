@@ -4,11 +4,14 @@ import { AppIcon } from '@/components/usable/app-icon';
 import { EmptyState, emptyStatePresets } from '@/components/usable/states';
 import { Badge } from '@/components/ui/badge';
 
+import { AddToNotebookButton } from '@/features/student/notebook/AddToNotebookButton';
+
 import type { KanjiItem } from '../../types/kanji.types';
 import { KanjiCard } from './KanjiCard';
 
 type KanjiListProps = {
   kanji: KanjiItem[];
+  lessonId?: string;
   title?: string;
   learnedCount?: number;
   progressLoading?: boolean;
@@ -18,6 +21,7 @@ type KanjiListProps = {
 
 export function KanjiList({
   kanji,
+  lessonId,
   title = 'Kanji bài học',
   learnedCount = 0,
   progressLoading = false,
@@ -46,7 +50,7 @@ export function KanjiList({
             <p className="font-display text-3xl font-extrabold tabular-nums text-blue-700">
               {progressLoading ? '…' : `${learnedCount}/${total}`}
             </p>
-            <p className="text-xs font-bold text-muted-foreground">Đã luyện xong</p>
+            <p className="text-xs font-bold text-muted-foreground">Đã thuộc</p>
           </div>
         </div>
         <div className="relative mt-5 h-4 overflow-hidden rounded-full border border-border bg-surface-paper">
@@ -75,6 +79,7 @@ export function KanjiList({
             <KanjiCard
               key={item.id}
               kanji={item}
+              lessonId={lessonId}
               learned={isLearned(item.id)}
               onClick={() => onSelect(item)}
             />

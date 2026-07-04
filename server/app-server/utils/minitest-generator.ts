@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 
+import { JPD1_KANJI_MINITEST_MAX } from "./jpd1-progression.js";
+import { JPD2_KANJI_MINITEST_MAX } from "./jpd2-progression.js";
 import {
   buildMcqOptions,
   isLongJapanesePhrase,
@@ -11,6 +13,7 @@ import {
 export const MINITEST_VOCAB_CATEGORY = "mini_test_vocab";
 export const MINITEST_VOCAB_PHRASE_CATEGORY = "mini_test_vocab_phrase";
 export const MINITEST_KANJI_CATEGORY = "mini_test_kanji";
+export const MINITEST_GRAMMAR_CATEGORY = "mini_test_grammar";
 
 export type MiniTestVocabRow = {
   id: string;
@@ -24,6 +27,12 @@ export type MiniTestKanjiRow = {
   character: string;
   meaning: string;
   hanVietPronunciation: string | null;
+};
+
+export type MiniTestGrammarQuizRow = {
+  questionText: string;
+  correctAnswer: string;
+  distractorPool: string[];
 };
 
 type QuestionDraft = {
@@ -99,12 +108,26 @@ export function buildVocabQuestionDrafts(
   });
 }
 
-export function buildKanjiQuestionDrafts(lessonKanji: MiniTestKanjiRow[]): QuestionDraft[] {
+export function buildKanjiQuestionDrafts(
+  lessonKanji: MiniTestKanjiRow[],
+  options?: { jlptLevel?: string | null },
+): QuestionDraft[] {
   if (lessonKanji.length === 0) return [];
 
-  return lessonKanji.map((kanji) => {
+  let picked = lessonKanji;
+  const kanjiCap =
+    options?.jlptLevel === "JPD2"
+      ? JPD2_KANJI_MINITEST_MAX
+      : options?.jlptLevel?.startsWith("JPD")
+        ? JPD1_KANJI_MINITEST_MAX
+        : null;
+  if (kanjiCap != null && lessonKanji.length > kanjiCap) {
+    picked = shuffle(lessonKanji).slice(0, kanjiCap);
+  }
+
+  return picked.map((kanji) => {
     const meaning = kanji.meaning.trim();
-    const others = lessonKanji.filter((k) => k.character !== kanji.character);
+    const others = picked.filter((k) => k.character !== kanji.character);
 
     const distractorPool = [
       ...others.map((k) => k.meaning.trim()),
@@ -123,16 +146,78 @@ export function buildKanjiQuestionDrafts(lessonKanji: MiniTestKanjiRow[]): Quest
   });
 }
 
+function segmentsToPlainText(
+  segments: Array<{ text?: string; kanji?: string; reading?: string }>,
+): string {
+  return segments
+    .map((s) => s.text ?? s.kanji ?? "")
+    .join("")
+    .trim();
+}
+
+export function buildGrammarQuestionDrafts(
+  grammarQuizzes: MiniTestGrammarQuizRow[],
+): QuestionDraft[] {
+  if (grammarQuizzes.length === 0) return [];
+
+  return grammarQuizzes.map((item) => ({
+    questionText: item.questionText,
+    correctAnswer: item.correctAnswer,
+    distractorPool: item.distractorPool,
+    targetLength: item.correctAnswer.length,
+    questionCategory: MINITEST_GRAMMAR_CATEGORY,
+  }));
+}
+
+export function extractGrammarQuizzesFromLesson(
+  grammarRows: Array<{ quiz: unknown }>,
+  maxQuestions = 4,
+): MiniTestGrammarQuizRow[] {
+  const items: MiniTestGrammarQuizRow[] = [];
+
+  for (const row of grammarRows) {
+    if (!row.quiz || !Array.isArray(row.quiz)) continue;
+    for (const raw of row.quiz) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+      const q = raw as {
+        question?: { segments?: Array<{ text?: string; kanji?: string }> };
+        choices?: string[];
+        answer?: number;
+      };
+      const choices = q.choices?.filter((c) => typeof c === "string" && c.trim()) ?? [];
+      const answerIdx = typeof q.answer === "number" ? q.answer : -1;
+      if (choices.length < 2 || answerIdx < 0 || answerIdx >= choices.length) continue;
+
+      const questionText = q.question?.segments
+        ? segmentsToPlainText(q.question.segments) || "Chọn đáp án đúng:"
+        : "Chọn đáp án đúng:";
+      const correctAnswer = choices[answerIdx].trim();
+      const distractorPool = choices.filter((_, i) => i !== answerIdx);
+
+      items.push({ questionText, correctAnswer, distractorPool });
+      if (items.length >= maxQuestions) return items;
+    }
+  }
+
+  return items;
+}
+
 export function buildLessonMiniTestMcqs(params: {
   lessonVocab: MiniTestVocabRow[];
   courseVocab: MiniTestVocabRow[];
   lessonKanji: MiniTestKanjiRow[];
+  grammarQuizzes?: MiniTestGrammarQuizRow[];
   optionCount?: number;
+  jlptLevel?: string | null;
 }): GeneratedMiniTestQuestion[] {
   const optionCount = params.optionCount ?? 4;
+  const includeGrammar = params.jlptLevel?.startsWith("JPD") ?? false;
   const drafts = [
     ...buildVocabQuestionDrafts(params.lessonVocab, params.courseVocab),
-    ...buildKanjiQuestionDrafts(params.lessonKanji),
+    ...buildKanjiQuestionDrafts(params.lessonKanji, { jlptLevel: params.jlptLevel }),
+    ...(includeGrammar
+      ? buildGrammarQuestionDrafts(params.grammarQuizzes ?? [])
+      : []),
   ];
 
   const questions = drafts.map((draft) => {

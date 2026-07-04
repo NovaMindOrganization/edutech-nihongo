@@ -26,7 +26,7 @@ export function KanjiCourseView() {
 
   const kanji = useMemo(() => (data?.kanji ?? []) as KanjiItem[], [data?.kanji]);
   const kanjiIds = useMemo(() => kanji.map((item) => item.id), [kanji]);
-  const { isLearned, markLearned, learnedCount, loading: progressLoading } =
+  const { isLearned, learnedCount, loading: progressLoading } =
     useKanjiProgress(kanjiIds);
 
   const activeIndex = kanji.findIndex((item) => item.id === activeKanjiId);
@@ -44,7 +44,6 @@ export function KanjiCourseView() {
           nextKanji={nextKanji}
           onBack={() => setActiveKanjiId(null)}
           onNext={nextKanji ? () => setActiveKanjiId(nextKanji.id) : undefined}
-          onPracticeComplete={() => markLearned(activeKanji.id)}
         />
       </div>
     );
@@ -65,7 +64,7 @@ export function KanjiCourseView() {
       tone="quaternary"
       chips={['Nghĩa', 'On · Kun', 'Bộ thủ', 'Nét viết']}
       backLink={{ to: paths.learn.kanjiHub, label: 'Kanji' }}
-      footer={`${learnedCount}/${kanji.length} kanji đã luyện — chọn một chữ để bắt đầu.`}
+      footer={`${learnedCount}/${kanji.length} kanji đã thuộc — chọn một chữ để xem chi tiết.`}
       headerExtra={
         <div className="rounded-xl border border-border bg-background p-4 shadow-premium card-lift">
           <div className="flex items-center gap-3">

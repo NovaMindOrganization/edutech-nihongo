@@ -34,6 +34,7 @@ export const listCourses = asyncHandler(async (_req: Request, res: Response) => 
         select: {
           id: true,
           title: true,
+          slug: true,
           orderIndex: true,
           isBonus: true,
           lessonType: true,
@@ -55,6 +56,7 @@ export const getCourseOutline = asyncHandler(async (req: Request, res: Response)
         select: {
           id: true,
           title: true,
+          slug: true,
           orderIndex: true,
           isBonus: true,
           lessonType: true,

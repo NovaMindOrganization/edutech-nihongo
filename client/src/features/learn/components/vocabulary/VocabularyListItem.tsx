@@ -1,6 +1,7 @@
 ﻿import { Check, Star, Volume2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { AddToNotebookButton } from '@/features/student/notebook/AddToNotebookButton';
 import { cn } from '@/lib/utils';
 
 import type { LessonVocabularyItem } from '../../services/vocabularyApi';
@@ -11,14 +12,18 @@ const iconBtnClass =
 
 type VocabularyListItemProps = {
   item: LessonVocabularyItem;
+  lessonId: string;
   speaking: boolean;
+  highlighted?: boolean;
   onPlayAudio: () => void;
   onToggleStar: () => void;
 };
 
 export function VocabularyListItem({
   item,
+  lessonId,
   speaking,
+  highlighted = false,
   onPlayAudio,
   onToggleStar,
 }: VocabularyListItemProps) {
@@ -35,6 +40,7 @@ export function VocabularyListItem({
         'rounded-xl border border-border bg-surface-paper p-4 shadow-premium card-lift transition-all',
         'hover:-translate-y-0.5 hover:shadow-premium card-lift',
         mastered && 'bg-quaternary/15',
+        highlighted && 'ring-2 ring-brand ring-offset-2',
       )}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-4">
@@ -122,6 +128,13 @@ export function VocabularyListItem({
               )}
             />
           </button>
+          <AddToNotebookButton
+            itemId={item.id}
+            itemType="vocabulary"
+            lessonId={lessonId}
+            itemLabel={item.word}
+            compact
+          />
         </div>
       </div>
     </article>
