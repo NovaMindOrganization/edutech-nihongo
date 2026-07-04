@@ -17,6 +17,8 @@ import {
   authForgotPasswordSchema,
   authLoginSchema,
   authRegisterSchema,
+  authRegisterOtpSendSchema,
+  authRegisterOtpVerifySchema,
   authResetPasswordSchema,
   conversationSchema,
   courseSchema,
@@ -91,6 +93,8 @@ router.get('/health/ready', async (_req, res) => {
 });
 
 // Auth
+router.post('/auth/register/otp/send', validateBody(authRegisterOtpSendSchema), auth.sendRegisterOtp);
+router.post('/auth/register/otp/verify', validateBody(authRegisterOtpVerifySchema), auth.verifyRegisterOtp);
 router.post('/auth/register', validateBody(authRegisterSchema), auth.register);
 router.post('/auth/login', validateBody(authLoginSchema), auth.login);
 router.post('/auth/forgot-password', validateBody(authForgotPasswordSchema), auth.forgotPassword);

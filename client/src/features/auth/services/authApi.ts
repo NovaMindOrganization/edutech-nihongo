@@ -9,10 +9,46 @@ export async function login(email: string, password: string) {
   });
 }
 
-export async function register(email: string, password: string, displayName?: string) {
+type RegisterInput = {
+  email: string;
+  password: string;
+  displayName?: string;
+  emailVerificationToken: string;
+};
+
+type RegisterOtpSendResult = {
+  message: string;
+  expiresInSeconds: number;
+  resendCooldownSeconds: number;
+  emailSent: boolean;
+  devOtp?: string;
+};
+
+type RegisterOtpVerifyResult = {
+  verified: true;
+  email: string;
+  emailVerificationToken: string;
+  expiresInSeconds: number;
+};
+
+export async function sendRegisterOtp(email: string) {
+  return apiFetch<RegisterOtpSendResult>('/auth/register/otp/send', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyRegisterOtp(email: string, otp: string) {
+  return apiFetch<RegisterOtpVerifyResult>('/auth/register/otp/verify', {
+    method: 'POST',
+    body: JSON.stringify({ email, otp }),
+  });
+}
+
+export async function register(input: RegisterInput) {
   return apiFetch<{ user: AuthUser; accessToken: string }>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password, displayName }),
+    body: JSON.stringify(input),
   });
 }
 

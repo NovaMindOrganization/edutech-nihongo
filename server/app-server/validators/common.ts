@@ -50,6 +50,16 @@ export const authRegisterSchema = z.object({
   email: z.string().email().max(255),
   password: z.string().min(8).max(128),
   displayName: z.string().min(1).max(100).optional(),
+  emailVerificationToken: z.string().min(32).max(128),
+});
+
+export const authRegisterOtpSendSchema = z.object({
+  email: z.string().email().max(255),
+});
+
+export const authRegisterOtpVerifySchema = z.object({
+  email: z.string().email().max(255),
+  otp: z.string().regex(/^\d{6}$/),
 });
 
 export const authForgotPasswordSchema = z.object({

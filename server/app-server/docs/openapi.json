@@ -9,13 +9,75 @@
   "components": {
     "securitySchemes": {
       "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "RegisterOtpSendRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "student@example.com" }
+        }
+      },
+      "RegisterOtpVerifyRequest": {
+        "type": "object",
+        "required": ["email", "otp"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "student@example.com" },
+          "otp": { "type": "string", "pattern": "^\\d{6}$", "example": "123456" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["email", "password", "emailVerificationToken"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "student@example.com" },
+          "password": { "type": "string", "format": "password", "minLength": 8, "example": "Student@123" },
+          "displayName": { "type": "string", "example": "Student" },
+          "emailVerificationToken": { "type": "string", "example": "token-from-otp-verify" }
+        }
+      }
     }
   },
   "paths": {
     "/health": {
       "get": { "summary": "Health check", "tags": ["System"] }
     },
-    "/auth/register": { "post": { "summary": "Register", "tags": ["Auth"] } },
+    "/auth/register/otp/send": {
+      "post": {
+        "summary": "Send registration OTP",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RegisterOtpSendRequest" } }
+          }
+        }
+      }
+    },
+    "/auth/register/otp/verify": {
+      "post": {
+        "summary": "Verify registration OTP",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RegisterOtpVerifyRequest" } }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RegisterRequest" } }
+          }
+        }
+      }
+    },
     "/auth/login": { "post": { "summary": "Login", "tags": ["Auth"] } },
     "/auth/refresh": { "post": { "summary": "Refresh access token", "tags": ["Auth"] } },
     "/auth/logout": { "post": { "summary": "Logout", "tags": ["Auth"] } },
