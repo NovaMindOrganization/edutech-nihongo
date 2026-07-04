@@ -31,6 +31,11 @@ import {
   mockExamListQuery,
   reviewGenerateSchema,
   miniTestSubmitSchema,
+  userNotebookAddItemSchema,
+  userNotebookCreateSchema,
+  userNotebookItemNoteSchema,
+  userNotebookRemoveItemSchema,
+  userNotebookUpdateSchema,
   validateBody,
   validateQuery,
   vocabSchema,
@@ -133,6 +138,35 @@ studentRouter.get('/notebook/vocabulary', studentExt.notebookVocabulary);
 studentRouter.get('/notebook/learned/:type', studentExt.notebookLearned);
 studentRouter.get('/notebook/collected/:type', studentExt.notebookCollected);
 studentRouter.get('/notebook/lessons', studentExt.notebookLessons);
+studentRouter.get('/notebooks', studentExt.listUserNotebooks);
+studentRouter.post(
+  '/notebooks',
+  validateBody(userNotebookCreateSchema),
+  studentExt.createUserNotebook,
+);
+studentRouter.patch(
+  '/notebooks/:notebookId',
+  validateBody(userNotebookUpdateSchema),
+  studentExt.updateUserNotebook,
+);
+studentRouter.delete('/notebooks/:notebookId', studentExt.deleteUserNotebook);
+studentRouter.get('/notebooks/:notebookId/content/:type', studentExt.userNotebookContent);
+studentRouter.post(
+  '/notebooks/:notebookId/items',
+  validateBody(userNotebookAddItemSchema),
+  studentExt.addUserNotebookItem,
+);
+studentRouter.patch(
+  '/notebooks/:notebookId/items/:entryId',
+  validateBody(userNotebookItemNoteSchema),
+  studentExt.updateUserNotebookItemNote,
+);
+studentRouter.delete(
+  '/notebooks/:notebookId/items',
+  validateBody(userNotebookRemoveItemSchema),
+  studentExt.removeUserNotebookItem,
+);
+studentRouter.get('/notebooks/items/membership', studentExt.userNotebookItemMembership);
 studentRouter.post('/mastery', studentExt.upsertMastery);
 studentRouter.post('/review/generate', validateBody(reviewGenerateSchema), studentExt.reviewGenerate);
 studentRouter.post('/review/submit', studentExt.reviewSubmit);

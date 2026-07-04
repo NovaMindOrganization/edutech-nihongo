@@ -5,7 +5,7 @@ export const JPD1_COURSE_META = {
   level: "Beginner",
   jlptLevel: "JPD1",
   description:
-    "Khóa học giúp người học làm quen với tiếng Nhật cơ bản thông qua các tình huống giao tiếp gần gũi: giới thiệu bản thân, mua sắm, gọi món, hỏi giờ, nói lịch sinh hoạt.",
+    "Khóa nhập môn 3 bài — Bài 1: 5 tiết · Bài 2: mua sắm & nhà hàng (4 tiết) · Bài 3: cuộc sống hằng ngày (6 tiết).",
   sortOrder: 0,
 } as const;
 
@@ -19,13 +19,23 @@ export type Jpd1VocabSeed = {
   partOfSpeech?: string;
 };
 
+export type Jpd1GrammarDrillSeed = {
+  labelVi: string;
+  modelJa: string;
+  segments?: Array<{ text: string } | { kanji: string; reading: string }>;
+  vi?: string;
+  hintVi?: string;
+};
+
 export type Jpd1GrammarSeed = {
   title: string;
   pattern: string;
   meaningVi: string;
   usage?: string;
   notes?: string;
+  challengeLabel?: string;
   examples: Array<{ segments: Array<{ text: string } | { kanji: string; reading: string }>; vi: string }>;
+  drills?: Jpd1GrammarDrillSeed[];
   quiz?: Array<{
     question: { segments: Array<{ text: string } | { kanji: string; reading: string }> };
     choices: string[];
@@ -61,6 +71,17 @@ export type Jpd1FinalTaskSeed = {
   expectedPattern: string;
 };
 
+export type Jpd1SpeakingStepSeed = {
+  id: number;
+  taskVi: string;
+  guideVi: string;
+  modelJa: string;
+  aiReply: string;
+  acceptPattern: string;
+  praiseVi?: string;
+  hintVi?: string;
+};
+
 export type Jpd1LessonSeed = {
   orderIndex: number;
   slug: string;
@@ -70,10 +91,12 @@ export type Jpd1LessonSeed = {
   lessonType: "main" | "support";
   isBonus: boolean;
   estimatedMinutes: number;
+  passThreshold?: number;
   vocabulary: Jpd1VocabSeed[];
   grammar: Jpd1GrammarSeed[];
   dialogues: Jpd1DialogueSeed[];
   kanji: Jpd1KanjiSeed[];
   finalTask?: Jpd1FinalTaskSeed;
   speakingPrompt?: string;
+  speakingSteps?: Jpd1SpeakingStepSeed[];
 };

@@ -1,0 +1,238 @@
+import type { Jpd1LessonSeed } from "./types.js";
+
+/** Bài 3 · Tiết 5 */
+export const lesson3Tiet5Habits: Jpd1LessonSeed = {
+  orderIndex: 13,
+  slug: "bai-3-tiet-5-thoi-quen-va-lich-sinh-hoat",
+  title: "ST5 — Thói quen và lịch sinh hoạt",
+  description: "Thói quen hằng ngày, thời điểm và khoảng thời gian hoạt động — Bài 3, Tiết 5.",
+  objective:
+    "Nói thói quen (まいにち/まいあさ), や〜など, なにも〜ません, 時間に V, から〜まで V, どこへもいきません.",
+  lessonType: "main",
+  isBonus: false,
+  estimatedMinutes: 55,
+  vocabulary: [
+    { word: "かいしゃ", reading: "かいしゃ", meaning: "Công ty" },
+    { word: "コンビニ", reading: "コンビニ", meaning: "Cửa hàng tiện lợi" },
+    { word: "ぎゅうにゅう", reading: "ぎゅうにゅう", meaning: "Sữa" },
+    { word: "くだもの", reading: "くだもの", meaning: "Trái cây" },
+    { word: "サラダ", reading: "サラダ", meaning: "Salad" },
+    { word: "チーズ", reading: "チーズ", meaning: "Phô mai" },
+    { word: "しんぶん", reading: "しんぶん", meaning: "Báo" },
+    { word: "かいます", reading: "かいます", meaning: "Mua" },
+    { word: "ききます", reading: "ききます", meaning: "Nghe" },
+    { word: "はたらきます", reading: "はたらきます", meaning: "Làm việc" },
+    { word: "よみます", reading: "よみます", meaning: "Đọc" },
+    { word: "おきます", reading: "おきます", meaning: "Thức dậy" },
+    { word: "ねます", reading: "ねます", meaning: "Ngủ" },
+    { word: "べんきょうします", reading: "べんきょうします", meaning: "Học" },
+    { word: "あさごはん", reading: "あさごはん", meaning: "Bữa sáng" },
+    { word: "ひるごはん", reading: "ひるごはん", meaning: "Bữa trưa" },
+    { word: "まいにち", reading: "まいにち", meaning: "Hằng ngày" },
+    { word: "まいあさ", reading: "まいあさ", meaning: "Mỗi sáng" },
+    { word: "まいばん", reading: "まいばん", meaning: "Mỗi tối" },
+    { word: "インターネット", reading: "インターネット", meaning: "Internet" },
+    { word: "日本語のCD", reading: "にほんごのCD", meaning: "CD tiếng Nhật" },
+    { word: "パン", reading: "パン", meaning: "Bánh mì" },
+    { word: "たまご", reading: "たまご", meaning: "Trứng" },
+    { word: "としょかん", reading: "としょかん", meaning: "Thư viện" },
+    { word: "わたし", reading: "わたし", meaning: "Tôi" },
+  ],
+  grammar: [
+    {
+      title: "Thói quen hằng ngày",
+      challengeLabel: "チャレンジ 1",
+      pattern: "まいにち／まいあさ／まいばん + Vます",
+      meaningVi: "Hằng ngày / mỗi sáng / mỗi tối làm gì",
+      usage: "まいにち = hằng ngày. まいあさ、たまごを たべます.",
+      examples: [
+        { segments: [{ text: "まいあさ、たまごを たべます。" }], vi: "Mỗi sáng tôi ăn trứng." },
+        { segments: [{ text: "まいにち、しんぶんを よみます。" }], vi: "Hằng ngày tôi đọc báo." },
+        { segments: [{ text: "まいばん、テレビを みます。" }], vi: "Mỗi tối tôi xem tivi." },
+      ],
+      drills: [
+        {
+          labelVi: "Mỗi sáng uống sữa",
+          modelJa: "まいあさ、ぎゅうにゅうをのみます。",
+          segments: [{ text: "まいあさ、ぎゅうにゅうを のみます。" }],
+        },
+        {
+          labelVi: "Hằng ngày đọc báo",
+          modelJa: "まいにち、しんぶんをよみます。",
+          segments: [{ text: "まいにち、しんぶんを よみます。" }],
+        },
+      ],
+    },
+    {
+      title: "Liệt kê và phủ định toàn phần",
+      challengeLabel: "チャレンジ 2",
+      pattern: "N1 や N2 など ／ なにも Vません",
+      meaningVi: "N1, N2,... / Không làm gì cả",
+      usage: "や liệt kê không đầy đủ. など = v.v. なにも + phủ định.",
+      examples: [
+        { segments: [{ text: "パンや たまごなどを たべます。" }], vi: "Tôi ăn bánh mì, trứng,..." },
+        { segments: [{ text: "あさ、うちで なにも たべません。" }], vi: "Buổi sáng ở nhà tôi không ăn gì." },
+        {
+          segments: [{ text: "A：いいえ、わたしは あさ、なにも たべません。" }],
+          vi: "Không, buổi sáng tôi không ăn gì cả.",
+        },
+      ],
+      drills: [
+        {
+          labelVi: "Ăn bánh mì và trứng",
+          modelJa: "パンやたまごをたべます。",
+          segments: [{ text: "パンや たまごを たべます。" }],
+        },
+        {
+          labelVi: "Không ăn gì",
+          modelJa: "なにもたべません。",
+          segments: [{ text: "なにも たべません。" }],
+        },
+      ],
+      quiz: [
+        {
+          question: { segments: [{ text: "なにも たべません。" }] },
+          choices: ["Không ăn gì cả", "Ăn mọi thứ", "Ăn bánh mì", "Ăn trứng"],
+          answer: 0,
+        },
+      ],
+    },
+    {
+      title: "Thời điểm và khoảng thời gian",
+      challengeLabel: "チャレンジ 3",
+      pattern: "時間に V ／ N1 から N2 まで V ／ どこへも いきません",
+      meaningVi: "Làm vào lúc ~ / Làm từ ~ đến ~ / Không đi đâu",
+      usage: "７時に あさごはんを たべます. ９じから １２じまで べんきょうします.",
+      examples: [
+        { segments: [{ text: "８じはんに おきます。" }], vi: "Tôi thức dậy lúc 8 giờ rưỡi." },
+        { segments: [{ text: "なんじに おきますか。" }], vi: "Mấy giờ bạn dậy?" },
+        { segments: [{ text: "９じから １２じまで べんきょうします。" }], vi: "Học từ 9 giờ đến 12 giờ." },
+        { segments: [{ text: "どこへも いきません。" }], vi: "Tôi không đi đâu cả." },
+        { segments: [{ text: "うちで インターネットを します。" }], vi: "Ở nhà tôi dùng internet." },
+      ],
+      drills: [
+        {
+          labelVi: "Dậy lúc 8 giờ rưỡi",
+          modelJa: "はちじはんにおきます。",
+          segments: [{ text: "８じはんに おきます。" }],
+        },
+        {
+          labelVi: "Học từ 9 đến 12",
+          modelJa: "9じから12じまでべんきょうします。",
+          segments: [{ text: "９じから １２じまで べんきょうします。" }],
+        },
+      ],
+      quiz: [
+        {
+          question: { segments: [{ text: "９じから １２じまで べんきょうします。" }] },
+          choices: ["Học từ 9 giờ đến 12 giờ", "Học lúc 9 giờ", "Không học", "Học đến 9 giờ"],
+          answer: 0,
+        },
+      ],
+    },
+  ],
+  dialogues: [
+    {
+      title: "Bữa sáng hằng ngày",
+      situationVi: "Hỏi thói quen ăn sáng.",
+      lines: [
+        { speaker: "A", segments: [{ text: "まいにち、あさごはんを たべますか。" }], vi: "Bạn ăn sáng hằng ngày không?" },
+        { speaker: "B", segments: [{ text: "はい。" }], vi: "Có." },
+        { speaker: "A", segments: [{ text: "なにを たべますか。" }], vi: "Ăn gì?" },
+        { speaker: "B", segments: [{ text: "パンや たまごを たべます。" }, { text: "Aさんは？" }], vi: "Ăn bánh mì, trứng. Còn bạn A?" },
+        {
+          speaker: "A",
+          segments: [{ text: "いいえ、わたしは あさ、なにも たべません。" }],
+          vi: "Không, buổi sáng tôi không ăn gì.",
+        },
+        { speaker: "B", segments: [{ text: "そうですか。" }], vi: "Thế à." },
+      ],
+    },
+    {
+      title: "Lịch học và cuối tuần",
+      situationVi: "Hỏi giờ dậy, giờ học và đi đâu.",
+      lines: [
+        { speaker: "A", segments: [{ text: "なんじに おきますか。" }], vi: "Mấy giờ bạn dậy?" },
+        { speaker: "B", segments: [{ text: "はちじはんに おきます。" }], vi: "Dậy lúc 8 giờ rưỡi." },
+        {
+          speaker: "A",
+          segments: [{ text: "まいにち、なんじから なんじまで べんきょうしますか。" }],
+          vi: "Hằng ngày học từ mấy giờ đến mấy giờ?",
+        },
+        { speaker: "B", segments: [{ text: "９じから １２じまで べんきょうします。" }], vi: "Học từ 9 đến 12 giờ." },
+        { speaker: "A", segments: [{ text: "どこへ いきますか。" }], vi: "Đi đâu?" },
+        {
+          speaker: "B",
+          segments: [{ text: "どこへも いきません。" }, { text: "うちで インターネットを します。" }],
+          vi: "Không đi đâu. Ở nhà dùng internet.",
+        },
+      ],
+    },
+    {
+      title: "Đi thư viện học",
+      situationVi: "Kế hoạch học ở thư viện.",
+      lines: [
+        { speaker: "A", segments: [{ text: "どこへ いきますか。" }], vi: "Đi đâu?" },
+        { speaker: "B", segments: [{ text: "としょかんへ いきます。" }], vi: "Đi thư viện." },
+        { speaker: "B", segments: [{ text: "としょかんで べんきょうします。" }], vi: "Học ở thư viện." },
+      ],
+    },
+  ],
+  kanji: [],
+  finalTask: {
+    title: "やってみよう — Sinh hoạt hằng ngày",
+    instructionVi: "Nói thói quen sáng, giờ dậy, giờ học và kế hoạch cuối ngày.",
+    promptJapanese:
+      "まいあさ、___を ___ます。\n___じはんに おきます。\n___じから ___じまで べんきょうします。\nどこへも いきません。",
+    expectedPattern: "まい|におき|から|まで|ません",
+  },
+  speakingPrompt: "Nói thói quen: まいにち, 時間に, から〜まで, どこへもいきません.",
+  speakingSteps: [
+    {
+      id: 1,
+      taskVi: "Thói quen sáng",
+      guideVi: "まいあさ、たまごを たべます。",
+      modelJa: "まいあさ、たまごをたべます。",
+      aiReply: "たべます。",
+      acceptPattern: "まいあさ",
+      hintVi: "まいあさ + hành động.",
+    },
+    {
+      id: 2,
+      taskVi: "Giờ dậy",
+      guideVi: "はちじはんに おきます。",
+      modelJa: "はちじはんにおきます。",
+      aiReply: "おきます。",
+      acceptPattern: "におきます|に おきます",
+      hintVi: "Giờ + に おきます.",
+    },
+    {
+      id: 3,
+      taskVi: "Giờ học",
+      guideVi: "９じから １２じまで べんきょうします。",
+      modelJa: "9じから12じまでべんきょうします。",
+      aiReply: "べんきょうします。",
+      acceptPattern: "から.*まで",
+      hintVi: "Từ ~ đến ~ học.",
+    },
+    {
+      id: 4,
+      taskVi: "Không đi đâu",
+      guideVi: "どこへも いきません。",
+      modelJa: "どこへもいきません。",
+      aiReply: "いきません。",
+      acceptPattern: "どこへも|いきません",
+      hintVi: "Không đi đâu cả.",
+    },
+    {
+      id: 5,
+      taskVi: "Ở nhà internet",
+      guideVi: "うちで インターネットを します。",
+      modelJa: "うちでインターネットをします。",
+      aiReply: "します。",
+      acceptPattern: "うちで",
+      praiseVi: "Hoàn thành!",
+      hintVi: "うちで + hoạt động.",
+    },
+  ],
+};

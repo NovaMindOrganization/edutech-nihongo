@@ -143,7 +143,8 @@ export function LearnHubView() {
     const available: PublicCourse[] = [];
     const foundation: PublicCourse[] = [];
     for (const course of courses) {
-      const isFoundation = course.jlptLevel === 'JPD1' || course.level === 'Beginner';
+      const isFoundation =
+        course.jlptLevel === 'JPD1' || course.jlptLevel === 'JPD2' || course.level === 'Beginner';
       if (isFoundation) foundation.push(course);
       if (enrolledIds.has(course.id)) enrolled.push(course);
       else available.push(course);
@@ -161,11 +162,11 @@ export function LearnHubView() {
     <PageShell
       eyebrow="Học"
       title="Khóa học"
-      description="Bắt đầu với JPD1 (nhập môn), sau đó tiếp tục N5, N4… Mỗi khóa có từ vựng, ngữ pháp, hội thoại và kanji."
+      description="Bắt đầu với JPD1 (nhập môn), tiếp JPD2 (sơ cấp), sau đó N5, N4… Mỗi khóa có từ vựng, ngữ pháp, hội thoại và kanji."
       icon={Sparkles}
       iconClassName="bg-quaternary"
       tone="quaternary"
-      chips={['JPD1', 'N5', 'N4', 'Flashcard · Quiz']}
+      chips={['JPD1', 'JPD2', 'N5', 'N4', 'Flashcard · Quiz']}
       footer={
         user
           ? 'Khóa đã ghi danh hiển thị tiến độ — chọn khóa chưa ghi danh để xem lộ trình và đăng ký.'
@@ -182,8 +183,8 @@ export function LearnHubView() {
         <div className="space-y-10">
           {foundationCourses.length > 0 ? (
             <CourseSection
-              title="Nền tảng — JPD1"
-              description="Khóa nhập môn cho sinh viên mới, đặt trước lộ trình JLPT N5."
+              title="Nền tảng — JPD1 & JPD2"
+              description="JPD1 nhập môn · JPD2 sơ cấp (Bài 4–7) — đặt trước lộ trình JLPT N5."
             >
               {foundationCourses.map((course, index) => (
                 <CourseCard

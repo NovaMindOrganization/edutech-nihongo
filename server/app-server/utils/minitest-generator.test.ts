@@ -17,6 +17,21 @@ describe("buildLessonMiniTestMcqs", () => {
     { character: "飲", meaning: "Uống", hanVietPronunciation: "Ẩm" },
   ];
 
+  it("caps kanji questions for JPD1", () => {
+    const manyKanji = Array.from({ length: 14 }, (_, i) => ({
+      character: String.fromCharCode(0x4e00 + i),
+      meaning: `nghĩa ${i}`,
+      hanVietPronunciation: `HV${i}`,
+    }));
+    const questions = buildLessonMiniTestMcqs({
+      lessonVocab: [],
+      courseVocab: [],
+      lessonKanji: manyKanji,
+      jlptLevel: "JPD1",
+    });
+    expect(questions).toHaveLength(8);
+  });
+
   it("includes ~50% vocab and all kanji", () => {
     const questions = buildLessonMiniTestMcqs({
       lessonVocab,

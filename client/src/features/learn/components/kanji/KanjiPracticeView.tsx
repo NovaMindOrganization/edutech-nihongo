@@ -4,6 +4,8 @@ import { AppIcon } from '@/components/usable/app-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+import { AddToNotebookButton } from '@/features/student/notebook/AddToNotebookButton';
+
 import type { KanjiItem } from '../../types/kanji.types';
 import { KanjiDetailPanel } from './KanjiDetailPanel';
 import { KanjiDrawingBoard } from './KanjiDrawingBoard';
@@ -12,6 +14,7 @@ import { KanjiMnemonicPanel } from './KanjiMnemonicPanel';
 
 type KanjiPracticeViewProps = {
   kanji: KanjiItem;
+  lessonId?: string;
   learned?: boolean;
   currentIndex?: number;
   totalCount?: number;
@@ -25,6 +28,7 @@ const columnClass = 'min-w-0 bg-amber-50 p-5 lg:p-7';
 
 export function KanjiPracticeView({
   kanji,
+  lessonId,
   learned = false,
   currentIndex,
   totalCount,
@@ -51,10 +55,19 @@ export function KanjiPracticeView({
               <ArrowLeft className="size-5" />
               Quay lại
             </Button>
+            {lessonId && (
+              <AddToNotebookButton
+                itemId={kanji.id}
+                itemType="kanji"
+                lessonId={lessonId}
+                itemLabel={kanji.character}
+                compact
+              />
+            )}
             {learned && (
               <Badge className="gap-1.5 bg-emerald-50 text-emerald-700">
                 <CheckCircle2 className="size-4" />
-                Đã luyện xong
+                Đã thuộc
               </Badge>
             )}
           </div>

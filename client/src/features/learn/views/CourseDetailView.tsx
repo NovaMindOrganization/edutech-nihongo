@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
 
 import { useAuthStore } from '@/features/auth';
+import { formatJpd1LessonEyebrow, groupJpd1Lessons, type Jpd1LessonRow } from '../utils/jpd1-lesson-groups';
+import { formatJpd2LessonEyebrow, groupJpd2Lessons } from '../utils/jpd2-lesson-groups';
 import { ApiRequestError } from '@/services/httpClient';
 import {
   enrollCourse,
@@ -20,15 +22,9 @@ import {
   getPublicCourseOutline,
 } from '@/features/student/services/studentApi';
 
-type LessonRow = {
-  id: string;
-  title: string;
-  orderIndex: number;
-  isBonus?: boolean;
-  lessonType?: string | null;
+type LessonRow = Jpd1LessonRow & {
   objective?: string | null;
   estimatedMinutes?: number | null;
-  progress?: { status: string };
 };
 
 export function CourseDetailView() {
@@ -75,6 +71,7 @@ export function CourseDetailView() {
             id: l.id,
             title: l.title,
             orderIndex: l.orderIndex,
+            slug: l.slug,
             isBonus: l.isBonus,
             lessonType: l.lessonType,
           }));
@@ -132,6 +129,16 @@ export function CourseDetailView() {
 
   const mainLessons = lessons.filter((l) => !l.isBonus);
   const supportLessons = lessons.filter((l) => l.isBonus);
+  const jpd1Groups = jlptLevel === 'JPD1' ? groupJpd1Lessons(mainLessons) : [];
+  const jpd2Groups = jlptLevel === 'JPD2' ? groupJpd2Lessons(mainLessons) : [];
+  const unitGroups = jpd1Groups.length > 0 ? jpd1Groups : jpd2Groups;
+  const isIntroCourse = jlptLevel === 'JPD1' || jlptLevel === 'JPD2';
+
+  function lessonUnitEyebrow(lesson: LessonRow, unitLessons: LessonRow[]) {
+    if (jlptLevel === 'JPD1') return formatJpd1LessonEyebrow(lesson, unitLessons);
+    if (jlptLevel === 'JPD2') return formatJpd2LessonEyebrow(lesson, unitLessons);
+    return '';
+  }
   const progressBase = mainLessons.length > 0 ? mainLessons : lessons;
   const completedCount = progressBase.filter((lesson) => lesson.progress?.status === 'completed').length;
   const activeCount = progressBase.filter((lesson) => lesson.progress?.status === 'active').length;
@@ -139,17 +146,32 @@ export function CourseDetailView() {
   const progressPercent =
     progressBase.length > 0 ? Math.round((completedCount / progressBase.length) * 100) : 0;
 
-  function renderLessonRow(lesson: LessonRow, i: number) {
+  function renderLessonRow(
+    lesson: LessonRow,
+    i: number,
+    options?: { sectionIndex?: number; unitLessons?: LessonRow[] },
+  ) {
     const status = lesson.progress?.status;
     const isFirst = i === 0;
+    const rowLabel =
+      options?.sectionIndex != null
+        ? options.sectionIndex
+        : lesson.orderIndex + 1;
 
     if (!enrolled) {
       return (
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-background px-4 py-4 shadow-premium card-lift sm:flex-row sm:items-center">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-tertiary font-display text-sm font-extrabold shadow-premium card-lift">
-            {lesson.orderIndex + 1}
+            {rowLabel}
           </span>
-          <span className="flex-1 font-display font-bold leading-snug">{lesson.title}</span>
+          <div className="min-w-0 flex-1">
+            {options?.unitLessons && isIntroCourse ? (
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {lessonUnitEyebrow(lesson, options.unitLessons)}
+              </p>
+            ) : null}
+            <span className="font-display font-bold leading-snug">{lesson.title}</span>
+          </div>
           {isFirst && (
             <Link to={`/learn/lessons/${lesson.id}/preview`}>
               <Button size="sm" variant="outline">
@@ -180,7 +202,17 @@ export function CourseDetailView() {
         )}
       >
         {statusIcon(status ?? 'active')}
-        <span className="flex-1 font-display font-bold leading-snug">{lesson.title}</span>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-tertiary font-display text-xs font-extrabold tabular-nums shadow-sm">
+          {rowLabel}
+        </span>
+        <div className="min-w-0 flex-1">
+          {options?.unitLessons && isIntroCourse ? (
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {lessonUnitEyebrow(lesson, options.unitLessons)}
+            </p>
+          ) : null}
+          <span className="font-display font-bold leading-snug">{lesson.title}</span>
+        </div>
         <Badge
           className={status === 'completed' ? 'bg-quaternary text-quaternary-foreground' : undefined}
           variant={lesson.isBonus ? 'outline' : undefined}
@@ -199,15 +231,25 @@ export function CourseDetailView() {
       title={courseTitle || 'Chi tiết khóa học'}
       description={
         jlptLevel === 'JPD1'
-          ? 'Khóa nhập môn FPT — 2 bài phụ trợ và 3 bài chính theo tình huống thực tế.'
-          : 'Danh sách bài học theo thứ tự mở khóa — tập trung bài đang mở và ôn lại bài đã hoàn thành khi cần.'
+          ? 'Khóa nhập môn FPT — Bài 1: 5 tiết · Bài 2: mua sắm & nhà hàng (4 tiết) · Bài 3: cuộc sống hằng ngày (6 tiết).'
+          : jlptLevel === 'JPD2'
+            ? 'Khóa sơ cấp tiếp JPD1 — 23 tiết: Bài 4–6 + Bài 7 tại nhà bạn (kanji & thể Te trước nhờ vả).'
+            : 'Danh sách bài học theo thứ tự mở khóa — tập trung bài đang mở và ôn lại bài đã hoàn thành khi cần.'
       }
       icon={GraduationCap}
       iconClassName="bg-quaternary"
       tone="quaternary"
       chips={
         jlptLevel
-          ? [jlptLevel, `${lessons.length} bài`, enrolled ? 'Đã ghi danh' : 'Chưa ghi danh']
+          ? [
+              jlptLevel,
+              jlptLevel === 'JPD1'
+                ? '3 bài · 15 tiết'
+                : jlptLevel === 'JPD2'
+                  ? 'Bài 4–7 · 23 tiết'
+                  : `${lessons.length} bài`,
+              enrolled ? 'Đã ghi danh' : 'Chưa ghi danh',
+            ]
           : undefined
       }
       backLink={{ to: paths.learn.hub, label: 'Khóa học' }}
@@ -294,7 +336,7 @@ export function CourseDetailView() {
             </div>
           ) : null}
 
-          <ul className="space-y-3">
+          <ul className="space-y-5">
             {loading ? (
               <li className="rounded-xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center text-sm font-medium text-muted-foreground">
                 Đang tải danh sách bài học…
@@ -303,6 +345,27 @@ export function CourseDetailView() {
               <li className="rounded-xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center text-sm font-medium text-muted-foreground">
                 Chưa có bài học trong khóa này.
               </li>
+            ) : unitGroups.length > 0 ? (
+              unitGroups.map((group) => (
+                <li key={group.unit} className="space-y-3">
+                  <h3 className="font-display text-sm font-extrabold text-foreground">{group.title}</h3>
+                  <ul className="space-y-2 border-l-2 border-brand/30 pl-4">
+                    {group.lessons.map((lesson, i) => (
+                      <motion.li
+                        key={lesson.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: i * 0.03 }}
+                      >
+                        {renderLessonRow(lesson, i, {
+                          sectionIndex: group.unit === 1 ? i + 1 : undefined,
+                          unitLessons: group.unit === 1 ? group.lessons : undefined,
+                        })}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </li>
+              ))
             ) : (
               (mainLessons.length > 0 ? mainLessons : lessons).map((lesson, i) => (
                 <motion.li

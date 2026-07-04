@@ -22,6 +22,7 @@ enum LessonProgressStatus {
 enum MasteryItemType {
   vocabulary
   kanji
+  grammar
 }
 
 enum VocabularyProgressStatus {
@@ -98,6 +99,7 @@ model User {
   reportsReceived     AbuseReport[]        @relation("Reported")
   orders              Order[]
   vocabularyProgress  UserVocabularyProgress[]
+  notebooks           UserNotebook[]
   feedbacks           UserFeedback[]
   feedbackMessages    FeedbackMessage[]
   assignedFeedbacks   UserFeedback[]       @relation("FeedbackAssignee")
@@ -143,6 +145,7 @@ model Lesson {
   passThreshold    Int      @default(70) @map("pass_threshold")
   isBonus          Boolean  @default(false) @map("is_bonus")
   speakingPrompt   String?  @map("speaking_prompt")
+  speakingSteps    Json?    @map("speaking_steps")
   finalTask        Json?    @map("final_task")
   createdAt        DateTime @default(now()) @map("created_at")
 
@@ -155,6 +158,7 @@ model Lesson {
   questions      LessonQuestion[]
   userProgress   UserLessonProgress[]
   errorLogs      UserErrorLog[]
+  notebookItems  UserNotebookItem[]
   feedbacks      UserFeedback[]
 
   @@unique([courseId, orderIndex])
@@ -223,6 +227,7 @@ model Grammar {
   notes      String?
   examples   Json?
   quiz       Json?    @map("quiz")
+  drills     Json?
   createdById String? @map("created_by")
   createdAt  DateTime @default(now()) @map("created_at")
 
@@ -299,6 +304,41 @@ model UserMasteryItem {
 
   @@unique([userId, itemId, itemType])
   @@map("user_mastery_items")
+}
+
+model UserNotebook {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String
+  description String?
+  isDefault   Boolean  @default(false) @map("is_default")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items UserNotebookItem[]
+
+  @@index([userId, sortOrder])
+  @@map("user_notebooks")
+}
+
+model UserNotebookItem {
+  id         String          @id @default(uuid())
+  notebookId String          @map("notebook_id")
+  itemId     String          @map("item_id")
+  itemType   MasteryItemType @map("item_type")
+  note       String?
+  lessonId   String?         @map("lesson_id")
+  orderIndex Int             @default(0) @map("order_index")
+  addedAt    DateTime        @default(now()) @map("added_at")
+
+  notebook UserNotebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  lesson   Lesson?      @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@unique([notebookId, itemId, itemType])
+  @@index([notebookId, itemType])
+  @@map("user_notebook_items")
 }
 
 model UserStreak {

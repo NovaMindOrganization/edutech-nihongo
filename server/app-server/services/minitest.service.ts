@@ -1,7 +1,9 @@
 import { db } from '../config/db.js';
 import { AppError } from '../utils/app-error.js';
+import { assertStudentLessonAccess } from '../utils/lesson-access.js';
 import {
   buildLessonMiniTestMcqs,
+  extractGrammarQuizzesFromLesson,
   toClientMiniTestQuestion,
   type MiniTestKanjiRow,
   type MiniTestVocabRow,
@@ -15,13 +17,16 @@ import {
 } from './minitest-session.store.js';
 
 async function assertLessonUnlocked(userId: string, lessonId: string) {
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    select: { id: true, courseId: true, isBonus: true, lessonType: true },
+  });
+  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  await assertStudentLessonAccess(userId, lesson);
   const progress = await db.userLessonProgress.findUnique({
     where: { userId_lessonId: { userId, lessonId } },
   });
-  if (!progress || progress.status === 'locked') {
-    throw new AppError('Lesson is locked', 403, 'LESSON_LOCKED');
-  }
-  return progress;
+  return progress ?? { status: 'active' as const, miniTestScore: null };
 }
 
 async function loadMiniTestSource(lessonId: string) {
@@ -77,18 +82,30 @@ async function loadMiniTestSource(lessonId: string) {
 
   const lessonKanji: MiniTestKanjiRow[] = kanjiLinks.map((link) => link.kanji);
 
-  return { lesson, lessonVocab, courseVocab, lessonKanji };
+  const grammarLinks = await db.lessonGrammar.findMany({
+    where: { lessonId },
+    include: { grammar: { select: { quiz: true } } },
+    orderBy: { grammar: { order: "asc" } },
+  });
+  const grammarQuizzes = extractGrammarQuizzesFromLesson(
+    grammarLinks.map((link) => ({ quiz: link.grammar.quiz })),
+  );
+
+  return { lesson, lessonVocab, courseVocab, lessonKanji, grammarQuizzes };
 }
 
 export async function startMiniTest(userId: string, lessonId: string) {
   await assertLessonUnlocked(userId, lessonId);
 
-  const { lessonVocab, courseVocab, lessonKanji } = await loadMiniTestSource(lessonId);
+  const { lesson, lessonVocab, courseVocab, lessonKanji, grammarQuizzes } =
+    await loadMiniTestSource(lessonId);
 
   const questions = buildLessonMiniTestMcqs({
     lessonVocab,
     courseVocab,
     lessonKanji,
+    grammarQuizzes,
+    jlptLevel: lesson.course.jlptLevel,
   });
 
   if (questions.length === 0) {
@@ -120,6 +137,13 @@ export async function submitMiniTest(
     answers: Array<{ questionId: string; answer: string }>;
   },
 ) {
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    select: { id: true, courseId: true, isBonus: true, lessonType: true },
+  });
+  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  await assertStudentLessonAccess(userId, lesson);
+
   const progress = await db.userLessonProgress.findUnique({
     where: { userId_lessonId: { userId, lessonId } },
     include: {
@@ -138,8 +162,8 @@ export async function submitMiniTest(
     },
   });
 
-  if (!progress || progress.status === 'locked') {
-    throw new AppError('Lesson is locked', 403, 'LESSON_LOCKED');
+  if (!progress) {
+    throw new AppError('Lesson progress not found', 404, 'NOT_FOUND');
   }
 
   const questions = await consumeMiniTestSession(input.sessionId, userId, lessonId);

@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { JPD1_COURSE_META, JPD1_LESSONS } from "../data/jpd1/index.js";
 import type { Jpd1LessonSeed } from "../data/jpd1/types.js";
 import { reserveUniqueKanjiSlug } from "../utils/kanji-slug.js";
+import { defaultJpd1PassThreshold } from "../utils/jpd1-progression.js";
 
 export const JPD1_COURSE_TITLE = JPD1_COURSE_META.title;
 
@@ -82,12 +83,14 @@ async function seedLessonContent(
     const grammar = await db.grammar.create({
       data: {
         title: g.title,
+        type: g.challengeLabel ?? null,
         pattern: g.pattern,
         meaningVi: g.meaningVi,
         usage: g.usage ?? null,
         notes: g.notes ?? null,
         examples: g.examples,
         quiz: g.quiz ?? null,
+        drills: g.drills ?? null,
         jlpt: "JPD1",
         lessonId,
         order: i + 1,
@@ -296,9 +299,10 @@ export async function seedJpd1Course(options: SeedJpd1Options) {
         lessonType: seed.lessonType,
         estimatedMinutes: seed.estimatedMinutes,
         orderIndex: seed.orderIndex,
-        passThreshold: 70,
+        passThreshold: defaultJpd1PassThreshold(seed),
         isBonus: seed.isBonus,
         speakingPrompt: seed.speakingPrompt ?? seed.finalTask?.instructionVi ?? null,
+        speakingSteps: seed.speakingSteps ?? undefined,
         finalTask: seed.finalTask ?? null,
       },
     });
@@ -315,7 +319,7 @@ export async function seedJpd1Course(options: SeedJpd1Options) {
         name: "Gói JPD1 — Miễn phí",
         description: "Khóa nhập môn JPD1 cho sinh viên FPT",
         price: 0,
-        features: ["5 bài học", "Flashcard & quiz", "Luyện hội thoại"],
+        features: ["3 bài · 15 tiết", "Flashcard & quiz", "Luyện hội thoại"],
         isActive: true,
         sortOrder: -1,
         courses: { create: [{ courseId: course.id }] },

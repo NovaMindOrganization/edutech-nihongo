@@ -68,7 +68,7 @@ import { CheckoutPage } from "@/pages/CheckoutPage";
 import { HomePage } from "@/pages/HomePage";
 import { PricingPage } from "@/pages/PricingPage";
 
-import { NotebookHubView, NotebookPoolRedirectView, NotebookShellView } from "@/features/student/notebook";
+import { NotebookHubView, NotebookPoolRedirectView, NotebookShellView, PersonalNotebookRedirectView, PersonalNotebookShellView, PersonalNotebooksListView } from "@/features/student/notebook";
 
 import { paths } from "./paths";
 
@@ -160,6 +160,16 @@ export function AppRouter() {
               element={<CommunityCallView />}
             />
             <Route path={paths.student.notebook} element={<NotebookHubView />} />
+            <Route path="/notebook/collected" element={<PersonalNotebooksListView />} />
+            <Route
+              path="/notebook/collected/:notebookId/:type"
+              element={<PersonalNotebookShellView />}
+            />
+            <Route
+              path="/notebook/collected/:notebookId"
+              element={<PersonalNotebookRedirectView />}
+            />
+            <Route path="/notebook/learned/:type" element={<NotebookShellView />} />
             <Route path="/notebook/:pool/:type" element={<NotebookShellView />} />
             <Route path="/notebook/:pool" element={<NotebookPoolRedirectView />} />
 
@@ -171,7 +181,7 @@ export function AppRouter() {
             <Route
               path={paths.learn.kanjiHandbook}
               element={
-                <Navigate to={paths.student.notebookCollected("kanji")} replace />
+                <Navigate to={paths.student.notebookCollectedList} replace />
               }
             />
             <Route path={paths.learn.kanaQuiz} element={<KanaQuizView />} />

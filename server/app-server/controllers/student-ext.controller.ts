@@ -13,7 +13,7 @@ import * as notebookService from '../services/notebook.service.js';
 import * as ocrNotebookService from '../services/ocr-notebook.service.js';
 import * as reviewService from '../services/review.service.js';
 import type { GenerateReviewInput } from '../services/review.service.js';
-import * as studySetMediaService from '../services/study-set-media.service.js';
+import * as userNotebookService from '../services/user-notebook.service.js';
 import * as studySetService from '../services/study-set.service.js';
 import * as webrtcService from '../services/webrtc.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
@@ -74,6 +74,93 @@ export const notebookCollected = asyncHandler(async (req: Request, res: Response
   res.json({ success: true, data });
 });
 
+export const listUserNotebooks = asyncHandler(async (req: Request, res: Response) => {
+  const data = await userNotebookService.listNotebooks(req.user!.id);
+  res.json({ success: true, data });
+});
+
+export const createUserNotebook = asyncHandler(async (req: Request, res: Response) => {
+  const body = (req.validatedBody ?? req.body) as { title: string; description?: string };
+  const data = await userNotebookService.createNotebook(req.user!.id, body);
+  res.json({ success: true, data });
+});
+
+export const updateUserNotebook = asyncHandler(async (req: Request, res: Response) => {
+  const body = (req.validatedBody ?? req.body) as {
+    title?: string;
+    description?: string | null;
+  };
+  const data = await userNotebookService.updateNotebook(
+    req.user!.id,
+    req.params.notebookId,
+    body,
+  );
+  res.json({ success: true, data });
+});
+
+export const deleteUserNotebook = asyncHandler(async (req: Request, res: Response) => {
+  const data = await userNotebookService.deleteNotebook(req.user!.id, req.params.notebookId);
+  res.json({ success: true, data });
+});
+
+export const userNotebookContent = asyncHandler(async (req: Request, res: Response) => {
+  const type = String(req.params.type) as 'kanji' | 'vocabulary' | 'grammar';
+  const data = await userNotebookService.listNotebookContent(
+    req.user!.id,
+    req.params.notebookId,
+    type,
+    { level: req.query.level ? String(req.query.level) : undefined },
+  );
+  res.json({ success: true, data });
+});
+
+export const addUserNotebookItem = asyncHandler(async (req: Request, res: Response) => {
+  const body = (req.validatedBody ?? req.body) as {
+    itemId: string;
+    itemType: 'kanji' | 'vocabulary' | 'grammar';
+    note?: string;
+    lessonId?: string;
+  };
+  const data = await userNotebookService.addNotebookItem(
+    req.user!.id,
+    req.params.notebookId,
+    body,
+  );
+  res.json({ success: true, data });
+});
+
+export const updateUserNotebookItemNote = asyncHandler(async (req: Request, res: Response) => {
+  const body = (req.validatedBody ?? req.body) as { note: string | null };
+  const data = await userNotebookService.updateNotebookItemNote(
+    req.user!.id,
+    req.params.notebookId,
+    req.params.entryId,
+    body.note,
+  );
+  res.json({ success: true, data });
+});
+
+export const removeUserNotebookItem = asyncHandler(async (req: Request, res: Response) => {
+  const body = (req.validatedBody ?? req.body) as {
+    itemId: string;
+    itemType: 'kanji' | 'vocabulary' | 'grammar';
+  };
+  const data = await userNotebookService.removeNotebookItem(
+    req.user!.id,
+    req.params.notebookId,
+    body,
+  );
+  res.json({ success: true, data });
+});
+
+export const userNotebookItemMembership = asyncHandler(async (req: Request, res: Response) => {
+  const data = await userNotebookService.getItemNotebookIds(req.user!.id, {
+    itemId: String(req.query.itemId),
+    itemType: String(req.query.itemType) as 'kanji' | 'vocabulary' | 'grammar',
+  });
+  res.json({ success: true, data });
+});
+
 export const notebookLessons = asyncHandler(async (req: Request, res: Response) => {
   const type = String(req.query.type ?? 'kanji') as 'kanji' | 'vocabulary' | 'grammar';
   const data = await notebookContentService.listNotebookLessons(req.user!.id, type);
@@ -93,6 +180,7 @@ export const reviewGenerate = asyncHandler(async (req: Request, res: Response) =
     pool?: string;
     lessonIds?: string[];
     itemIds?: string[];
+    notebookId?: string;
   };
   const data = await reviewService.generateReview(req.user!.id, {
     mode: body.mode as GenerateReviewInput['mode'],
@@ -101,6 +189,7 @@ export const reviewGenerate = asyncHandler(async (req: Request, res: Response) =
     pool: body.pool as GenerateReviewInput['pool'],
     lessonIds: body.lessonIds,
     itemIds: body.itemIds,
+    notebookId: body.notebookId,
   });
   res.json({ success: true, data });
 });

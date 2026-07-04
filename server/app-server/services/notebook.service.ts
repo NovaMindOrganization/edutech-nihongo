@@ -49,7 +49,7 @@ export async function listNotebookVocabulary(
 
 export async function upsertMastery(
   userId: string,
-  data: { itemId: string; itemType: 'vocabulary' | 'kanji'; isLearned?: boolean; isFavorite?: boolean; note?: string },
+  data: { itemId: string; itemType: 'vocabulary' | 'kanji' | 'grammar'; isLearned?: boolean; isFavorite?: boolean; note?: string },
 ) {
   return db.userMasteryItem.upsert({
     where: {

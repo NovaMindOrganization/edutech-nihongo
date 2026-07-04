@@ -10,7 +10,7 @@ export type VocabSourceFilter = 'all' | 'starred' | 'unmastered' | 'mastered';
 async function assertLessonUnlocked(userId: string, lessonId: string) {
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
-    select: { id: true, courseId: true, isBonus: true },
+    select: { id: true, courseId: true, isBonus: true, lessonType: true },
   });
   if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
   await assertStudentLessonAccess(userId, lesson);
