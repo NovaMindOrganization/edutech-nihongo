@@ -1,10 +1,12 @@
-﻿import { BookOpen, CheckCircle2 } from 'lucide-react';
+﻿import { BookOpen, CheckCircle2, ClipboardCheck, MessageSquare } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { buttonVariants } from '@/components/ui/button-variants';
 import { AppIcon } from '@/components/usable/app-icon';
 import { PageShell, pageContentClass } from '@/components/usable/page-shell';
+import { useFeedbackQuick } from '@/features/feedback/feedback-quick-context';
 import { getLesson, type LessonPayload } from '@/features/student/services/studentApi';
 import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
@@ -62,6 +64,7 @@ function LessonModuleTabs({
 export function LessonShellView() {
   const { lessonId = '' } = useParams();
   const [data, setData] = useState<LessonPayload | null>(null);
+  const { openFeedback } = useFeedbackQuick();
 
   useEffect(() => {
     getLesson(lessonId)
@@ -126,6 +129,22 @@ export function LessonShellView() {
       >
         <div className="space-y-5">
           <section className="rounded-xl border border-border bg-background p-4 shadow-premium card-lift">
+            <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1.5')}
+                onClick={() =>
+                  openFeedback({
+                    initialCategory: 'lesson_content',
+                    initialLessonId: lessonId,
+                    initialCourseId: courseId,
+                  })
+                }
+              >
+                <MessageSquare className="size-4" />
+                Góp ý bài học
+              </button>
+            </div>
             <LessonModuleTabs lessonId={lessonId} data={data} />
           </section>
           <div className="rounded-2xl border border-border/70 bg-surface-paper/50 p-4 md:p-6">

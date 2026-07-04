@@ -19,6 +19,8 @@ import {
   RadicalsAdminView,
   PricingAdminView,
   ReportsAdminView,
+  FeedbackAdminRouteView,
+  FeedbackStaffDetailView,
   AnalyticsAdminView,
 } from "@/features/admin";
 import { RedirectIfAuthenticated } from "@/features/auth/components/redirect-if-authenticated";
@@ -57,6 +59,7 @@ import {
   JlptHistoryView,
   MistakesReviewView,
 } from "@/features/student";
+import { FeedbackDetailView, FeedbackHubView } from "@/features/feedback";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { AuthLayout } from "@/layouts/auth-layout";
 import { ExamLayout } from "@/layouts/exam-layout";
@@ -133,6 +136,8 @@ export function AppRouter() {
             <Route path={paths.student.ocr} element={<OcrView />} />
             <Route path={paths.student.jlptHistory} element={<JlptHistoryView />} />
             <Route path={paths.student.mistakes} element={<MistakesReviewView />} />
+            <Route path={paths.student.feedback} element={<FeedbackHubView />} />
+            <Route path="/feedback/:id" element={<FeedbackDetailView />} />
             <Route
               path={paths.student.community}
               element={<Navigate to={paths.student.studySets} replace />}
@@ -225,6 +230,8 @@ export function AppRouter() {
           <Route path="config" element={<ConfigAdminView />} />
           <Route path="pricing" element={<PricingAdminView />} />
           <Route path="reports" element={<ReportsAdminView />} />
+          <Route path="feedbacks" element={<FeedbackAdminRouteView />} />
+          <Route path="feedbacks/:id" element={<FeedbackStaffDetailView />} />
           <Route path="analytics" element={<AnalyticsAdminView />} />
         </Route>
 

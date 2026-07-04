@@ -9,6 +9,7 @@ import * as student from '../controllers/student.controller.js';
 import * as studentExt from '../controllers/student-ext.controller.js';
 import * as vocabularyCtrl from '../controllers/vocabulary.controller.js';
 import * as systemAdmin from '../controllers/system-admin.controller.js';
+import * as feedback from '../controllers/feedback.controller.js';
 import * as payment from '../controllers/payment.controller.js';
 import { optionalAuth, requireAuth, requireRoles } from '../middlewares/auth.js';
 import {
@@ -57,6 +58,12 @@ import {
   lessonVocabularyQuerySchema,
   vocabularyProgressPatchSchema,
 } from '../validators/vocabulary.validator.js';
+import {
+  addFeedbackMessageSchema,
+  createFeedbackSchema,
+  feedbackListQuerySchema,
+  updateFeedbackStatusSchema,
+} from '../validators/feedback.validator.js';
 
 const router = Router();
 const upload = multer({
@@ -216,6 +223,16 @@ studentRouter.post('/community/translate', studentExt.communityTranslate);
 studentRouter.post('/webrtc/evaluate', studentExt.webrtcEvaluate);
 studentRouter.post('/webrtc/report', studentExt.webrtcReport);
 
+studentRouter.post('/feedbacks', validateBody(createFeedbackSchema), feedback.createFeedback);
+studentRouter.get('/feedbacks', validateQuery(feedbackListQuerySchema), feedback.listFeedbacks);
+studentRouter.get('/feedbacks/:id', feedback.getFeedback);
+studentRouter.post(
+  '/feedbacks/:id/messages',
+  validateBody(addFeedbackMessageSchema),
+  feedback.addMessage,
+);
+studentRouter.patch('/feedbacks/:id/close', feedback.closeFeedback);
+
 router.use('/student', studentRouter);
 
 // Vocabulary flashcards + progress (authenticated students)
@@ -323,6 +340,19 @@ instructorRouter.post(
   admin.moderateStudySet,
 );
 
+instructorRouter.get('/feedbacks', validateQuery(feedbackListQuerySchema), feedback.listFeedbacks);
+instructorRouter.get('/feedbacks/:id', feedback.getFeedback);
+instructorRouter.post(
+  '/feedbacks/:id/messages',
+  validateBody(addFeedbackMessageSchema),
+  feedback.addMessage,
+);
+instructorRouter.patch(
+  '/feedbacks/:id',
+  validateBody(updateFeedbackStatusSchema),
+  feedback.updateStatus,
+);
+
 router.use('/instructor', instructorRouter);
 
 // System admin only
@@ -356,6 +386,19 @@ sysAdminRouter.get('/config', systemAdmin.getConfig);
 sysAdminRouter.put('/config/:key', systemAdmin.setConfig);
 sysAdminRouter.get('/reports', systemAdmin.listReports);
 sysAdminRouter.put('/reports/:id/resolve', systemAdmin.resolveReport);
+sysAdminRouter.get('/feedbacks/stats', feedback.getStats);
+sysAdminRouter.get('/feedbacks', validateQuery(feedbackListQuerySchema), feedback.listFeedbacks);
+sysAdminRouter.get('/feedbacks/:id', feedback.getFeedback);
+sysAdminRouter.post(
+  '/feedbacks/:id/messages',
+  validateBody(addFeedbackMessageSchema),
+  feedback.addMessage,
+);
+sysAdminRouter.patch(
+  '/feedbacks/:id',
+  validateBody(updateFeedbackStatusSchema),
+  feedback.updateStatus,
+);
 sysAdminRouter.get('/analytics/dau', systemAdmin.analytics);
 sysAdminRouter.get('/health', systemAdmin.adminHealth);
 
