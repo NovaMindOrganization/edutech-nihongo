@@ -1,5 +1,5 @@
-import { BookOpen, Layers, ListChecks, Shuffle } from 'lucide-react';
-import { useState } from 'react';
+import { BookOpen, Brain, Layers, ListChecks, Shuffle, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
@@ -19,10 +19,20 @@ type LessonOption = {
 type NotebookReviewBarProps = {
   pool: NotebookPool;
   type: NotebookType;
+  notebookId?: string;
   selectedItemIds?: string[];
+  pickRequestId?: number;
+  onSessionClose?: () => void;
 };
 
-export function NotebookReviewBar({ pool, type, selectedItemIds = [] }: NotebookReviewBarProps) {
+export function NotebookReviewBar({
+  pool,
+  type,
+  notebookId,
+  selectedItemIds = [],
+  pickRequestId = 0,
+  onSessionClose,
+}: NotebookReviewBarProps) {
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [lessonPickerOpen, setLessonPickerOpen] = useState(false);
   const [sessionOpen, setSessionOpen] = useState(false);
@@ -34,8 +44,17 @@ export function NotebookReviewBar({ pool, type, selectedItemIds = [] }: Notebook
   const [loadingLessons, setLoadingLessons] = useState(false);
 
   const pickCount = selectedItemIds.length;
-  const canPick = pool === 'collected' && type !== 'grammar' && pickCount > 0;
-  const canLesson = pool === 'learned' && type !== 'grammar';
+  const canPickLearned = pool === 'learned' && pickCount > 0;
+  const canPickCollected =
+    pool === 'collected' && pickCount > 0 && (!!notebookId || type !== 'grammar');
+  const canPick = canPickLearned || canPickCollected;
+  const canLesson = pool === 'learned';
+  const canMasteryModes = pool === 'learned';
+
+  const masteryLabel =
+    type === 'vocabulary' ? 'từ vựng' : type === 'grammar' ? 'ngữ pháp' : 'kanji';
+  const pickUnit =
+    type === 'kanji' ? 'kanji' : type === 'vocabulary' ? 'từ' : 'mẫu';
 
   async function openLessonPicker() {
     setModeDialogOpen(false);
@@ -57,6 +76,12 @@ export function NotebookReviewBar({ pool, type, selectedItemIds = [] }: Notebook
     setLessonPickerOpen(false);
     setSessionOpen(true);
   }
+
+  useEffect(() => {
+    if (!pickRequestId || pickCount === 0) return;
+    begin('pick', undefined, selectedItemIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chỉ kích hoạt khi bấm「Ôn flashcard」từ thanh chọn
+  }, [pickRequestId]);
 
   return (
     <>
@@ -86,6 +111,37 @@ export function NotebookReviewBar({ pool, type, selectedItemIds = [] }: Notebook
             </span>
           </button>
 
+          {canMasteryModes && (
+            <>
+              <button
+                type="button"
+                onClick={() => begin('unlearned')}
+                className="flex w-full items-start gap-3 rounded-xl border border-border bg-surface-paper p-4 text-left transition-colors hover:border-brand/40 hover:bg-brand-soft/20"
+              >
+                <Brain className="mt-0.5 size-5 shrink-0 text-brand" />
+                <span>
+                  <span className="block font-display text-sm font-bold">Chưa thuộc</span>
+                  <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
+                    Chỉ {masteryLabel} bạn chưa đánh dấu thuộc
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => begin('learned')}
+                className="flex w-full items-start gap-3 rounded-xl border border-border bg-surface-paper p-4 text-left transition-colors hover:border-brand/40 hover:bg-brand-soft/20"
+              >
+                <Sparkles className="mt-0.5 size-5 shrink-0 text-brand" />
+                <span>
+                  <span className="block font-display text-sm font-bold">Đã thuộc</span>
+                  <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
+                    Ôn lại {masteryLabel} đã thuộc
+                  </span>
+                </span>
+              </button>
+            </>
+          )}
+
           {canLesson && (
             <button
               type="button"
@@ -102,7 +158,7 @@ export function NotebookReviewBar({ pool, type, selectedItemIds = [] }: Notebook
             </button>
           )}
 
-          {pool === 'collected' && type !== 'grammar' && (
+          {(pool === 'collected' && type !== 'grammar') || pool === 'learned' ? (
             <button
               type="button"
               disabled={!canPick}
@@ -119,12 +175,12 @@ export function NotebookReviewBar({ pool, type, selectedItemIds = [] }: Notebook
                 <span className="block font-display text-sm font-bold">Tự chọn mục</span>
                 <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
                   {canPick
-                    ? `Ôn ${pickCount} mục đã tick trong danh sách`
-                    : 'Tick ít nhất một mục trong danh sách trước'}
+                    ? `Ôn ${pickCount} ${pickUnit} đã chọn trong danh sách`
+                    : `Chọn ít nhất một ${pickUnit} trong danh sách trước`}
                 </span>
               </span>
             </button>
-          )}
+          ) : null}
         </div>
       </Dialog>
 
@@ -191,9 +247,13 @@ export function NotebookReviewBar({ pool, type, selectedItemIds = [] }: Notebook
 
       <NotebookReviewSession
         open={sessionOpen}
-        onClose={() => setSessionOpen(false)}
+        onClose={() => {
+          setSessionOpen(false);
+          onSessionClose?.();
+        }}
         pool={pool}
         type={type}
+        notebookId={notebookId}
         mode={sessionMode}
         lessonIds={sessionMode === 'lesson' ? sessionLessonIds : undefined}
         itemIds={sessionMode === 'pick' ? sessionItemIds : undefined}

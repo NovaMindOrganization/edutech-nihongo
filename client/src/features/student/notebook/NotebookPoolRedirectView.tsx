@@ -9,5 +9,8 @@ export function NotebookPoolRedirectView() {
   if (!pool || !isNotebookPool(pool)) {
     return <Navigate to={paths.student.notebook} replace />;
   }
+  if (pool === 'collected') {
+    return <Navigate to={paths.student.notebookCollectedList} replace />;
+  }
   return <Navigate to={paths.student.notebookSection(pool, 'kanji')} replace />;
 }

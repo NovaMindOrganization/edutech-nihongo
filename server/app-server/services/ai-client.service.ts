@@ -5,6 +5,13 @@ import { db } from '../config/db.js';
 import { incrRateLimit } from '../config/redis.js';
 import { getConfigValue } from './config.service.js';
 import { getLlmRuntimePayload } from './llm-config.service.js';
+import { loadLessonVocabulary } from './lesson.service.js';
+import {
+  parseSpeakingSteps,
+  processScriptedSpeakingTurn,
+  startScriptedSpeakingSession,
+  type ScriptedSpeakingReply,
+} from './lesson-speaking-script.service.js';
 import { AppError } from '../utils/app-error.js';
 
 type AiLlmResponse = {
@@ -29,10 +36,59 @@ async function aiPost(
   return data;
 }
 
-const FALLBACK_REPLY = {
+const FALLBACK_REPLY: { AI_Reply: string; Correction: string | null } = {
   AI_Reply: 'もう一度、ゆっくり話してください。',
   Correction: null,
 };
+
+export type LessonSpeakingResult = {
+  AI_Reply: string;
+  Correction: string | null;
+  sessionId: string;
+  transcript?: string;
+  lessonId?: string;
+  rateLimited?: boolean;
+  Guide_Vi?: string | null;
+  Model_Answer?: string | null;
+  stepIndex?: number;
+  stepTotal?: number;
+  stepTasks?: string[];
+  sessionMode?: 'scripted' | 'llm';
+  completed?: boolean;
+};
+
+function isIntroScriptedLesson(jlptLevel: string, steps: ReturnType<typeof parseSpeakingSteps>) {
+  return (jlptLevel === 'JPD1' || jlptLevel === 'JPD2') && steps.length > 0;
+}
+
+function toLessonSpeakingResult(
+  parsed: ScriptedSpeakingReply | { AI_Reply: string; Correction: string | null },
+  sessionId: string,
+  extra?: { transcript?: string; lessonId?: string; rateLimited?: boolean },
+): LessonSpeakingResult {
+  if ('sessionMode' in parsed && parsed.sessionMode === 'scripted') {
+    return {
+      AI_Reply: parsed.AI_Reply,
+      Correction: parsed.Correction,
+      Guide_Vi: parsed.Guide_Vi,
+      Model_Answer: parsed.Model_Answer,
+      stepIndex: parsed.stepIndex,
+      stepTotal: parsed.stepTotal,
+      stepTasks: parsed.stepTasks,
+      sessionMode: 'scripted',
+      completed: parsed.completed,
+      sessionId,
+      ...extra,
+    };
+  }
+  return {
+    AI_Reply: parsed.AI_Reply,
+    Correction: parsed.Correction,
+    sessionMode: 'llm',
+    sessionId,
+    ...extra,
+  };
+}
 
 async function checkSpeakingLimit(userId: string) {
   const limit = Number(await getConfigValue('ai_speaking_daily_limit', '50'));
@@ -104,36 +160,35 @@ export async function sendLessonSpeakingMessage(
     conversationHistory?: Array<{ role: string; content: string }>;
   },
 ) {
-  const ok = await checkSpeakingLimit(userId);
-  if (!ok) {
-    return { ...FALLBACK_REPLY, rateLimited: true };
+  const { lesson, lessonContext, speakingSteps } = await loadLessonSpeakingContext(lessonId);
+  const sessionId = input.sessionId ?? crypto.randomUUID();
+
+  if (isIntroScriptedLesson(lesson.course.jlptLevel, speakingSteps)) {
+    const parsed =
+      processScriptedSpeakingTurn(
+        speakingSteps,
+        input.text,
+        input.conversationHistory ?? [],
+      ) ?? FALLBACK_REPLY;
+    await persistSpeakingTurn(userId, sessionId, input.text, parsed, 'ai_speaking_lesson_script', lesson.id);
+    return toLessonSpeakingResult(parsed, sessionId, {
+      transcript: input.text,
+      lessonId: lesson.id,
+    });
   }
 
-  const lesson = await db.lesson.findUnique({
-    where: { id: lessonId },
-    include: {
-      course: { select: { jlptLevel: true, title: true } },
-      grammar: { take: 5, include: { grammar: true } },
-    },
-  });
-  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+  const ok = await checkSpeakingLimit(userId);
+  if (!ok) {
+    return {
+      ...FALLBACK_REPLY,
+      sessionMode: 'llm' as const,
+      sessionId,
+      lessonId: lesson.id,
+      rateLimited: true,
+    };
+  }
 
-  const lessonVocab = await db.vocabulary.findMany({
-    where: { lessonId },
-    orderBy: { word: 'asc' },
-    take: 8,
-  });
-
-  const sessionId = input.sessionId ?? crypto.randomUUID();
   let parsed = FALLBACK_REPLY;
-
-  const lessonContext = {
-    lesson_title: lesson.title,
-    jlpt_level: lesson.course.jlptLevel,
-    speaking_prompt: lesson.speakingPrompt,
-    vocabulary: lessonVocab.map((v) => v.word),
-    grammar: lesson.grammar.map((g) => g.grammar.pattern),
-  };
 
   try {
     const data = await aiPost('/api/v1/speaking/lesson', {
@@ -148,8 +203,79 @@ export async function sendLessonSpeakingMessage(
     parsed = FALLBACK_REPLY;
   }
 
-  await persistSpeakingTurn(userId, sessionId, input.text, parsed, 'ai_speaking_lesson', lessonId);
-  return { ...parsed, sessionId, transcript: input.text, lessonId };
+  await persistSpeakingTurn(userId, sessionId, input.text, parsed, 'ai_speaking_lesson', lesson.id);
+  return toLessonSpeakingResult(parsed, sessionId, { transcript: input.text, lessonId: lesson.id });
+}
+
+export async function startLessonSpeakingSession(userId: string, lessonId: string) {
+  const { lesson, lessonContext, speakingSteps } = await loadLessonSpeakingContext(lessonId);
+  const sessionId = crypto.randomUUID();
+
+  if (isIntroScriptedLesson(lesson.course.jlptLevel, speakingSteps)) {
+    const parsed = startScriptedSpeakingSession(speakingSteps, lesson.title) ?? FALLBACK_REPLY;
+    await persistSpeakingTurn(
+      userId,
+      sessionId,
+      '[SESSION_START]',
+      parsed,
+      'ai_speaking_lesson_script',
+      lesson.id,
+    );
+    return toLessonSpeakingResult(parsed, sessionId, { transcript: '', lessonId: lesson.id });
+  }
+
+  const ok = await checkSpeakingLimit(userId);
+  if (!ok) {
+    return {
+      ...FALLBACK_REPLY,
+      sessionMode: 'llm' as const,
+      sessionId,
+      lessonId: lesson.id,
+      rateLimited: true,
+    };
+  }
+
+  let parsed = FALLBACK_REPLY;
+
+  try {
+    const data = await aiPost('/api/v1/speaking/lesson/start', lessonContext);
+    if (data?.AI_Reply) {
+      parsed = { AI_Reply: data.AI_Reply, Correction: data.Correction ?? null };
+    }
+  } catch {
+    parsed = FALLBACK_REPLY;
+  }
+
+  await persistSpeakingTurn(userId, sessionId, '[SESSION_START]', parsed, 'ai_speaking_lesson', lesson.id);
+  return toLessonSpeakingResult(parsed, sessionId, { transcript: '', lessonId: lesson.id });
+}
+
+async function loadLessonSpeakingContext(lessonId: string) {
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    include: {
+      course: { select: { jlptLevel: true, title: true } },
+      grammar: { take: 10, include: { grammar: true } },
+    },
+  });
+  if (!lesson) throw new AppError('Lesson not found', 404, 'NOT_FOUND');
+
+  const lessonVocab = await loadLessonVocabulary(lessonId);
+  const speakingSteps = parseSpeakingSteps(
+    (lesson as { speakingSteps?: unknown }).speakingSteps as import('@prisma/client').Prisma.JsonValue,
+  );
+
+  const lessonContext = {
+    lesson_title: lesson.title,
+    jlpt_level: lesson.course.jlptLevel,
+    lesson_objective: lesson.objective,
+    lesson_description: lesson.description,
+    speaking_prompt: lesson.speakingPrompt,
+    vocabulary: lessonVocab.slice(0, 20).map((v) => v.word),
+    grammar: lesson.grammar.map((g) => g.grammar.pattern),
+  };
+
+  return { lesson, lessonContext, speakingSteps };
 }
 
 async function persistSpeakingTurn(

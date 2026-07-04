@@ -21,6 +21,28 @@ export class ApiRequestError extends Error {
 const RATE_LIMIT_MESSAGE =
   'Quá nhiều request. Vui lòng đợi vài phút rồi thử lại.';
 
+/** Thông báo lỗi API thân thiện cho người dùng (tiếng Việt). */
+export function formatApiErrorMessage(
+  error: unknown,
+  fallback = 'Đã xảy ra lỗi. Vui lòng thử lại.',
+): string {
+  if (!(error instanceof ApiRequestError)) {
+    return error instanceof Error ? error.message : fallback;
+  }
+
+  if (error.code === 'VALIDATION_ERROR' || error.message === 'Validation failed') {
+    return 'Yêu cầu không hợp lệ. Vui lòng thử lại hoặc tải lại trang.';
+  }
+  if (error.status === 401) {
+    return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+  }
+  if (error.status === 429 || error.code === 'RATE_LIMITED') {
+    return RATE_LIMIT_MESSAGE;
+  }
+
+  return error.message || fallback;
+}
+
 /** Parse JSON an toàn — tránh lỗi khi server trả plain text (vd. 429). */
 export async function parseFetchJson<T>(res: Response): Promise<T> {
   const text = await res.text();

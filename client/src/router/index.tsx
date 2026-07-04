@@ -19,6 +19,8 @@ import {
   RadicalsAdminView,
   PricingAdminView,
   ReportsAdminView,
+  FeedbackAdminRouteView,
+  FeedbackStaffDetailView,
   AnalyticsAdminView,
 } from "@/features/admin";
 import { RedirectIfAuthenticated } from "@/features/auth/components/redirect-if-authenticated";
@@ -57,6 +59,7 @@ import {
   JlptHistoryView,
   MistakesReviewView,
 } from "@/features/student";
+import { FeedbackDetailView, FeedbackHubView } from "@/features/feedback";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { AuthLayout } from "@/layouts/auth-layout";
 import { ExamLayout } from "@/layouts/exam-layout";
@@ -65,7 +68,7 @@ import { CheckoutPage } from "@/pages/CheckoutPage";
 import { HomePage } from "@/pages/HomePage";
 import { PricingPage } from "@/pages/PricingPage";
 
-import { NotebookHubView, NotebookPoolRedirectView, NotebookShellView } from "@/features/student/notebook";
+import { NotebookHubView, NotebookPoolRedirectView, NotebookShellView, PersonalNotebookRedirectView, PersonalNotebookShellView, PersonalNotebooksListView } from "@/features/student/notebook";
 
 import { paths } from "./paths";
 
@@ -133,6 +136,8 @@ export function AppRouter() {
             <Route path={paths.student.ocr} element={<OcrView />} />
             <Route path={paths.student.jlptHistory} element={<JlptHistoryView />} />
             <Route path={paths.student.mistakes} element={<MistakesReviewView />} />
+            <Route path={paths.student.feedback} element={<FeedbackHubView />} />
+            <Route path="/feedback/:id" element={<FeedbackDetailView />} />
             <Route
               path={paths.student.community}
               element={<Navigate to={paths.student.studySets} replace />}
@@ -155,6 +160,16 @@ export function AppRouter() {
               element={<CommunityCallView />}
             />
             <Route path={paths.student.notebook} element={<NotebookHubView />} />
+            <Route path="/notebook/collected" element={<PersonalNotebooksListView />} />
+            <Route
+              path="/notebook/collected/:notebookId/:type"
+              element={<PersonalNotebookShellView />}
+            />
+            <Route
+              path="/notebook/collected/:notebookId"
+              element={<PersonalNotebookRedirectView />}
+            />
+            <Route path="/notebook/learned/:type" element={<NotebookShellView />} />
             <Route path="/notebook/:pool/:type" element={<NotebookShellView />} />
             <Route path="/notebook/:pool" element={<NotebookPoolRedirectView />} />
 
@@ -166,7 +181,7 @@ export function AppRouter() {
             <Route
               path={paths.learn.kanjiHandbook}
               element={
-                <Navigate to={paths.student.notebookCollected("kanji")} replace />
+                <Navigate to={paths.student.notebookCollectedList} replace />
               }
             />
             <Route path={paths.learn.kanaQuiz} element={<KanaQuizView />} />
@@ -215,6 +230,8 @@ export function AppRouter() {
           <Route path="config" element={<ConfigAdminView />} />
           <Route path="pricing" element={<PricingAdminView />} />
           <Route path="reports" element={<ReportsAdminView />} />
+          <Route path="feedbacks" element={<FeedbackAdminRouteView />} />
+          <Route path="feedbacks/:id" element={<FeedbackStaffDetailView />} />
           <Route path="analytics" element={<AnalyticsAdminView />} />
         </Route>
 

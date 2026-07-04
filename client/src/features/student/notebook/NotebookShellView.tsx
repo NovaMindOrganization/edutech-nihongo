@@ -1,11 +1,11 @@
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { FadeUp } from '@/components/motion';
 import { PageShell, pageContentClass } from '@/components/usable/page-shell';
 import { paths } from '@/router/paths';
-import { NotebookCollectedPanel } from './NotebookCollectedPanel';
 import { NotebookLearnedPanel } from './NotebookLearnedPanel';
+import { LegacyCollectedRedirect } from './PersonalNotebookShellView';
 import { NotebookTypeTabs, POOL_CARD_META } from './notebook-shared';
 import {
   isNotebookPool,
@@ -35,6 +35,11 @@ export function NotebookShellView() {
 
   const pool = poolParam as NotebookPool;
   const type = typeParam as NotebookType;
+
+  if (pool === 'collected') {
+    return <LegacyCollectedRedirect type={type} />;
+  }
+
   const poolMeta = POOL_CARD_META[pool];
 
   function goType(nextType: NotebookType) {
@@ -53,11 +58,7 @@ export function NotebookShellView() {
       tone={pool === 'learned' ? 'brand' : 'secondary'}
       subtitle={itemCount != null ? `${itemCount} mục trong sổ tay` : undefined}
       chips={['Kanji', 'Từ vựng', 'Ngữ pháp']}
-      footer={
-        pool === 'learned'
-          ? 'Nội dung xuất hiện khi bạn hoàn thành bài trong khóa học — chọn loại nội dung ở thanh tab bên dưới.'
-          : 'Mục từ OCR hoặc đánh dấu yêu thích — lọc theo loại ở thanh tab bên dưới.'
-      }
+      footer="Nội dung xuất hiện khi bạn học bài trong khóa — chọn loại nội dung ở thanh tab bên dưới."
       backLink={{ to: paths.student.notebook, label: 'Sổ tay' }}
     >
       <FadeUp className="space-y-5">
@@ -65,11 +66,7 @@ export function NotebookShellView() {
           <NotebookTypeTabs type={type} onTypeChange={goType} />
         </section>
         <div className="rounded-2xl border border-border/70 bg-surface-paper/50 p-4 md:p-6">
-          {pool === 'learned' ? (
-            <NotebookLearnedPanel type={type} onCountChange={setItemCount} />
-          ) : (
-            <NotebookCollectedPanel type={type} onCountChange={setItemCount} />
-          )}
+          <NotebookLearnedPanel type={type} onCountChange={setItemCount} />
         </div>
       </FadeUp>
     </PageShell>

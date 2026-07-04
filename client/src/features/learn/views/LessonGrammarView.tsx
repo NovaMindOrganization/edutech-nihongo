@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -13,9 +14,12 @@ import {
 import { EmptyState, emptyStatePresets } from '@/components/usable/states';
 import { Button } from '@/components/ui/button';
 import type { JapaneseSegment } from '@/features/student/services/studentApi';
+import { AddToNotebookButton } from '@/features/student/notebook/AddToNotebookButton';
 import { useSpeech } from '@/hooks/use-speech';
 import { cn } from '@/lib/utils';
 import { useLessonData } from '../context/lesson-context';
+import { GrammarDrillPanel } from '../components/grammar-drill-panel';
+import { isIntroCourseLevel, speakingPassScoreForCourse } from '../utils/jpd1-speaking';
 
 const PAGE_BG = '#F8FAFC';
 const CARD_BG = '#FFFFFF';
@@ -48,6 +52,92 @@ function FuriganaText({
 
 function segmentsToText(segments: JapaneseSegment[] = []) {
   return segments.map((segment) => ('kanji' in segment ? segment.kanji : segment.text)).join('');
+}
+
+type ParsedDialogueLine = {
+  speaker: 'A' | 'B';
+  segments: JapaneseSegment[];
+};
+
+const SPEAKER_LINE_RE = /^([ABＡＢ])\s*[：:]\s*(.*)$/s;
+
+function parseDialogueExample(segments: JapaneseSegment[] = []): ParsedDialogueLine[] | null {
+  const lines: ParsedDialogueLine[] = [];
+
+  for (const segment of segments) {
+    const raw = ('kanji' in segment ? segment.kanji : segment.text).trim();
+    const match = raw.match(SPEAKER_LINE_RE);
+    if (!match) return null;
+
+    const speaker = match[1] === 'B' || match[1] === 'Ｂ' ? 'B' : 'A';
+    const text = match[2].trim();
+    if (!text) return null;
+
+    lines.push({ speaker, segments: [{ text }] });
+  }
+
+  return lines.length >= 2 ? lines : null;
+}
+
+function GrammarDialogueExample({
+  lines,
+  exampleIndex,
+  playingKey,
+  speaking,
+  onPlay,
+}: {
+  lines: ParsedDialogueLine[];
+  exampleIndex: number;
+  playingKey: string | null;
+  speaking: boolean;
+  onPlay: (segments: JapaneseSegment[], key: string) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      {lines.map((line, lineIndex) => {
+        const isLeft = line.speaker === 'A';
+        const playKey = `${exampleIndex}-${lineIndex}`;
+
+        return (
+          <div
+            key={playKey}
+            className={cn('flex items-end gap-3', isLeft ? 'justify-start' : 'justify-end')}
+          >
+            {isLeft ? (
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-tertiary font-display text-sm font-extrabold text-foreground shadow-sm">
+                {line.speaker}
+              </div>
+            ) : null}
+
+            <div
+              className={cn(
+                'max-w-[82%] rounded-xl border border-border bg-surface-paper px-4 py-3 shadow-sm',
+                isLeft ? 'rounded-bl-md' : 'rounded-br-md bg-primary/10',
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <p className="min-w-0 flex-1 font-jp text-[1.375rem] font-medium leading-[1.65] text-foreground">
+                  <FuriganaText segments={line.segments} />
+                </p>
+                <AudioButton
+                  disabled={speaking}
+                  playing={playingKey === playKey}
+                  label={`Nghe lời ${line.speaker}`}
+                  onClick={() => onPlay(line.segments, playKey)}
+                />
+              </div>
+            </div>
+
+            {!isLeft ? (
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary font-display text-sm font-extrabold text-foreground shadow-sm">
+                {line.speaker}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function shuffleChoices(choices: string[], correctAnswer: number) {
@@ -130,14 +220,33 @@ function AudioButton({
 }
 
 export function LessonGrammarView() {
-  const { grammar } = useLessonData();
+  const { grammar, lesson } = useLessonData();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusId = searchParams.get('focus');
+  const isIntroCourse = isIntroCourseLevel(lesson.course.jlptLevel);
+  const passScore = speakingPassScoreForCourse(lesson.course.jlptLevel);
   const { playTts, speaking } = useSpeech();
   const [grammarIndex, setGrammarIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
-  const [playingExampleIndex, setPlayingExampleIndex] = useState<number | null>(null);
+  const [playingExampleKey, setPlayingExampleKey] = useState<string | null>(null);
+  const [drillScores, setDrillScores] = useState<Record<number, number | null>>({});
 
   const currentGrammar = grammar[grammarIndex];
+
+  useEffect(() => {
+    if (!focusId || grammar.length === 0) return;
+    const index = grammar.findIndex((g) => g.id === focusId);
+    if (index >= 0) {
+      setGrammarIndex(index);
+      setAnswers({});
+      setSubmitted(false);
+      setDrillScores({});
+      const next = new URLSearchParams(searchParams);
+      next.delete('focus');
+      setSearchParams(next, { replace: true });
+    }
+  }, [focusId, grammar, searchParams, setSearchParams]);
 
   const shuffledQuiz = useMemo(() => {
     const g = grammar[grammarIndex];
@@ -158,7 +267,12 @@ export function LessonGrammarView() {
     : 0;
 
   const hasQuiz = Boolean(currentGrammar?.quiz?.length);
-  const canContinue = !hasQuiz || submitted;
+  const drills = currentGrammar?.drills ?? [];
+  const drillsRequired = isIntroCourse && drills.length > 0;
+  const allDrillsPassed =
+    !drillsRequired ||
+    drills.every((_, i) => (drillScores[i] ?? 0) >= passScore);
+  const canContinue = allDrillsPassed && (!hasQuiz || submitted);
   const quizPerfect = hasQuiz && submitted && score === currentGrammar?.quiz?.length;
 
   if (!currentGrammar) {
@@ -173,7 +287,12 @@ export function LessonGrammarView() {
   function goToGrammar(index: number) {
     setGrammarIndex(index);
     resetQuizState();
-    setPlayingExampleIndex(null);
+    setDrillScores({});
+    setPlayingExampleKey(null);
+  }
+
+  function handleDrillScore(index: number, score: number) {
+    setDrillScores((prev) => ({ ...prev, [index]: score }));
   }
 
   function handleSelectAnswer(questionIndex: number, choiceIndex: number) {
@@ -186,14 +305,14 @@ export function LessonGrammarView() {
     goToGrammar(grammarIndex + 1);
   }
 
-  async function handlePlayExample(segments: JapaneseSegment[], index: number) {
+  async function handlePlayExample(segments: JapaneseSegment[], key: string) {
     const text = segmentsToText(segments);
     if (!text.trim()) return;
-    setPlayingExampleIndex(index);
+    setPlayingExampleKey(key);
     try {
       await playTts(text);
     } finally {
-      setPlayingExampleIndex(null);
+      setPlayingExampleKey(null);
     }
   }
 
@@ -221,9 +340,18 @@ export function LessonGrammarView() {
                 Grammar Progress
               </p>
             </div>
-            <p className="text-sm tabular-nums text-muted-foreground">
-              <span className="font-semibold text-foreground">{progressPercent}%</span> Completed
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <AddToNotebookButton
+                itemId={currentGrammar.id}
+                itemType="grammar"
+                lessonId={lesson.id}
+                itemLabel={currentGrammar.pattern}
+                compact
+              />
+              <p className="text-sm tabular-nums text-muted-foreground">
+                <span className="font-semibold text-foreground">{progressPercent}%</span> Completed
+              </p>
+            </div>
           </div>
           <ProgressBlocks percent={progressPercent} total={grammar.length} />
           <p className="text-sm font-medium text-foreground">
@@ -252,12 +380,6 @@ export function LessonGrammarView() {
                   <BookOpen className="size-3.5" strokeWidth={2} />
                   {currentGrammar.title}
                 </span>
-                {currentGrammar.type ? (
-                  <>
-                    <span className="text-[#EAECEF]">|</span>
-                    <span>{currentGrammar.type}</span>
-                  </>
-                ) : null}
               </div>
 
               <p className="font-jp text-[2.625rem] font-bold leading-[1.2] tracking-[0.04em] text-foreground sm:text-[3rem]">
@@ -295,7 +417,11 @@ export function LessonGrammarView() {
                     Ví dụ
                   </p>
                   <ul className="space-y-0">
-                    {currentGrammar.examples.map((example, index) => (
+                    {currentGrammar.examples.map((example, index) => {
+                      const dialogueLines = parseDialogueExample(example.segments);
+                      const playKey = String(index);
+
+                      return (
                       <li key={index}>
                         {index > 0 ? (
                           <div className="my-6 h-px" style={{ backgroundColor: DIVIDER }} />
@@ -305,26 +431,53 @@ export function LessonGrammarView() {
                             {CIRCLED[index] ?? `${index + 1}.`}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-start gap-3">
-                              <p className="min-w-0 flex-1 font-jp text-[1.625rem] font-medium leading-[1.65] text-foreground">
-                                <FuriganaText segments={example.segments} />
-                              </p>
-                              <AudioButton
-                                disabled={speaking}
-                                playing={playingExampleIndex === index}
-                                label="Nghe câu ví dụ"
-                                onClick={() => void handlePlayExample(example.segments, index)}
+                            {dialogueLines ? (
+                              <GrammarDialogueExample
+                                lines={dialogueLines}
+                                exampleIndex={index}
+                                playingKey={playingExampleKey}
+                                speaking={speaking}
+                                onPlay={handlePlayExample}
                               />
-                            </div>
-                            <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                              {example.vi}
-                            </p>
+                            ) : (
+                              <>
+                                <div className="flex items-start gap-3">
+                                  <p className="min-w-0 flex-1 font-jp text-[1.625rem] font-medium leading-[1.65] text-foreground">
+                                    <FuriganaText segments={example.segments} />
+                                  </p>
+                                  <AudioButton
+                                    disabled={speaking}
+                                    playing={playingExampleKey === playKey}
+                                    label="Nghe câu ví dụ"
+                                    onClick={() => void handlePlayExample(example.segments, playKey)}
+                                  />
+                                </div>
+                                {example.vi ? (
+                                  <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                                    {example.vi}
+                                  </p>
+                                ) : null}
+                              </>
+                            )}
                           </div>
                         </div>
                       </li>
-                    ))}
+                    );
+                    })}
                   </ul>
                 </section>
+              </>
+            ) : null}
+
+            {drills.length > 0 ? (
+              <>
+                <div className="h-px" style={{ backgroundColor: DIVIDER }} />
+                <GrammarDrillPanel
+                  drills={drills}
+                  scores={drillScores}
+                  onScore={handleDrillScore}
+                  jlptLevel={lesson.course.jlptLevel}
+                />
               </>
             ) : null}
 
@@ -476,7 +629,11 @@ export function LessonGrammarView() {
                 <ArrowRight className="size-4" strokeWidth={2.5} />
               </Button>
               {!canContinue ? (
-                <p className="text-xs text-muted-foreground">Làm xong luyện tập để tiếp tục.</p>
+                <p className="text-xs text-muted-foreground">
+                  {drillsRequired && !allDrillsPassed
+                    ? `Nhại đủ các câu (≥${passScore} điểm) để tiếp tục.`
+                    : 'Làm xong luyện tập để tiếp tục.'}
+                </p>
               ) : null}
             </>
           ) : (

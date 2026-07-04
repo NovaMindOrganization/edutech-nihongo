@@ -7,7 +7,7 @@ export function validateBody<T extends ZodSchema>(schema: T) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      return next(new AppError("Validation failed", 422, "VALIDATION_ERROR"));
+      return next(new AppError("Dữ liệu không hợp lệ", 422, "VALIDATION_ERROR"));
     }
     req.validatedBody = result.data;
     return next();
@@ -18,7 +18,7 @@ export function validateQuery<T extends ZodSchema>(schema: T) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      return next(new AppError("Validation failed", 422, "VALIDATION_ERROR"));
+      return next(new AppError("Dữ liệu không hợp lệ", 422, "VALIDATION_ERROR"));
     }
     req.validatedQuery = result.data;
     return next();
@@ -133,10 +133,13 @@ export const conversationSchema = z.object({
 });
 
 export const reviewGenerateSchema = z.object({
-  mode: z.enum(["random", "weakness", "flashcard", "lesson", "pick"]).optional(),
+  mode: z
+    .enum(["random", "weakness", "flashcard", "lesson", "pick", "unlearned", "learned"])
+    .optional(),
   count: z.number().int().min(1).max(50).optional(),
   type: z.enum(["kanji", "vocabulary", "grammar", "mixed"]).optional(),
   pool: z.enum(["learned", "collected"]).optional(),
+  notebookId: z.string().uuid().optional(),
   lessonIds: z.array(z.string().uuid()).optional(),
   itemIds: z.array(z.string().uuid()).optional(),
 });
@@ -153,6 +156,32 @@ export const miniTestSubmitSchema = z.object({
 
 export const assignIdsSchema = z.object({
   ids: z.array(z.string().uuid()).min(0),
+});
+
+export const userNotebookCreateSchema = z.object({
+  title: z.string().min(1).max(120),
+  description: z.string().max(2000).optional(),
+});
+
+export const userNotebookUpdateSchema = z.object({
+  title: z.string().min(1).max(120).optional(),
+  description: z.string().max(2000).nullable().optional(),
+});
+
+export const userNotebookAddItemSchema = z.object({
+  itemId: z.string().uuid(),
+  itemType: z.enum(["kanji", "vocabulary", "grammar"]),
+  note: z.string().max(2000).optional(),
+  lessonId: z.string().uuid().optional(),
+});
+
+export const userNotebookItemNoteSchema = z.object({
+  note: z.string().max(2000).nullable(),
+});
+
+export const userNotebookRemoveItemSchema = z.object({
+  itemId: z.string().uuid(),
+  itemType: z.enum(["kanji", "vocabulary", "grammar"]),
 });
 
 export const questionSchema = z.object({

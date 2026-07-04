@@ -770,12 +770,16 @@ async function main() {
   const { seedJpd1Course } = await import("../scripts/seed-jpd1.js");
   const jpd1 = await seedJpd1Course({ db, adminId: admin.id });
 
+  const { seedJpd2Course } = await import("../scripts/seed-jpd2.js");
+  const jpd2 = await seedJpd2Course({ db, adminId: admin.id });
+
   const { syncKanjiMemoryImagesFromMinio } = await import(
     "../scripts/sync-kanji-memory-images.js"
   );
   await syncKanjiMemoryImagesFromMinio({ db });
 
   await enrollDemoJpd1(jpd1.courseId, admin.id);
+  await enrollDemoJpd1(jpd2.courseId, admin.id);
 
   console.log("[seed] Done.");
 }

@@ -10,4 +10,5 @@ export {
   SidebarSection,
   SidebarShell,
   SidebarUserCard,
+  TopbarUserBadge,
 } from './app-sidebar';

@@ -1,15 +1,19 @@
-﻿import { BookOpen, CheckCircle2, ClipboardCheck } from 'lucide-react';
+﻿import { BookOpen, CheckCircle2, ClipboardCheck, MessageSquare } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { buttonVariants } from '@/components/ui/button-variants';
 import { AppIcon } from '@/components/usable/app-icon';
 import { PageShell, pageContentClass } from '@/components/usable/page-shell';
+import { useFeedbackQuick } from '@/features/feedback/feedback-quick-context';
 import { getLesson, type LessonPayload } from '@/features/student/services/studentApi';
 import { cn } from '@/lib/utils';
 import { paths } from '@/router/paths';
 
 import { LessonContext } from '../context/lesson-context';
+import { formatJpd1ShellSubtitle } from '../utils/jpd1-lesson-groups';
+import { formatJpd2ShellSubtitle } from '../utils/jpd2-lesson-groups';
 
 function LessonModuleTabs({
   lessonId,
@@ -60,6 +64,7 @@ function LessonModuleTabs({
 export function LessonShellView() {
   const { lessonId = '' } = useParams();
   const [data, setData] = useState<LessonPayload | null>(null);
+  const { openFeedback } = useFeedbackQuick();
 
   useEffect(() => {
     getLesson(lessonId)
@@ -79,36 +84,30 @@ export function LessonShellView() {
         ? 'Đang học'
         : 'Đã khóa';
 
-  const levelLabel =
-    data.lesson.course.jlptLevel === 'JPD1'
-      ? 'Foundation'
-      : data.lesson.course.jlptLevel;
+  const jlptLevel = data.lesson.course.jlptLevel;
 
   return (
     <LessonContext.Provider value={data}>
       <PageShell
         className={pageContentClass}
-        eyebrow={data.lesson.isBonus ? 'Bài phụ trợ' : 'Bài học'}
-        subtitle={`Tiết ${data.lesson.orderIndex} · ${levelLabel}`}
+        eyebrow={
+          jlptLevel === 'JPD1'
+            ? formatJpd1ShellSubtitle(data.lesson)
+            : jlptLevel === 'JPD2'
+              ? formatJpd2ShellSubtitle(data.lesson)
+              : data.lesson.isBonus
+                ? 'Bài phụ trợ'
+                : 'Bài học'
+        }
+        subtitle={jlptLevel === 'JPD1' || jlptLevel === 'JPD2' ? undefined : jlptLevel}
         title={data.lesson.title}
-        description={data.lesson.objective ?? 'Đọc ví dụ trước, sau đó dùng flashcard, quiz hoặc luyện hội thoại.'}
         icon={BookOpen}
         iconClassName="bg-tertiary"
         tone="secondary"
-        chips={
-          data.lesson.estimatedMinutes
-            ? [`~${data.lesson.estimatedMinutes} phút`, 'Từ vựng', 'Ngữ pháp']
-            : ['Ngữ pháp', 'Từ vựng', 'Kanji']
-        }
         backLink={{
           to: courseId ? paths.learn.course(courseId) : paths.learn.hub,
           label: data.lesson.course.title,
         }}
-        footer={
-          data.lesson.isBonus
-            ? 'Bài phụ trợ — học tùy chọn, không bắt buộc để mở bài tiếp theo.'
-            : `MiniTest: ${data.progress.miniTestScore ?? 'chưa làm'} / ${data.lesson.passThreshold} điểm để mở bài tiếp theo.`
-        }
         headerExtra={
           <div className="rounded-xl border border-border bg-background p-4 shadow-premium card-lift">
             <div className="flex items-center gap-3">
@@ -125,17 +124,27 @@ export function LessonShellView() {
                 <p className="font-bold">{progressLabel}</p>
               </div>
             </div>
-            {!data.lesson.isBonus ? (
-              <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <AppIcon icon={ClipboardCheck} size="sm" className="bg-tertiary" />
-                MiniTest: {data.progress.miniTestScore ?? 'chưa làm'} / {data.lesson.passThreshold}
-              </div>
-            ) : null}
           </div>
         }
       >
         <div className="space-y-5">
           <section className="rounded-xl border border-border bg-background p-4 shadow-premium card-lift">
+            <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1.5')}
+                onClick={() =>
+                  openFeedback({
+                    initialCategory: 'lesson_content',
+                    initialLessonId: lessonId,
+                    initialCourseId: courseId,
+                  })
+                }
+              >
+                <MessageSquare className="size-4" />
+                Góp ý bài học
+              </button>
+            </div>
             <LessonModuleTabs lessonId={lessonId} data={data} />
           </section>
           <div className="rounded-2xl border border-border/70 bg-surface-paper/50 p-4 md:p-6">

@@ -9,6 +9,7 @@ import * as student from '../controllers/student.controller.js';
 import * as studentExt from '../controllers/student-ext.controller.js';
 import * as vocabularyCtrl from '../controllers/vocabulary.controller.js';
 import * as systemAdmin from '../controllers/system-admin.controller.js';
+import * as feedback from '../controllers/feedback.controller.js';
 import * as payment from '../controllers/payment.controller.js';
 import { optionalAuth, requireAuth, requireRoles } from '../middlewares/auth.js';
 import {
@@ -32,6 +33,11 @@ import {
   mockExamListQuery,
   reviewGenerateSchema,
   miniTestSubmitSchema,
+  userNotebookAddItemSchema,
+  userNotebookCreateSchema,
+  userNotebookItemNoteSchema,
+  userNotebookRemoveItemSchema,
+  userNotebookUpdateSchema,
   validateBody,
   validateQuery,
   vocabSchema,
@@ -54,6 +60,12 @@ import {
   lessonVocabularyQuerySchema,
   vocabularyProgressPatchSchema,
 } from '../validators/vocabulary.validator.js';
+import {
+  addFeedbackMessageSchema,
+  createFeedbackSchema,
+  feedbackListQuerySchema,
+  updateFeedbackStatusSchema,
+} from '../validators/feedback.validator.js';
 
 const router = Router();
 const upload = multer({
@@ -115,6 +127,7 @@ studentRouter.get('/orders/:id', payment.getOrder);
 studentRouter.post('/courses/:courseId/enroll', student.enrollCourse);
 studentRouter.get('/courses/:courseId/lessons', student.getCourseLessons);
 studentRouter.get('/lessons/:id', student.getLesson);
+studentRouter.post('/lessons/:lessonId/speaking/start', studentExt.lessonSpeakingStart);
 studentRouter.post('/lessons/:lessonId/speaking/message', studentExt.lessonSpeakingMessage);
 studentRouter.get('/courses/:courseId/kanji', studentExt.courseKanji);
 studentRouter.get('/kanji/handbook', studentExt.handbookKanji);
@@ -129,6 +142,35 @@ studentRouter.get('/notebook/vocabulary', studentExt.notebookVocabulary);
 studentRouter.get('/notebook/learned/:type', studentExt.notebookLearned);
 studentRouter.get('/notebook/collected/:type', studentExt.notebookCollected);
 studentRouter.get('/notebook/lessons', studentExt.notebookLessons);
+studentRouter.get('/notebooks', studentExt.listUserNotebooks);
+studentRouter.post(
+  '/notebooks',
+  validateBody(userNotebookCreateSchema),
+  studentExt.createUserNotebook,
+);
+studentRouter.patch(
+  '/notebooks/:notebookId',
+  validateBody(userNotebookUpdateSchema),
+  studentExt.updateUserNotebook,
+);
+studentRouter.delete('/notebooks/:notebookId', studentExt.deleteUserNotebook);
+studentRouter.get('/notebooks/:notebookId/content/:type', studentExt.userNotebookContent);
+studentRouter.post(
+  '/notebooks/:notebookId/items',
+  validateBody(userNotebookAddItemSchema),
+  studentExt.addUserNotebookItem,
+);
+studentRouter.patch(
+  '/notebooks/:notebookId/items/:entryId',
+  validateBody(userNotebookItemNoteSchema),
+  studentExt.updateUserNotebookItemNote,
+);
+studentRouter.delete(
+  '/notebooks/:notebookId/items',
+  validateBody(userNotebookRemoveItemSchema),
+  studentExt.removeUserNotebookItem,
+);
+studentRouter.get('/notebooks/items/membership', studentExt.userNotebookItemMembership);
 studentRouter.post('/mastery', studentExt.upsertMastery);
 studentRouter.post('/review/generate', validateBody(reviewGenerateSchema), studentExt.reviewGenerate);
 studentRouter.post('/review/submit', studentExt.reviewSubmit);
@@ -184,6 +226,16 @@ studentRouter.post('/webrtc/leave', studentExt.webrtcLeave);
 studentRouter.post('/community/translate', studentExt.communityTranslate);
 studentRouter.post('/webrtc/evaluate', studentExt.webrtcEvaluate);
 studentRouter.post('/webrtc/report', studentExt.webrtcReport);
+
+studentRouter.post('/feedbacks', validateBody(createFeedbackSchema), feedback.createFeedback);
+studentRouter.get('/feedbacks', validateQuery(feedbackListQuerySchema), feedback.listFeedbacks);
+studentRouter.get('/feedbacks/:id', feedback.getFeedback);
+studentRouter.post(
+  '/feedbacks/:id/messages',
+  validateBody(addFeedbackMessageSchema),
+  feedback.addMessage,
+);
+studentRouter.patch('/feedbacks/:id/close', feedback.closeFeedback);
 
 router.use('/student', studentRouter);
 
@@ -292,6 +344,19 @@ instructorRouter.post(
   admin.moderateStudySet,
 );
 
+instructorRouter.get('/feedbacks', validateQuery(feedbackListQuerySchema), feedback.listFeedbacks);
+instructorRouter.get('/feedbacks/:id', feedback.getFeedback);
+instructorRouter.post(
+  '/feedbacks/:id/messages',
+  validateBody(addFeedbackMessageSchema),
+  feedback.addMessage,
+);
+instructorRouter.patch(
+  '/feedbacks/:id',
+  validateBody(updateFeedbackStatusSchema),
+  feedback.updateStatus,
+);
+
 router.use('/instructor', instructorRouter);
 
 // System admin only
@@ -325,6 +390,19 @@ sysAdminRouter.get('/config', systemAdmin.getConfig);
 sysAdminRouter.put('/config/:key', systemAdmin.setConfig);
 sysAdminRouter.get('/reports', systemAdmin.listReports);
 sysAdminRouter.put('/reports/:id/resolve', systemAdmin.resolveReport);
+sysAdminRouter.get('/feedbacks/stats', feedback.getStats);
+sysAdminRouter.get('/feedbacks', validateQuery(feedbackListQuerySchema), feedback.listFeedbacks);
+sysAdminRouter.get('/feedbacks/:id', feedback.getFeedback);
+sysAdminRouter.post(
+  '/feedbacks/:id/messages',
+  validateBody(addFeedbackMessageSchema),
+  feedback.addMessage,
+);
+sysAdminRouter.patch(
+  '/feedbacks/:id',
+  validateBody(updateFeedbackStatusSchema),
+  feedback.updateStatus,
+);
 sysAdminRouter.get('/analytics/dau', systemAdmin.analytics);
 sysAdminRouter.get('/health', systemAdmin.adminHealth);
 

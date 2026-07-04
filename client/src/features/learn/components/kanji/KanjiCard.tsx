@@ -1,6 +1,7 @@
 ﻿import { Check, PenTool } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { AddToNotebookButton } from '@/features/student/notebook/AddToNotebookButton';
 
 import { cn } from '@/lib/utils';
 
@@ -8,11 +9,12 @@ import type { KanjiItem } from '../../types/kanji.types';
 
 type KanjiCardProps = {
   kanji: KanjiItem;
+  lessonId?: string;
   learned?: boolean;
   onClick: () => void;
 };
 
-export function KanjiCard({ kanji, learned = false, onClick }: KanjiCardProps) {
+export function KanjiCard({ kanji, lessonId, learned = false, onClick }: KanjiCardProps) {
   const onReading = kanji.readingsOn[0];
   const kunReading = kanji.readingsKun[0];
 
@@ -34,6 +36,17 @@ export function KanjiCard({ kanji, learned = false, onClick }: KanjiCardProps) {
           aria-hidden
         >
           <Check className="size-3.5 stroke-[3]" />
+        </span>
+      )}
+      {lessonId && (
+        <span className="absolute left-3 top-3" onClick={(e) => e.stopPropagation()}>
+          <AddToNotebookButton
+            itemId={kanji.id}
+            itemType="kanji"
+            lessonId={lessonId}
+            itemLabel={kanji.character}
+            compact
+          />
         </span>
       )}
 

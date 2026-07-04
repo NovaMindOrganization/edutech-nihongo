@@ -2,6 +2,7 @@ import {
   BookMarked,
   BookOpen,
   Check,
+  ChevronRight,
   FileText,
   GraduationCap,
   Languages,
@@ -195,8 +196,8 @@ export function NotebookEmptyState({
     return (
       <EmptyState
         tone="grammar"
-        title="Ngữ pháp tự thêm sắp ra mắt"
-        description="Hiện tại bạn vẫn có thể ôn ngữ pháp trong Lộ trình học. Sưu tập riêng sẽ được bổ sung sau."
+        title="Chưa có ngữ pháp trong sổ"
+        description="Thêm mẫu ngữ pháp từ bài học bằng nút Thêm vào sổ tay."
         size="lg"
       />
     );
@@ -209,7 +210,7 @@ export function NotebookEmptyState({
       <EmptyState
         tone={preset.tone}
         title="Sưu tập đang trống"
-        description="Quét văn bản bằng OCR hoặc đánh dấu yêu thích khi học để gom mục vào đây."
+        description="Quét văn bản bằng OCR hoặc thêm từ bài học để gom mục vào sổ tay cá nhân."
         size="lg"
         action={
           <Link
@@ -253,6 +254,8 @@ export function NotebookKanjiCard({
   hanViet,
   readingsOn,
   readingsKun,
+  isLearned,
+  practiceHref,
   selected,
   selectable,
   onToggleSelect,
@@ -266,6 +269,8 @@ export function NotebookKanjiCard({
   hanViet?: string | null;
   readingsOn?: string[];
   readingsKun?: string[];
+  isLearned?: boolean;
+  practiceHref?: string;
   selected?: boolean;
   selectable?: boolean;
   onToggleSelect?: () => void;
@@ -279,7 +284,20 @@ export function NotebookKanjiCard({
   const body = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <Badge className="bg-amber-200 text-amber-950">{jlptLevel}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className="bg-amber-200 text-amber-950">{jlptLevel}</Badge>
+          {isLearned !== undefined && (
+            <Badge
+              className={cn(
+                isLearned
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-muted text-muted-foreground',
+              )}
+            >
+              {isLearned ? 'Đã thuộc' : 'Chưa thuộc'}
+            </Badge>
+          )}
+        </div>
         {selectable && (
           <span
             className={cn(
@@ -327,6 +345,17 @@ export function NotebookKanjiCard({
         <p className="mt-3 rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2 text-left text-xs font-medium text-muted-foreground">
           {note}
         </p>
+      )}
+
+      {practiceHref && (
+        <Link
+          to={practiceHref}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-bold text-foreground shadow-sm transition-colors hover:border-brand/40 hover:bg-brand-soft/30"
+        >
+          Xem chi tiết
+          <ChevronRight className="size-4" />
+        </Link>
       )}
     </>
   );
@@ -377,6 +406,8 @@ export function NotebookVocabCard({
   reading,
   meaning,
   jlptLevel,
+  isLearned,
+  practiceHref,
   selected,
   selectable,
   onToggleSelect,
@@ -387,6 +418,8 @@ export function NotebookVocabCard({
   reading?: string | null;
   meaning: string;
   jlptLevel?: string | null;
+  isLearned?: boolean;
+  practiceHref?: string;
   selected?: boolean;
   selectable?: boolean;
   onToggleSelect?: () => void;
@@ -401,6 +434,17 @@ export function NotebookVocabCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {jlptLevel && <Badge className="bg-brand-soft text-brand">{jlptLevel}</Badge>}
+          {isLearned !== undefined && (
+            <Badge
+              className={cn(
+                isLearned
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-muted text-muted-foreground',
+              )}
+            >
+              {isLearned ? 'Đã thuộc' : 'Chưa thuộc'}
+            </Badge>
+          )}
         </div>
         {selectable && (
           <span
@@ -425,6 +469,17 @@ export function NotebookVocabCard({
         )}
         <p className="mt-3 text-base font-bold leading-snug text-foreground">{meaning}</p>
       </div>
+
+      {practiceHref && (
+        <Link
+          to={practiceHref}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-bold text-foreground shadow-sm transition-colors hover:border-brand/40 hover:bg-brand-soft/30"
+        >
+          Xem trong bài
+          <ChevronRight className="size-4" />
+        </Link>
+      )}
     </>
   );
 
@@ -474,16 +529,51 @@ export function NotebookGrammarCard({
   meaningVi,
   title,
   jlpt,
+  isLearned,
+  practiceHref,
+  selected,
+  selectable,
+  onToggleSelect,
 }: {
   pattern: string;
   meaningVi: string;
   title?: string | null;
   jlpt?: string | null;
+  isLearned?: boolean;
+  practiceHref?: string;
+  selected?: boolean;
+  selectable?: boolean;
+  onToggleSelect?: () => void;
 }) {
-  return (
-    <article className="flex h-full flex-col rounded-2xl border border-border bg-surface-paper p-4 shadow-premium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-premium-hover">
-      <div className="flex flex-wrap gap-2">
-        {jlpt && <Badge className="bg-secondary/30 text-secondary-foreground">{jlpt}</Badge>}
+  const body = (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {jlpt && <Badge className="bg-secondary/30 text-secondary-foreground">{jlpt}</Badge>}
+          {isLearned !== undefined && (
+            <Badge
+              className={cn(
+                isLearned
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-muted text-muted-foreground',
+              )}
+            >
+              {isLearned ? 'Đã thuộc' : 'Chưa thuộc'}
+            </Badge>
+          )}
+        </div>
+        {selectable && (
+          <span
+            className={cn(
+              'inline-flex size-6 items-center justify-center rounded-lg border-2 transition-colors',
+              selected
+                ? 'border-brand bg-brand text-white'
+                : 'border-border bg-background text-transparent',
+            )}
+          >
+            <Check className="size-3.5 stroke-[3]" />
+          </span>
+        )}
       </div>
       {title && (
         <p className="mt-3 font-display text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -494,6 +584,32 @@ export function NotebookGrammarCard({
         {pattern}
       </p>
       <p className="mt-3 flex-1 text-sm font-semibold leading-7 text-foreground/90">{meaningVi}</p>
-    </article>
+      {practiceHref && (
+        <Link
+          to={practiceHref}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-bold text-foreground shadow-sm transition-colors hover:border-brand/40 hover:bg-brand-soft/30"
+        >
+          Xem trong bài
+          <ChevronRight className="size-4" />
+        </Link>
+      )}
+    </>
   );
+
+  const className = cn(
+    'relative flex h-full flex-col rounded-2xl border border-border bg-surface-paper p-4 shadow-premium transition-all duration-200',
+    'hover:-translate-y-0.5 hover:shadow-premium-hover',
+    selected && 'border-brand ring-2 ring-brand/25 ring-offset-2',
+  );
+
+  if (selectable) {
+    return (
+      <button type="button" onClick={onToggleSelect} className={cn(className, 'text-left')}>
+        {body}
+      </button>
+    );
+  }
+
+  return <article className={className}>{body}</article>;
 }

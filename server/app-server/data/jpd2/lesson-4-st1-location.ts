@@ -1,0 +1,196 @@
+import type { Jpd2LessonSeed } from "./types.js";
+
+/** Bài 4 · Tiết 1 — ST1 vị trí */
+export const lesson4St1Location: Jpd2LessonSeed = {
+  orderIndex: 0,
+  slug: "bai-4-st1-vi-tri-va-phuong-huong",
+  title: "ST1 — Vị trí và phương hướng",
+  description: "Hỏi và nói vị trí thành phố / địa điểm theo phương hướng — Bài 4, Tiết 1.",
+  objective:
+    "Hỏi được どこですか, nói địa điểm nằm ở phía Bắc/Nam/Đông/Tây/trung tâm của quốc gia hoặc thành phố.",
+  lessonType: "main",
+  isBonus: false,
+  estimatedMinutes: 50,
+  vocabulary: [
+    { word: "きた", reading: "きた", meaning: "phía Bắc" },
+    { word: "みなみ", reading: "みなみ", meaning: "phía Nam" },
+    { word: "ひがし", reading: "ひがし", meaning: "phía Đông" },
+    { word: "にし", reading: "にし", meaning: "phía Tây" },
+    { word: "まんなか", reading: "まんなか", meaning: "chính giữa / trung tâm" },
+    { word: "まち", reading: "まち", meaning: "thành phố / thị trấn" },
+    { word: "どこ", reading: "どこ", meaning: "ở đâu" },
+    { word: "おうち", reading: "おうち", meaning: "nhà (lịch sự)" },
+    { word: "うち", reading: "うち", meaning: "nhà" },
+    { word: "～く", reading: "く", meaning: "quận", memoryTip: "Gắn sau số: ９く = quận 9." },
+    { word: "ホーチミン", reading: "ホーチミン", meaning: "Hồ Chí Minh" },
+    { word: "ハノイ", reading: "ハノイ", meaning: "Hà Nội" },
+    { word: "ダナン", reading: "ダナン", meaning: "Đà Nẵng" },
+    { word: "とうきょう", reading: "とうきょう", meaning: "Tokyo" },
+    { word: "おおさか", reading: "おおさか", meaning: "Osaka" },
+    { word: "さっぽろ", reading: "さっぽろ", meaning: "Sapporo" },
+    { word: "アユタヤ", reading: "アユタヤ", meaning: "Ayutthaya" },
+    { word: "タイ", reading: "タイ", meaning: "Thái Lan" },
+    { word: "ベトナム", reading: "ベトナム", meaning: "Việt Nam" },
+    { word: "にほん", reading: "にほん", meaning: "Nhật Bản" },
+  ],
+  grammar: [
+    {
+      title: "Hỏi vị trí",
+      challengeLabel: "チャレンジ 1",
+      pattern: "N は どこですか",
+      meaningVi: "N ở đâu?",
+      usage: "どこ = ở đâu. Dùng khi hỏi vị trí thành phố, địa điểm.",
+      examples: [
+        { segments: [{ text: "ホーチミンは どこですか。" }], vi: "Hồ Chí Minh ở đâu?" },
+        { segments: [{ text: "ハノイは どこですか。" }], vi: "Hà Nội ở đâu?" },
+        { segments: [{ text: "とうきょうは どこですか。" }], vi: "Tokyo ở đâu?" },
+      ],
+      drills: [
+        {
+          labelVi: "Hỏi vị trí HCM",
+          modelJa: "ホーチミンはどこですか。",
+          segments: [{ text: "ホーチミンは どこですか。" }],
+        },
+        {
+          labelVi: "Hỏi vị trí Tokyo",
+          modelJa: "とうきょうはどこですか。",
+          segments: [{ text: "とうきょうは どこですか。" }],
+        },
+      ],
+      quiz: [
+        {
+          question: { segments: [{ text: "ホーチミンは どこですか。" }] },
+          choices: ["Hồ Chí Minh ở đâu?", "Hồ Chí Minh là gì?", "Hồ Chí Minh của ai?", "Đây là Hồ Chí Minh"],
+          answer: 0,
+        },
+      ],
+    },
+    {
+      title: "Vị trí trong quốc gia",
+      challengeLabel: "チャレンジ 2",
+      pattern: "N は 国 の 方角 です",
+      meaningVi: "N ở phía ~ của quốc gia",
+      usage: "の nối quốc gia và phương hướng: ベトナムの みなみ = phía Nam Việt Nam.",
+      notes: "きた=北 · みなみ=南 · ひがし=東 · にし=西 · まんなか=中央",
+      examples: [
+        { segments: [{ text: "ホーチミンは ベトナムの みなみです。" }], vi: "HCM ở phía Nam Việt Nam." },
+        { segments: [{ text: "ハノイは ベトナムの きたです。" }], vi: "Hà Nội ở phía Bắc Việt Nam." },
+        { segments: [{ text: "ダナンは ベトナムの まんなかです。" }], vi: "Đà Nẵng ở trung tâm Việt Nam." },
+        { segments: [{ text: "とうきょうは にほんの ひがしです。" }], vi: "Tokyo ở phía Đông Nhật." },
+        { segments: [{ text: "さっぽろは にほんの きたです。" }], vi: "Sapporo ở phía Bắc Nhật." },
+      ],
+      drills: [
+        {
+          labelVi: "HCM — phía Nam VN",
+          modelJa: "ホーチミンはベトナムのみなみです。",
+          segments: [{ text: "ホーチミンは ベトナムの みなみです。" }],
+        },
+        {
+          labelVi: "Hà Nội — phía Bắc VN",
+          modelJa: "ハノイはベトナムのきたです。",
+          segments: [{ text: "ハノイは ベトナムの きたです。" }],
+        },
+      ],
+      quiz: [
+        {
+          question: { segments: [{ text: "ホーチミンは ベトナムの みなみです。" }] },
+          choices: ["HCM ở phía Nam VN", "HCM ở phía Bắc VN", "HCM ở trung tâm VN", "HCM ở phía Đông VN"],
+          answer: 0,
+        },
+      ],
+    },
+    {
+      title: "Vị trí trong thành phố",
+      challengeLabel: "チャレンジ 3",
+      pattern: "N の どこですか ／ N は 市 の 方角 です",
+      meaningVi: "Ở đâu của N? / N ở phía ~ của thành phố",
+      usage: "HCMの どこですか = ở đâu của HCM? ９くは HCMの ひがし = quận 9 ở phía Đông HCM.",
+      examples: [
+        { segments: [{ text: "HCMの どこですか。" }], vi: "Ở đâu của HCM?" },
+        { segments: [{ text: "９くです。" }], vi: "Quận 9." },
+        { segments: [{ text: "９くは HCMの ひがしです。" }], vi: "Quận 9 ở phía Đông HCM." },
+      ],
+      drills: [
+        {
+          labelVi: "Hỏi quận trong HCM",
+          modelJa: "HCMのどこですか。",
+          segments: [{ text: "HCMの どこですか。" }],
+        },
+        {
+          labelVi: "Trả lời quận 9",
+          modelJa: "9くはHCMのひがしです。",
+          segments: [{ text: "９くは HCMの ひがしです。" }],
+        },
+      ],
+    },
+  ],
+  dialogues: [
+    {
+      title: "Nhà ở quận nào",
+      situationVi: "Hỏi nhà bạn ở đâu trong thành phố.",
+      lines: [
+        { speaker: "A", segments: [{ text: "おうちは どこですか。" }], vi: "Nhà bạn ở đâu?" },
+        { speaker: "B", segments: [{ text: "HCMです。" }], vi: "Ở HCM." },
+        { speaker: "A", segments: [{ text: "HCMの どこですか。" }], vi: "Ở đâu của HCM?" },
+        { speaker: "B", segments: [{ text: "９くです。" }], vi: "Quận 9." },
+        { speaker: "A", segments: [{ text: "９くは どこですか。" }], vi: "Quận 9 ở đâu?" },
+        { speaker: "B", segments: [{ text: "HCMの ひがしです。" }], vi: "Phía Đông HCM." },
+      ],
+    },
+    {
+      title: "Thành phố ở đâu",
+      situationVi: "Hỏi vị trí các thành phố trong quốc gia.",
+      lines: [
+        { speaker: "A", segments: [{ text: "ハノイは どこですか。" }], vi: "Hà Nội ở đâu?" },
+        { speaker: "B", segments: [{ text: "ベトナムの きたです。" }], vi: "Phía Bắc Việt Nam." },
+        { speaker: "A", segments: [{ text: "おおさかは どこですか。" }], vi: "Osaka ở đâu?" },
+        { speaker: "B", segments: [{ text: "にほんの にしです。" }], vi: "Phía Tây Nhật." },
+      ],
+    },
+  ],
+  kanji: [],
+  finalTask: {
+    title: "やってみよう — Vị trí",
+    instructionVi: "Hỏi một thành phố ở đâu và trả lời bằng phương hướng trong quốc gia.",
+    promptJapanese: "___は どこですか。\n___の ___です。",
+    expectedPattern: "どこ|きた|みなみ|ひがし|にし|まんなか",
+  },
+  speakingPrompt: "Hỏi và nói vị trí: どこですか, ベトナムの みなみ, HCMの ひがし.",
+  speakingSteps: [
+    {
+      id: 1,
+      taskVi: "Hỏi vị trí",
+      guideVi: "ホーチミンは どこですか。",
+      modelJa: "ホーチミンはどこですか。",
+      aiReply: "どこですか。",
+      acceptPattern: "どこ",
+      hintVi: "N + は どこですか",
+    },
+    {
+      id: 2,
+      taskVi: "Trả lời phía Nam",
+      guideVi: "ベトナムの みなみです。",
+      modelJa: "ベトナムのみなみです。",
+      aiReply: "みなみです。",
+      acceptPattern: "みなみ",
+      hintVi: "国 + の + 方角 + です",
+    },
+    {
+      id: 3,
+      taskVi: "Hỏi quận",
+      guideVi: "HCMの どこですか。",
+      modelJa: "HCMのどこですか。",
+      aiReply: "どこですか。",
+      acceptPattern: "どこ",
+    },
+    {
+      id: 4,
+      taskVi: "Trả lời phía Đông",
+      guideVi: "HCMの ひがしです。",
+      modelJa: "HCMのひがしです。",
+      aiReply: "ひがしです。",
+      acceptPattern: "ひがし",
+      praiseVi: "Hoàn thành!",
+    },
+  ],
+};

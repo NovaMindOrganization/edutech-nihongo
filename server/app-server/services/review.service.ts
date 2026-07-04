@@ -6,17 +6,26 @@ import {
   getProgressLessonIds,
   type NotebookContentType,
 } from './notebook-content.service.js';
+import { flashcardFromNotebook } from './user-notebook.service.js';
 import { touchStreak } from './dashboard.service.js';
 
 type ReviewType = 'kanji' | 'vocabulary' | 'grammar' | 'mixed';
 type ReviewPool = 'learned' | 'collected';
-type ReviewGenerateMode = 'random' | 'weakness' | 'flashcard' | 'lesson' | 'pick';
+type ReviewGenerateMode =
+  | 'random'
+  | 'weakness'
+  | 'flashcard'
+  | 'lesson'
+  | 'pick'
+  | 'unlearned'
+  | 'learned';
 
 export type GenerateReviewInput = {
   mode?: ReviewGenerateMode;
   count?: number;
   type?: ReviewType;
   pool?: ReviewPool;
+  notebookId?: string;
   lessonIds?: string[];
   itemIds?: string[];
 };
@@ -25,13 +34,40 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
+type LearnedFlashcardFilter = {
+  lessonIds?: string[];
+  itemIds?: string[];
+  mastery?: 'all' | 'learned' | 'unlearned';
+};
+
+async function filterByMastery(
+  userId: string,
+  itemType: MasteryItemType,
+  items: Array<{ id: string }>,
+  mastery: 'all' | 'learned' | 'unlearned',
+) {
+  if (mastery === 'all' || items.length === 0) return items;
+
+  const ids = items.map((k) => k.id);
+  const rows = await db.userMasteryItem.findMany({
+    where: { userId, itemType, itemId: { in: ids } },
+    select: { itemId: true, isLearned: true },
+  });
+  const learnedSet = new Set(rows.filter((r) => r.isLearned).map((r) => r.itemId));
+
+  if (mastery === 'learned') {
+    return items.filter((k) => learnedSet.has(k.id));
+  }
+  return items.filter((k) => !learnedSet.has(k.id));
+}
+
 async function flashcardFromLearned(
   userId: string,
   type: NotebookContentType,
   count: number,
-  lessonIds?: string[],
+  filter: LearnedFlashcardFilter = {},
 ) {
-  const ids = await getProgressLessonIds(userId, lessonIds);
+  const ids = await getProgressLessonIds(userId, filter.lessonIds);
   if (ids.length === 0) return [];
 
   if (type === 'kanji') {
@@ -39,7 +75,17 @@ async function flashcardFromLearned(
       where: { lessonId: { in: ids } },
       include: { kanji: true },
     });
-    const unique = [...new Map(rows.map((r) => [r.kanji.id, r.kanji])).values()];
+    let unique = [...new Map(rows.map((r) => [r.kanji.id, r.kanji])).values()];
+    if (filter.itemIds?.length) {
+      const pick = new Set(filter.itemIds);
+      unique = unique.filter((k) => pick.has(k.id));
+    }
+    unique = await filterByMastery(
+      userId,
+      MasteryItemType.kanji,
+      unique,
+      filter.mastery ?? 'all',
+    );
     return shuffle(unique)
       .slice(0, count)
       .map((k) => ({
@@ -56,7 +102,17 @@ async function flashcardFromLearned(
       where: { lessonId: { in: ids } },
       include: { vocabulary: true },
     });
-    const unique = [...new Map(rows.map((r) => [r.vocabulary.id, r.vocabulary])).values()];
+    let unique = [...new Map(rows.map((r) => [r.vocabulary.id, r.vocabulary])).values()];
+    if (filter.itemIds?.length) {
+      const pick = new Set(filter.itemIds);
+      unique = unique.filter((v) => pick.has(v.id));
+    }
+    unique = await filterByMastery(
+      userId,
+      MasteryItemType.vocabulary,
+      unique,
+      filter.mastery ?? 'all',
+    );
     return shuffle(unique)
       .slice(0, count)
       .map((v) => ({
@@ -72,7 +128,17 @@ async function flashcardFromLearned(
     where: { lessonId: { in: ids } },
     include: { grammar: true },
   });
-  const unique = [...new Map(rows.map((r) => [r.grammar.id, r.grammar])).values()];
+  let unique = [...new Map(rows.map((r) => [r.grammar.id, r.grammar])).values()];
+  if (filter.itemIds?.length) {
+    const pick = new Set(filter.itemIds);
+    unique = unique.filter((g) => pick.has(g.id));
+  }
+  unique = await filterByMastery(
+    userId,
+    MasteryItemType.grammar,
+    unique,
+    filter.mastery ?? 'all',
+  );
   return shuffle(unique)
     .slice(0, count)
     .map((g) => ({
@@ -139,6 +205,25 @@ export async function generateReview(userId: string, input: GenerateReviewInput 
   const type = input.type ?? 'mixed';
   const pool = input.pool ?? 'learned';
 
+  if (input.notebookId && type !== 'mixed') {
+    const reviewMode = mode === 'pick' ? 'pick' : 'random';
+    const items = await flashcardFromNotebook(
+      userId,
+      input.notebookId,
+      type,
+      count,
+      reviewMode === 'pick' ? input.itemIds : undefined,
+    );
+    return {
+      mode: reviewMode,
+      type,
+      pool: 'collected',
+      notebookId: input.notebookId,
+      items,
+      questions: [],
+    };
+  }
+
   if (pool === 'collected' && type !== 'mixed' && type !== 'grammar') {
     const reviewMode = input.mode === 'pick' || mode === 'pick' ? 'pick' : 'random';
     const items = await flashcardFromCollected(
@@ -153,13 +238,41 @@ export async function generateReview(userId: string, input: GenerateReviewInput 
   if (
     pool === 'learned' &&
     type !== 'mixed' &&
-    (mode === 'random' || mode === 'lesson' || legacyMode === 'flashcard')
+    (mode === 'random' ||
+      mode === 'lesson' ||
+      mode === 'pick' ||
+      mode === 'unlearned' ||
+      mode === 'learned' ||
+      legacyMode === 'flashcard')
   ) {
     const lessonFilter =
       mode === 'lesson' && input.lessonIds?.length ? input.lessonIds : undefined;
-    const items = await flashcardFromLearned(userId, type, count, lessonFilter);
+    const itemFilter = mode === 'pick' && input.itemIds?.length ? input.itemIds : undefined;
+    const masteryFilter: LearnedFlashcardFilter['mastery'] =
+      mode === 'learned' ? 'learned' : mode === 'unlearned' ? 'unlearned' : 'all';
+
+    const items = await flashcardFromLearned(userId, type, count, {
+      lessonIds: lessonFilter,
+      itemIds: itemFilter,
+      mastery:
+        type === 'kanji' || type === 'vocabulary' || type === 'grammar'
+          ? masteryFilter
+          : 'all',
+    });
+
+    const resolvedMode =
+      mode === 'lesson'
+        ? 'lesson'
+        : mode === 'pick'
+          ? 'pick'
+          : mode === 'unlearned'
+            ? 'unlearned'
+            : mode === 'learned'
+              ? 'learned'
+              : 'random';
+
     return {
-      mode: mode === 'lesson' ? 'lesson' : 'random',
+      mode: resolvedMode,
       type,
       pool,
       items,

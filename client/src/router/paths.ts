@@ -16,12 +16,18 @@ export const paths = {
     lessonPreview: (id: string) => `/learn/lessons/${id}/preview`,
     lessonSpeaking: (id: string) => `/learn/lessons/${id}/speaking`,
     lessonVocabulary: (id: string) => `/learn/lessons/${id}/vocabulary`,
+    lessonVocabularyFocus: (lessonId: string, vocabId: string) =>
+      `/learn/lessons/${lessonId}/vocabulary?focus=${vocabId}`,
     lessonVocabularyFlashcards: (id: string) =>
       `/learn/lessons/${id}/vocabulary/flashcards`,
     lessonGrammar: (id: string) => `/learn/lessons/${id}/grammar`,
+    lessonGrammarFocus: (lessonId: string, grammarId: string) =>
+      `/learn/lessons/${lessonId}/grammar?focus=${grammarId}`,
     lessonOverview: (id: string) => `/learn/lessons/${id}/overview`,
     lessonDialogue: (id: string) => `/learn/lessons/${id}/dialogue`,
     lessonKanji: (id: string) => `/learn/lessons/${id}/kanji`,
+    lessonKanjiFocus: (lessonId: string, kanjiId: string) =>
+      `/learn/lessons/${lessonId}/kanji?focus=${kanjiId}`,
     miniTest: (lessonId: string) => `/learn/lessons/${lessonId}/mini-test`,
     kanjiHub: "/learn/kanji",
     kanjiCourse: (courseId: string) => `/learn/kanji/course/${courseId}`,
@@ -47,7 +53,13 @@ export const paths = {
     communityCall: "/community/call",
     notebook: "/notebook",
     notebookDefault: "/notebook",
-    notebookPool: (pool: "learned" | "collected") => `/notebook/${pool}/kanji`,
+    notebookCollectedList: "/notebook/collected",
+    notebookPersonal: (
+      notebookId: string,
+      type: "kanji" | "vocabulary" | "grammar",
+    ) => `/notebook/collected/${notebookId}/${type}`,
+    notebookPool: (pool: "learned" | "collected") =>
+      pool === "collected" ? "/notebook/collected" : "/notebook/learned/kanji",
     notebookSection: (
       pool: "learned" | "collected",
       type: "kanji" | "vocabulary" | "grammar",
@@ -58,6 +70,8 @@ export const paths = {
       `/notebook/collected/${type}`,
     jlptHistory: "/insights/jlpt-history",
     mistakes: "/insights/mistakes",
+    feedback: "/feedback",
+    feedbackDetail: (id: string) => `/feedback/${id}`,
   },
   admin: {
     dashboard: "/admin",
@@ -79,6 +93,8 @@ export const paths = {
     config: "/admin/config",
     pricing: "/admin/pricing",
     reports: "/admin/reports",
+    feedbacks: "/admin/feedbacks",
+    feedbackDetail: (id: string) => `/admin/feedbacks/${id}`,
     analytics: "/admin/analytics",
   },
 } as const;

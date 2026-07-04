@@ -24,6 +24,7 @@ export function MiniTestView() {
   const { lessonId = '' } = useParams();
   const lessonData = useContext(LessonContext);
   const [title, setTitle] = useState(lessonData?.lesson.title ?? '');
+  const [courseId, setCourseId] = useState(lessonData?.lesson.course.id ?? '');
   const [passThreshold, setPassThreshold] = useState(
     lessonData?.lesson.passThreshold ?? 70,
   );
@@ -43,6 +44,7 @@ export function MiniTestView() {
   useEffect(() => {
     if (lessonData) {
       setTitle(lessonData.lesson.title);
+      setCourseId(lessonData.lesson.course.id);
       setPassThreshold(lessonData.lesson.passThreshold);
       return;
     }
@@ -50,6 +52,7 @@ export function MiniTestView() {
     getLesson(lessonId)
       .then((d) => {
         setTitle(d.lesson.title);
+        setCourseId(d.lesson.course.id);
         setPassThreshold(d.lesson.passThreshold);
       })
       .catch(() => {});
@@ -71,6 +74,7 @@ export function MiniTestView() {
   const answeredCount = questions.filter((q) => Boolean(answers[q.id])).length;
   const allAnswered = questions.length > 0 && answeredCount === questions.length;
   const lessonBackPath = paths.learn.lessonGrammar(lessonId);
+  const courseBackPath = courseId ? paths.learn.course(courseId) : lessonBackPath;
 
   async function handleSubmit() {
     if (!allAnswered) {
@@ -216,9 +220,9 @@ export function MiniTestView() {
                 ? 'Đạt — bài tiếp theo đã được mở khóa.'
                 : 'Chưa đạt — ôn lại nội dung bài và thử lại.'}
             </p>
-            <Link to={lessonBackPath}>
+            <Link to={courseBackPath}>
               <Button className="w-full" variant={result.passed ? 'default' : 'outline'}>
-                Về bài học
+                {result.passed ? 'Tiếp tục lộ trình' : 'Về khóa học'}
               </Button>
             </Link>
           </div>

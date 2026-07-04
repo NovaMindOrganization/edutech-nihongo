@@ -34,6 +34,10 @@ export function studentNavPathMatches(pathname: string, to: string): boolean {
     return pathname === to || pathname.startsWith(`${to}/`);
   }
 
+  if (to === paths.student.feedback) {
+    return pathname === to || pathname.startsWith(`${to}/`);
+  }
+
   if (to === paths.student.studySets) {
     return pathname === to || pathname.startsWith('/community/study-sets');
   }

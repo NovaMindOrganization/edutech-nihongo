@@ -71,66 +71,213 @@ export async function listLearnedContent(
     userId,
     params.lessonId ? [params.lessonId] : undefined,
   );
-  if (lessonIds.length === 0) return { items: [] as unknown[] };
+  if (lessonIds.length === 0) {
+    return { items: [] as unknown[], levels: [] as string[] };
+  }
 
   if (type === 'kanji') {
+    const lessons = await db.lesson.findMany({
+      where: { id: { in: lessonIds } },
+      select: {
+        id: true,
+        title: true,
+        orderIndex: true,
+        courseId: true,
+        course: { select: { id: true, title: true, jlptLevel: true } },
+      },
+      orderBy: [{ courseId: 'asc' }, { orderIndex: 'asc' }],
+    });
+    const lessonMap = new Map(lessons.map((l) => [l.id, l]));
+
     const rows = await db.lessonKanji.findMany({
       where: { lessonId: { in: lessonIds } },
       include: { kanji: { select: KANJI_SELECT } },
     });
-    const unique = [...new Map(rows.map((r) => [r.kanji.id, r.kanji])).values()];
-    const filtered = params.level
-      ? unique.filter((k) => k.jlptLevel === params.level)
-      : unique;
-    return {
-      items: filtered.map((kanji) => ({ id: kanji.id, kanji })),
-    };
+
+    const allLevels = [...new Set(rows.map((r) => r.kanji.jlptLevel))].sort();
+    const filteredRows = params.level
+      ? rows.filter((r) => r.kanji.jlptLevel === params.level)
+      : rows;
+
+    const kanjiIds = [...new Set(filteredRows.map((r) => r.kanjiId))];
+    const mastery =
+      kanjiIds.length > 0
+        ? await db.userMasteryItem.findMany({
+            where: {
+              userId,
+              itemType: MasteryItemType.kanji,
+              itemId: { in: kanjiIds },
+            },
+          })
+        : [];
+    const learnedSet = new Set(
+      mastery.filter((m) => m.isLearned).map((m) => m.itemId),
+    );
+
+    const items = filteredRows
+      .filter((r) => lessonMap.has(r.lessonId))
+      .map((r) => {
+        const lesson = lessonMap.get(r.lessonId)!;
+        return {
+          id: r.kanji.id,
+          kanji: r.kanji,
+          lessonId: lesson.id,
+          lessonTitle: lesson.title,
+          lessonOrderIndex: lesson.orderIndex,
+          courseId: lesson.course.id,
+          courseTitle: lesson.course.title,
+          courseJlptLevel: lesson.course.jlptLevel,
+          isLearned: learnedSet.has(r.kanji.id),
+        };
+      })
+      .sort((a, b) => {
+        if (a.courseId !== b.courseId) return a.courseId.localeCompare(b.courseId);
+        if (a.lessonOrderIndex !== b.lessonOrderIndex) {
+          return a.lessonOrderIndex - b.lessonOrderIndex;
+        }
+        return a.kanji.character.localeCompare(b.kanji.character);
+      });
+
+    return { items, levels: allLevels };
   }
 
   if (type === 'vocabulary') {
+    const lessons = await db.lesson.findMany({
+      where: { id: { in: lessonIds } },
+      select: {
+        id: true,
+        title: true,
+        orderIndex: true,
+        courseId: true,
+        course: { select: { id: true, title: true, jlptLevel: true } },
+      },
+      orderBy: [{ courseId: 'asc' }, { orderIndex: 'asc' }],
+    });
+    const lessonMap = new Map(lessons.map((l) => [l.id, l]));
+
     const rows = await db.lessonVocabulary.findMany({
       where: { lessonId: { in: lessonIds } },
       include: { vocabulary: true },
     });
-    const unique = [...new Map(rows.map((r) => [r.vocabulary.id, r.vocabulary])).values()];
-    const filtered = params.level
-      ? unique.filter((v) => v.jlptLevel === params.level)
-      : unique;
-    const mastery = await db.userMasteryItem.findMany({
-      where: {
-        userId,
-        itemType: MasteryItemType.vocabulary,
-        itemId: { in: filtered.map((v) => v.id) },
-      },
-    });
-    const masteryMap = new Map(mastery.map((m) => [m.itemId, m]));
-    return {
-      items: filtered.map((v) => ({
-        id: v.id,
-        word: v.word,
-        reading: v.reading,
-        meaning: v.meaning,
-        jlptLevel: v.jlptLevel,
-        mastery: masteryMap.get(v.id) ?? null,
-      })),
-    };
+
+    const allLevels = [...new Set(rows.map((r) => r.vocabulary.jlptLevel))].sort();
+    const filteredRows = params.level
+      ? rows.filter((r) => r.vocabulary.jlptLevel === params.level)
+      : rows;
+
+    const vocabIds = [...new Set(filteredRows.map((r) => r.vocabularyId))];
+    const mastery =
+      vocabIds.length > 0
+        ? await db.userMasteryItem.findMany({
+            where: {
+              userId,
+              itemType: MasteryItemType.vocabulary,
+              itemId: { in: vocabIds },
+            },
+          })
+        : [];
+    const learnedSet = new Set(
+      mastery.filter((m) => m.isLearned).map((m) => m.itemId),
+    );
+
+    const items = filteredRows
+      .filter((r) => lessonMap.has(r.lessonId))
+      .map((r) => {
+        const lesson = lessonMap.get(r.lessonId)!;
+        const v = r.vocabulary;
+        return {
+          id: v.id,
+          word: v.word,
+          reading: v.reading,
+          meaning: v.meaning,
+          jlptLevel: v.jlptLevel,
+          lessonId: lesson.id,
+          lessonTitle: lesson.title,
+          lessonOrderIndex: lesson.orderIndex,
+          courseId: lesson.course.id,
+          courseTitle: lesson.course.title,
+          courseJlptLevel: lesson.course.jlptLevel,
+          isLearned: learnedSet.has(v.id),
+        };
+      })
+      .sort((a, b) => {
+        if (a.courseId !== b.courseId) return a.courseId.localeCompare(b.courseId);
+        if (a.lessonOrderIndex !== b.lessonOrderIndex) {
+          return a.lessonOrderIndex - b.lessonOrderIndex;
+        }
+        return a.word.localeCompare(b.word, 'ja');
+      });
+
+    return { items, levels: allLevels };
   }
+
+  const lessons = await db.lesson.findMany({
+    where: { id: { in: lessonIds } },
+    select: {
+      id: true,
+      title: true,
+      orderIndex: true,
+      courseId: true,
+      course: { select: { id: true, title: true, jlptLevel: true } },
+    },
+    orderBy: [{ courseId: 'asc' }, { orderIndex: 'asc' }],
+  });
+  const lessonMap = new Map(lessons.map((l) => [l.id, l]));
 
   const rows = await db.lessonGrammar.findMany({
     where: { lessonId: { in: lessonIds } },
     include: { grammar: true },
   });
-  const unique = [...new Map(rows.map((r) => [r.grammar.id, r.grammar])).values()];
-  const filtered = params.level ? unique.filter((g) => g.jlpt === params.level) : unique;
-  return {
-    items: filtered.map((g) => ({
-      id: g.id,
-      pattern: g.pattern,
-      meaningVi: g.meaningVi,
-      title: g.title,
-      jlpt: g.jlpt,
-    })),
-  };
+
+  const allLevels = [...new Set(rows.map((r) => r.grammar.jlpt).filter(Boolean))].sort();
+  const filteredRows = params.level
+    ? rows.filter((r) => r.grammar.jlpt === params.level)
+    : rows;
+
+  const grammarIds = [...new Set(filteredRows.map((r) => r.grammarId))];
+  const mastery =
+    grammarIds.length > 0
+      ? await db.userMasteryItem.findMany({
+          where: {
+            userId,
+            itemType: MasteryItemType.grammar,
+            itemId: { in: grammarIds },
+          },
+        })
+      : [];
+  const learnedSet = new Set(
+    mastery.filter((m) => m.isLearned).map((m) => m.itemId),
+  );
+
+  const items = filteredRows
+    .filter((r) => lessonMap.has(r.lessonId))
+    .map((r) => {
+      const lesson = lessonMap.get(r.lessonId)!;
+      const g = r.grammar;
+      return {
+        id: g.id,
+        pattern: g.pattern,
+        meaningVi: g.meaningVi,
+        title: g.title,
+        jlpt: g.jlpt,
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        lessonOrderIndex: lesson.orderIndex,
+        courseId: lesson.course.id,
+        courseTitle: lesson.course.title,
+        courseJlptLevel: lesson.course.jlptLevel,
+        isLearned: learnedSet.has(g.id),
+      };
+    })
+    .sort((a, b) => {
+      if (a.courseId !== b.courseId) return a.courseId.localeCompare(b.courseId);
+      if (a.lessonOrderIndex !== b.lessonOrderIndex) {
+        return a.lessonOrderIndex - b.lessonOrderIndex;
+      }
+      return a.pattern.localeCompare(b.pattern, 'ja');
+    });
+
+  return { items, levels: allLevels };
 }
 
 export async function listCollectedContent(

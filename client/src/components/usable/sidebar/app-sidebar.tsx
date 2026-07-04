@@ -317,6 +317,35 @@ export function SidebarUserCard({ name, email, onClick }: SidebarUserCardProps) 
   return <div className={className}>{content}</div>;
 }
 
+type TopbarUserBadgeProps = {
+  name: string;
+  email: string;
+};
+
+/** Read-only learner identity for layout topbars */
+export function TopbarUserBadge({ name, email }: TopbarUserBadgeProps) {
+  const initial = name.charAt(0).toUpperCase();
+
+  return (
+    <div
+      className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface-paper/90 px-2 py-1.5 shadow-sm"
+      aria-label={`${name}, ${email}`}
+    >
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-hover text-xs font-bold text-white shadow-sm">
+        {initial}
+      </span>
+      <span className="hidden min-w-0 sm:block">
+        <span className="block max-w-[140px] truncate text-xs font-semibold text-foreground md:max-w-[200px]">
+          {name}
+        </span>
+        <span className="block max-w-[140px] truncate text-[10px] text-muted-foreground md:max-w-[200px]">
+          {email}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 type SidebarActionProps = {
   icon: LucideIcon;
   label: string;
