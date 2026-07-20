@@ -91,6 +91,9 @@ full_rebuild() {
     docker volume rm -f edutech-nihongo_app_server_nm edutech-nihongo_client_nm 2>/dev/null || true
   fi
   "${COMPOSE[@]}" up -d --build --remove-orphans
+  # containers may still be starting; CI health step waits with retries
+  log "compose up finished — waiting briefly for app-server"
+  sleep 8
 }
 
 # --- main ---

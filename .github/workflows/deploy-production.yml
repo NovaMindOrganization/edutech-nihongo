@@ -156,19 +156,40 @@ jobs:
           DOMAIN="$(grep -E '^DOMAIN=' .env 2>/dev/null | cut -d= -f2- | tr -d '\r' || true)"
           DOMAIN="${DOMAIN:-nihongo.com.vn}"
 
-          # Prefer HTTPS (edge redirects HTTP→HTTPS)
+          wait_http() {
+            local url="$1" want="$2" label="$3"
+            local i code
+            for i in $(seq 1 36); do
+              code="$(curl -skS --resolve "${DOMAIN}:443:127.0.0.1" \
+                -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo 000)"
+              echo "${label}: try ${i} → ${code}"
+              if [ "$code" = "$want" ]; then
+                return 0
+              fi
+              # pricing may briefly 502 while app-server boots
+              if [ "$want" = "200" ] && [ "$code" = "200" ]; then
+                return 0
+              fi
+              sleep 5
+            done
+            echo "::error::${label} not ready (last HTTP ${code}, want ${want})"
+            return 1
+          }
+
           if [ -f certbot/conf/live/"$DOMAIN"/fullchain.pem ]; then
-            curl -fsSk --resolve "${DOMAIN}:443:127.0.0.1" \
-              -o /dev/null -w "HTTPS SPA %{http_code}\n" "https://${DOMAIN}/"
-            curl -fsSk --resolve "${DOMAIN}:443:127.0.0.1" \
-              -o /dev/null -w "API pricing %{http_code}\n" "https://${DOMAIN}/api/public/pricing-plans"
-            code="$(curl -skS --resolve "${DOMAIN}:443:127.0.0.1" \
-              -o /dev/null -w "%{http_code}" "https://${DOMAIN}/api/auth/me" || true)"
-            echo "API auth/me ${code} (expect 401)"
-            [ "$code" = "401" ] || [ "$code" = "200" ]
+            wait_http "https://${DOMAIN}/" 200 "HTTPS SPA"
+            wait_http "https://${DOMAIN}/api/public/pricing-plans" 200 "API pricing"
+            # auth/me is healthy when unauthenticated → 401
+            wait_http "https://${DOMAIN}/api/auth/me" 401 "API auth/me"
           else
             HTTP_PORT="$(grep -E '^HTTP_PORT=' .env 2>/dev/null | cut -d= -f2- || true)"
             HTTP_PORT="${HTTP_PORT:-80}"
-            curl -fsS -H "Host: ${DOMAIN}" -o /dev/null -w "HTTP %{http_code}\n" \
-              "http://127.0.0.1:${HTTP_PORT}/"
+            for i in $(seq 1 24); do
+              code="$(curl -sS -H "Host: ${DOMAIN}" -o /dev/null -w "%{http_code}" \
+                "http://127.0.0.1:${HTTP_PORT}/" 2>/dev/null || echo 000)"
+              echo "HTTP try ${i} → ${code}"
+              [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ] && break
+              sleep 5
+            done
+            [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ]
           fi
