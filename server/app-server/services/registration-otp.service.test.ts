@@ -44,6 +44,11 @@ async function loadService() {
   vi.doMock('../config/redis.js', () => ({ redis }));
   vi.doMock('../config/env.js', () => ({ env: testEnv }));
   vi.doMock('./email.service.js', () => ({ sendMail }));
+  vi.doMock('./usage-limit.service.js', () => ({
+    getRegistrationOtpResendCooldownSeconds: vi.fn(
+      async (fallback: number) => fallback,
+    ),
+  }));
 
   const service = await import('./registration-otp.service.js');
   return { service, db, redis, store, sendMail };

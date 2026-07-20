@@ -16,6 +16,7 @@ import type { GenerateReviewInput } from '../services/review.service.js';
 import * as userNotebookService from '../services/user-notebook.service.js';
 import * as studySetService from '../services/study-set.service.js';
 import * as webrtcService from '../services/webrtc.service.js';
+import { assertDailyUserLimit, USAGE_LIMIT_KEYS } from '../services/usage-limit.service.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
 export const dashboard = asyncHandler(async (req: Request, res: Response) => {
@@ -226,6 +227,12 @@ export const lessonSpeakingStart = asyncHandler(async (req: Request, res: Respon
 });
 
 export const speechTts = asyncHandler(async (req: Request, res: Response) => {
+  await assertDailyUserLimit(
+    req.user!.id,
+    USAGE_LIMIT_KEYS.speechTtsDailyLimit,
+    'speech_tts',
+    'Đã đạt giới hạn đọc văn bản (TTS) trong ngày.',
+  );
   const buf = await aiClient.synthesizeSpeech(req.body.text, req.body.voice);
   res.json({
     success: true,
@@ -243,6 +250,12 @@ export const speechSttConfig = asyncHandler(async (_req: Request, res: Response)
 });
 
 export const speechStt = asyncHandler(async (req: Request, res: Response) => {
+  await assertDailyUserLimit(
+    req.user!.id,
+    USAGE_LIMIT_KEYS.speechSttDailyLimit,
+    'speech_stt',
+    'Đã đạt giới hạn nhận diện giọng nói (STT) trong ngày.',
+  );
   const data = await aiClient.transcribeSpeech(
     req.body.audio,
     req.body.language ?? 'ja',
@@ -253,6 +266,12 @@ export const speechStt = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const speechPronunciationAssess = asyncHandler(async (req: Request, res: Response) => {
+  await assertDailyUserLimit(
+    req.user!.id,
+    USAGE_LIMIT_KEYS.pronunciationDailyLimit,
+    'pronunciation',
+    'Đã đạt giới hạn chấm phát âm trong ngày.',
+  );
   const data = await aiClient.assessPronunciation({
     referenceText: String(req.body.referenceText ?? req.body.reference_text ?? ''),
     audioBase64: String(req.body.audioBase64 ?? req.body.audio_base64 ?? req.body.audio ?? ''),
@@ -326,6 +345,12 @@ export const jlptHistory = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const ocrAnalyze = asyncHandler(async (req: Request, res: Response) => {
+  await assertDailyUserLimit(
+    req.user!.id,
+    USAGE_LIMIT_KEYS.ocrDailyLimit,
+    'ocr',
+    'Đã đạt giới hạn OCR trong ngày.',
+  );
   const ai = await aiClient.analyzeOcr(req.body.image);
   const notebook = await ocrNotebookService.discoverNotInNotebook(
     req.user!.id,
@@ -350,12 +375,24 @@ export const ocrNotebookAdd = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const ocrQuizGenerate = asyncHandler(async (req: Request, res: Response) => {
+  await assertDailyUserLimit(
+    req.user!.id,
+    USAGE_LIMIT_KEYS.ocrDailyLimit,
+    'ocr',
+    'Đã đạt giới hạn OCR trong ngày.',
+  );
   const questionCount = Math.min(20, Math.max(3, Number(req.body.questionCount ?? 5)));
   const data = await aiClient.generateOcrQuiz(req.body.image, questionCount);
   res.json({ success: true, data });
 });
 
 export const ocrGrade = asyncHandler(async (req: Request, res: Response) => {
+  await assertDailyUserLimit(
+    req.user!.id,
+    USAGE_LIMIT_KEYS.ocrDailyLimit,
+    'ocr',
+    'Đã đạt giới hạn OCR trong ngày.',
+  );
   const data = await aiClient.gradeOcrHomework(req.body.image, req.body.context);
   res.json({ success: true, data });
 });
@@ -474,7 +511,7 @@ export const webrtcLeave = asyncHandler(async (req: Request, res: Response) => {
 export const communityTranslate = asyncHandler(async (req: Request, res: Response) => {
   const text = String(req.body?.text ?? '');
   const targetLang = String(req.body?.targetLang ?? 'vi');
-  const data = await aiClient.translateCommunityText(text, targetLang);
+  const data = await aiClient.translateCommunityText(req.user!.id, text, targetLang);
   res.json({ success: true, data });
 });
 

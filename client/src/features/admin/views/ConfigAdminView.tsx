@@ -1,4 +1,4 @@
-import { BookOpen, BrainCircuit, CreditCard, Gauge, ServerCog, Wrench } from 'lucide-react';
+import { BookOpen, BrainCircuit, CreditCard, Gauge, ServerCog, Shield, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -26,6 +26,98 @@ import {
   type SaveSepayAdminConfig,
   type SepayAuthMode,
 } from '../services/systemAdminApi';
+
+const USAGE_LIMIT_FIELDS: Array<{
+  key: string;
+  label: string;
+  hint: string;
+  group: 'api' | 'ai' | 'auth';
+}> = [
+  {
+    key: 'api_rate_limit_max',
+    label: 'API chung / 15 phút / IP',
+    hint: 'Production. 0 = không giới hạn.',
+    group: 'api',
+  },
+  {
+    key: 'guest_dict_rate_limit',
+    label: 'Từ điển (khách) / giờ / IP',
+    hint: 'Chỉ áp dụng khi chưa đăng nhập.',
+    group: 'api',
+  },
+  {
+    key: 'auth_login_limit_per_ip',
+    label: 'Đăng nhập / 15 phút / IP',
+    hint: 'Chống brute-force.',
+    group: 'auth',
+  },
+  {
+    key: 'auth_otp_send_limit_per_ip',
+    label: 'Gửi OTP đăng ký / giờ / IP',
+    hint: 'Bổ sung cooldown theo email.',
+    group: 'auth',
+  },
+  {
+    key: 'auth_forgot_password_limit_per_ip',
+    label: 'Quên mật khẩu / giờ / IP',
+    hint: 'Chống spam reset.',
+    group: 'auth',
+  },
+  {
+    key: 'registration_otp_resend_cooldown_seconds',
+    label: 'Cooldown gửi lại OTP (giây)',
+    hint: 'Theo từng email.',
+    group: 'auth',
+  },
+  {
+    key: 'ai_speaking_daily_limit',
+    label: 'AI luyện nói / ngày / user',
+    hint: 'Free + lesson speaking.',
+    group: 'ai',
+  },
+  {
+    key: 'ocr_daily_limit',
+    label: 'OCR (quét + quiz + chấm) / ngày / user',
+    hint: 'Mỗi thao tác OCR tính 1 lượt.',
+    group: 'ai',
+  },
+  {
+    key: 'speech_tts_daily_limit',
+    label: 'TTS đọc tiếng Nhật / ngày / user',
+    hint: 'Edge TTS qua server.',
+    group: 'ai',
+  },
+  {
+    key: 'speech_stt_daily_limit',
+    label: 'STT nhận giọng nói / ngày / user',
+    hint: 'Whisper / Gemini fallback.',
+    group: 'ai',
+  },
+  {
+    key: 'pronunciation_daily_limit',
+    label: 'Chấm phát âm / ngày / user',
+    hint: 'Azure Speech PA.',
+    group: 'ai',
+  },
+  {
+    key: 'community_translate_daily_limit',
+    label: 'Dịch community call / ngày / user',
+    hint: 'Sidebar dịch khi gọi.',
+    group: 'ai',
+  },
+  {
+    key: 'community_evaluate_daily_limit',
+    label: 'Đánh giá buổi gọi / ngày / user',
+    hint: 'WebRTC evaluate.',
+    group: 'ai',
+  },
+  {
+    key: 'study_set_quiz_daily_limit',
+    label: 'Sinh quiz study set / ngày / owner',
+    hint: 'Khi duyệt hoặc auto-generate.',
+    group: 'ai',
+  },
+];
 
 function LlmTestResultPanel({
   result,
@@ -68,6 +160,8 @@ function LlmTestResultPanel({
 export function ConfigAdminView() {
   const [config, setConfig] = useState<Record<string, string>>({});
   const [threshold, setThreshold] = useState('70');
+  const [usageLimits, setUsageLimits] = useState<Record<string, string>>({});
+  const [usageLimitsSaving, setUsageLimitsSaving] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [n4FreeAccess, setN4FreeAccess] = useState(false);
 
@@ -113,6 +207,11 @@ export function ConfigAdminView() {
       .then(([c, llm, sepay]) => {
         setConfig(c);
         setThreshold(c.default_pass_threshold ?? '70');
+        const limits: Record<string, string> = {};
+        for (const field of USAGE_LIMIT_FIELDS) {
+          limits[field.key] = c[field.key] ?? '';
+        }
+        setUsageLimits(limits);
         setMaintenanceMode(c.maintenance_mode === 'true');
         setN4FreeAccess(c.n4_free_access === 'true');
         setLlmProvider(llm.provider);
@@ -141,6 +240,27 @@ export function ConfigAdminView() {
       })
       .catch((e) => toast.error(e instanceof Error ? e.message : 'Lỗi'));
   }, []);
+
+  async function saveUsageLimits() {
+    setUsageLimitsSaving(true);
+    try {
+      for (const field of USAGE_LIMIT_FIELDS) {
+        const raw = usageLimits[field.key]?.trim() ?? '';
+        if (!raw) continue;
+        const value = String(Math.max(0, Math.floor(Number(raw))));
+        if (!Number.isFinite(Number(raw))) {
+          toast.error(`${field.label}: giá trị không hợp lệ`);
+          return;
+        }
+        await setSystemConfig(field.key, value);
+      }
+      toast.success('Đã lưu giới hạn sử dụng');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Lỗi');
+    } finally {
+      setUsageLimitsSaving(false);
+    }
+  }
 
   async function saveThreshold() {
     try {
@@ -366,6 +486,40 @@ export function ConfigAdminView() {
             </label>
           </AdminSection>
         </div>
+
+        <AdminSection
+          title="Giới hạn & chống spam"
+          description="Điều chỉnh quota theo IP hoặc theo user/ngày. Giá trị 0 = tắt giới hạn. Cần Redis chạy ổn định."
+          icon={Shield}
+          iconClassName="bg-brand-soft"
+        >
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {USAGE_LIMIT_FIELDS.map((field) => (
+              <div key={field.key} className="space-y-1.5">
+                <label className={fieldLabel}>{field.label}</label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={usageLimits[field.key] ?? ''}
+                  onChange={(e) =>
+                    setUsageLimits((prev) => ({ ...prev, [field.key]: e.target.value }))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">{field.hint}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button onClick={() => void saveUsageLimits()} disabled={usageLimitsSaving}>
+              {usageLimitsSaving ? 'Đang lưu…' : 'Lưu giới hạn'}
+            </Button>
+            <p className="self-center text-xs text-muted-foreground">
+              OTP TTL / số lần nhập sai OTP vẫn cấu hình qua{' '}
+              <code className="rounded bg-muted px-1">REGISTRATION_OTP_*</code> trong app-server
+              .env nếu cần.
+            </p>
+          </div>
+        </AdminSection>
 
         <AdminSection
           title="SePAY — Thanh toán chuyển khoản"

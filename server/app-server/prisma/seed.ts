@@ -425,16 +425,6 @@ async function main() {
       description: "Default MiniTest pass percentage",
     },
     {
-      key: "guest_dict_rate_limit",
-      value: "20",
-      description: "Dictionary searches per hour for guests",
-    },
-    {
-      key: "ai_speaking_daily_limit",
-      value: "50",
-      description: "Max AI speaking messages per day",
-    },
-    {
       key: "maintenance_mode",
       value: "false",
       description: "Toggle maintenance mode",
@@ -500,6 +490,22 @@ async function main() {
     });
     await setConfig(c.key, c.value);
   }
+
+  const { USAGE_LIMIT_DEFAULTS, USAGE_LIMIT_SEED_META } = await import(
+    "../services/usage-limit.service.js"
+  );
+  for (const meta of USAGE_LIMIT_SEED_META) {
+    await db.systemConfig.upsert({
+      where: { key: meta.key },
+      create: {
+        key: meta.key,
+        value: USAGE_LIMIT_DEFAULTS[meta.key] ?? "0",
+        description: meta.description,
+      },
+      update: { description: meta.description },
+    });
+  }
+  await (await import("../config/redis.js")).redis.del("nihongocoach:system_config");
 
   const adminHash = await bcrypt.hash("Admin@123", 12);
   const admin = await db.user.upsert({

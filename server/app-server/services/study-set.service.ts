@@ -195,7 +195,7 @@ export async function getStudySetById(
     !set.quiz &&
     !set.quizGeneratedAt
   ) {
-    void generateAndStoreStudySetQuiz(id);
+    void generateAndStoreStudySetQuiz(id, set.ownerId);
   }
 
   return {
@@ -414,7 +414,7 @@ export async function moderateStudySet(
   });
 
   if (status === 'approved') {
-    await generateAndStoreStudySetQuiz(id);
+    await generateAndStoreStudySetQuiz(id, updated.ownerId);
     const refreshed = await db.studySet.findUnique({
       where: { id },
       include: { items: itemsOrder, owner: ownerSelect },

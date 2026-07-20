@@ -1,5 +1,8 @@
 import { db } from '../config/db.js';
 import { incrRateLimit } from '../config/redis.js';
+import {
+  USAGE_LIMIT_KEYS,
+} from './usage-limit.service.js';
 import { getConfigValue } from './config.service.js';
 
 export async function searchDictionary(query: string, opts?: { userId?: string; ip?: string }) {
@@ -7,8 +10,17 @@ export async function searchDictionary(query: string, opts?: { userId?: string; 
   if (q.length < 1) return { vocabulary: [], grammar: [], kanji: [] };
 
   if (!opts?.userId && opts?.ip) {
-    const limit = Number(await getConfigValue('guest_dict_rate_limit', '20'));
-    const ok = await incrRateLimit(`nihongocoach:ratelimit:dict:${opts.ip}`, limit, 3600);
+    const limit = Number(
+      await getConfigValue(
+        USAGE_LIMIT_KEYS.guestDictRateLimit,
+        '30',
+      ),
+    );
+    const ok = await incrRateLimit(
+      `nihongocoach:ratelimit:dict:${opts.ip}`,
+      limit > 0 ? limit : 30,
+      3600,
+    );
     if (!ok) {
       return { vocabulary: [], grammar: [], kanji: [], rateLimited: true };
     }
