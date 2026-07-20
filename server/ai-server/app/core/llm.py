@@ -206,7 +206,7 @@ def _gemini_generate(
                 return body['candidates'][0]['content']['parts'][0]['text']
             except httpx.HTTPStatusError as err:
                 last_err = err
-                if err.response.status_code in (404, 429):
+                if err.response.status_code in (404, 429, 503):
                     logger.warning('Gemini model %s unavailable (%s), trying fallback', model, err)
                     continue
                 logger.warning('Gemini API error (%s): %s', model, err)

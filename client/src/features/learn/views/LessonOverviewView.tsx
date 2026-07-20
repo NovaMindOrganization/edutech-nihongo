@@ -1,7 +1,7 @@
 import { useLessonData } from '../context/lesson-context';
 
 export function LessonOverviewView() {
-  const { lesson, vocabulary, grammar, kanji, conversations } = useLessonData();
+  const { vocabulary, grammar, kanji, conversations } = useLessonData();
   const sections = [
     { label: 'Từ vựng', count: vocabulary.length },
     { label: 'Ngữ pháp', count: grammar.length },

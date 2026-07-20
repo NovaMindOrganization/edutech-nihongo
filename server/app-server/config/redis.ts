@@ -51,8 +51,8 @@ function createRedisClient(): RedisLike {
 
   const client = new Redis(env.redisUrl, {
     maxRetriesPerRequest: 1,
-    lazyConnect: true,
-    enableOfflineQueue: false,
+    lazyConnect: false,
+    enableOfflineQueue: true,
     retryStrategy: (times) => {
       if (env.nodeEnv !== "production") {
         return null;

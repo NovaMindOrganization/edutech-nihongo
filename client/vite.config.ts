@@ -14,6 +14,8 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
+    allowedHosts: ['nihongo.com.vn', 'www.nihongo.com.vn', 'nihongo.iotforce.io.vn'],
     proxy: {
       '/api': {
         target: 'http://localhost:4000',

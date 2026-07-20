@@ -4,8 +4,6 @@ import { AppIcon } from '@/components/usable/app-icon';
 import { EmptyState, emptyStatePresets } from '@/components/usable/states';
 import { Badge } from '@/components/ui/badge';
 
-import { AddToNotebookButton } from '@/features/student/notebook/AddToNotebookButton';
-
 import type { KanjiItem } from '../../types/kanji.types';
 import { KanjiCard } from './KanjiCard';
 

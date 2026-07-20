@@ -1,4 +1,4 @@
-﻿import { BookOpen, CheckCircle2, ClipboardCheck, MessageSquare } from 'lucide-react';
+﻿import { BookOpen, CheckCircle2, MessageSquare } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
 import { toast } from 'sonner';

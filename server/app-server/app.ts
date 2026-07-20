@@ -23,6 +23,9 @@ const swaggerSpec = JSON.parse(
 export function createApp() {
   const app = express();
 
+  // Cloudflare tunnel / reverse proxy — required for rate-limit + client IP
+  app.set('trust proxy', 1);
+
   app.use(helmet());
   app.use(
     cors({

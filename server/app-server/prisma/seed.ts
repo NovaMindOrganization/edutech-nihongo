@@ -481,14 +481,26 @@ async function main() {
     },
   ];
 
+  const SECRET_CONFIG_KEYS = new Set([
+    "llm_gemini_api_key",
+    "llm_openai_api_key",
+    "sepay_api_key",
+    "sepay_webhook_secret",
+  ]);
+
   const { setConfig } = await import("../services/config.service.js");
   for (const c of configs) {
+    const preserveValue = SECRET_CONFIG_KEYS.has(c.key);
     await db.systemConfig.upsert({
       where: { key: c.key },
       create: c,
-      update: { value: c.value, description: c.description },
+      update: preserveValue
+        ? { description: c.description }
+        : { value: c.value, description: c.description },
     });
-    await setConfig(c.key, c.value);
+    if (!preserveValue) {
+      await setConfig(c.key, c.value);
+    }
   }
 
   const { USAGE_LIMIT_DEFAULTS, USAGE_LIMIT_SEED_META } = await import(
