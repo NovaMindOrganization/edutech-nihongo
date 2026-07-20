@@ -172,11 +172,11 @@ export function RegisterView() {
             {sendingOtp ? <LoaderCircle className="animate-spin" /> : <Mail />}
             {otpSentEmail === normalizedEmail ? 'Gửi lại OTP' : 'Gửi OTP'}
           </Button>
-          {devOtp && (
+          {/* {devOtp && (
             <p className="mt-2 text-xs font-medium text-muted-foreground">
               Mã dev: <span className="font-mono text-foreground">{devOtp}</span>
             </p>
-          )}
+          )} */}
         </AuthField>
 
         <AuthField label="OTP" hint="Nhập mã 6 chữ số vừa nhận được trong email.">

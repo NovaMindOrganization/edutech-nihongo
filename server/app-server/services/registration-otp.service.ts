@@ -5,6 +5,9 @@ import { env } from '../config/env.js';
 import { redis } from '../config/redis.js';
 import { AppError } from '../utils/app-error.js';
 import { sendMail } from './email.service.js';
+import {
+  getRegistrationOtpResendCooldownSeconds,
+} from './usage-limit.service.js';
 
 type OtpRecord = {
   otpHash: string;
@@ -103,7 +106,9 @@ async function ensureCanSend(email: string) {
 }
 
 async function setCooldown(email: string) {
-  const ttl = env.registrationOtpResendCooldownSeconds;
+  const ttl = await getRegistrationOtpResendCooldownSeconds(
+    env.registrationOtpResendCooldownSeconds,
+  );
   await redis.setex(cooldownKey(email), ttl, '1');
   cooldownStore.set(email, Date.now() + ttl * 1000);
 }
@@ -187,7 +192,9 @@ export async function sendRegistrationOtp(email: string) {
   return {
     message: 'Registration OTP has been sent.',
     expiresInSeconds: env.registrationOtpTtlSeconds,
-    resendCooldownSeconds: env.registrationOtpResendCooldownSeconds,
+    resendCooldownSeconds: await getRegistrationOtpResendCooldownSeconds(
+      env.registrationOtpResendCooldownSeconds,
+    ),
     emailSent: sendResult.sent,
     ...(env.nodeEnv !== 'production' ? { devOtp: otp } : {}),
   };

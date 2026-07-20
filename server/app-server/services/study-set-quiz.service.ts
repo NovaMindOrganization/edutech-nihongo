@@ -1,6 +1,10 @@
 import { db } from '../config/db.js';
 import { generateStudySetQuizViaAi } from './ai-client.service.js';
 import {
+  assertDailyUserLimit,
+  USAGE_LIMIT_KEYS,
+} from './usage-limit.service.js';
+import {
   normalizeQuizPayload,
   QUIZ_QUESTION_COUNT_MAX,
   studySetQuizSchema,
@@ -14,7 +18,10 @@ export function parseStoredQuiz(raw: unknown): StudySetQuizPayload | null {
   return parsed.success ? parsed.data : null;
 }
 
-export async function generateAndStoreStudySetQuiz(studySetId: string): Promise<StudySetQuizPayload | null> {
+export async function generateAndStoreStudySetQuiz(
+  studySetId: string,
+  billingUserId?: string,
+): Promise<StudySetQuizPayload | null> {
   const set = await db.studySet.findUnique({
     where: { id: studySetId },
     include: {
@@ -22,6 +29,21 @@ export async function generateAndStoreStudySetQuiz(studySetId: string): Promise<
     },
   });
   if (!set) return null;
+
+  const quotaUserId = billingUserId ?? set.ownerId;
+  if (quotaUserId) {
+    try {
+      await assertDailyUserLimit(
+        quotaUserId,
+        USAGE_LIMIT_KEYS.studySetQuizDailyLimit,
+        'study_set_quiz',
+        'Đã đạt giới hạn tạo quiz AI cho study set trong ngày.',
+      );
+    } catch (err) {
+      console.warn('[study-set-quiz] daily limit', studySetId, err);
+      return null;
+    }
+  }
 
   const quizableItems = set.items.filter((it) => QUIZABLE_TYPES.has(it.contentType));
   if (quizableItems.length < 1) {

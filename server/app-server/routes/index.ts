@@ -13,6 +13,11 @@ import * as feedback from '../controllers/feedback.controller.js';
 import * as payment from '../controllers/payment.controller.js';
 import { optionalAuth, requireAuth, requireRoles } from '../middlewares/auth.js';
 import {
+  authForgotPasswordRateLimit,
+  authLoginRateLimit,
+  authOtpSendRateLimit,
+} from '../middlewares/auth-rate-limit.js';
+import {
   assignIdsSchema,
   authForgotPasswordSchema,
   authLoginSchema,
@@ -93,11 +98,11 @@ router.get('/health/ready', async (_req, res) => {
 });
 
 // Auth
-router.post('/auth/register/otp/send', validateBody(authRegisterOtpSendSchema), auth.sendRegisterOtp);
+router.post('/auth/register/otp/send', authOtpSendRateLimit(), validateBody(authRegisterOtpSendSchema), auth.sendRegisterOtp);
 router.post('/auth/register/otp/verify', validateBody(authRegisterOtpVerifySchema), auth.verifyRegisterOtp);
 router.post('/auth/register', validateBody(authRegisterSchema), auth.register);
-router.post('/auth/login', validateBody(authLoginSchema), auth.login);
-router.post('/auth/forgot-password', validateBody(authForgotPasswordSchema), auth.forgotPassword);
+router.post('/auth/login', authLoginRateLimit(), validateBody(authLoginSchema), auth.login);
+router.post('/auth/forgot-password', authForgotPasswordRateLimit(), validateBody(authForgotPasswordSchema), auth.forgotPassword);
 router.post('/auth/reset-password', validateBody(authResetPasswordSchema), auth.resetPassword);
 router.post('/auth/refresh', auth.refresh);
 router.post('/auth/logout', auth.logout);

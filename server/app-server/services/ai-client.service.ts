@@ -2,8 +2,10 @@ import axios from 'axios';
 
 import { env } from '../config/env.js';
 import { db } from '../config/db.js';
-import { incrRateLimit } from '../config/redis.js';
-import { getConfigValue } from './config.service.js';
+import {
+  checkDailyUserLimit,
+  USAGE_LIMIT_KEYS,
+} from './usage-limit.service.js';
 import { getLlmRuntimePayload } from './llm-config.service.js';
 import { loadLessonVocabulary } from './lesson.service.js';
 import {
@@ -91,10 +93,11 @@ function toLessonSpeakingResult(
 }
 
 async function checkSpeakingLimit(userId: string) {
-  const limit = Number(await getConfigValue('ai_speaking_daily_limit', '50'));
-  const dateKey = new Date().toISOString().slice(0, 10);
-  const ok = await incrRateLimit(`nihongocoach:ai_limit:${userId}:${dateKey}`, limit, 86400);
-  return ok;
+  return checkDailyUserLimit(
+    userId,
+    USAGE_LIMIT_KEYS.aiSpeakingDailyLimit,
+    'ai_speaking',
+  );
 }
 
 export async function startSpeakingSession(userId: string) {
@@ -444,9 +447,25 @@ export async function assessPronunciation(input: {
   }
 }
 
-export async function translateCommunityText(text: string, targetLang = 'vi') {
+export async function translateCommunityText(
+  userId: string,
+  text: string,
+  targetLang = 'vi',
+) {
   const trimmed = text.trim();
   if (!trimmed) return { translation: '', error: 'Empty text' };
+
+  const withinLimit = await checkDailyUserLimit(
+    userId,
+    USAGE_LIMIT_KEYS.communityTranslateDailyLimit,
+    'community_translate',
+  );
+  if (!withinLimit) {
+    return {
+      translation: '',
+      error: 'Đã đạt giới hạn dịch trong ngày. Vui lòng thử lại vào ngày mai.',
+    };
+  }
 
   try {
     const data = await aiPost(
@@ -480,6 +499,18 @@ export async function evaluateCallSpeaking(
   userId: string,
   input: { roomId?: string; transcripts: Array<{ speaker: string; text: string }> },
 ) {
+  const withinLimit = await checkDailyUserLimit(
+    userId,
+    USAGE_LIMIT_KEYS.communityEvaluateDailyLimit,
+    'community_evaluate',
+  );
+  if (!withinLimit) {
+    return {
+      summary: 'Đã đạt giới hạn đánh giá buổi gọi trong ngày.',
+      feedback_per_speaker: [],
+    };
+  }
+
   try {
     const data = await aiPost(
       '/api/v1/community/evaluate',
