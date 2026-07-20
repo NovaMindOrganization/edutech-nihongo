@@ -95,10 +95,11 @@ export function PersonalNotebookShellView() {
   }
 
   const type = typeParam as NotebookType;
+  const notebookId = notebookIdParam as string;
   const poolMeta = POOL_CARD_META.collected;
 
   function goType(nextType: NotebookType) {
-    navigate(paths.student.notebookPersonal(notebookIdParam, nextType));
+    navigate(paths.student.notebookPersonal(notebookId, nextType));
   }
 
   if (loading) {

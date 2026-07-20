@@ -109,7 +109,7 @@ export function PersonalNotebooksListView() {
       chips={['Kanji', 'Từ vựng', 'Ngữ pháp', 'Ghi chú']}
       footer={POOL_TAGLINES.collected}
       backLink={{ to: paths.student.notebook, label: 'Sổ tay' }}
-      actions={
+      headerExtra={
         <Button className="gap-2" onClick={() => setCreateOpen(true)}>
           <Plus className="size-4" />
           Sổ tay mới

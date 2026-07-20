@@ -23,7 +23,7 @@ export function RegisterView() {
   const [otpSentEmail, setOtpSentEmail] = useState('');
   const [verifiedEmail, setVerifiedEmail] = useState('');
   const [emailVerificationToken, setEmailVerificationToken] = useState('');
-  const [devOtp, setDevOtp] = useState<string | undefined>();
+  const [, setDevOtp] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
@@ -172,11 +172,7 @@ export function RegisterView() {
             {sendingOtp ? <LoaderCircle className="animate-spin" /> : <Mail />}
             {otpSentEmail === normalizedEmail ? 'Gửi lại OTP' : 'Gửi OTP'}
           </Button>
-          {/* {devOtp && (
-            <p className="mt-2 text-xs font-medium text-muted-foreground">
-              Mã dev: <span className="font-mono text-foreground">{devOtp}</span>
-            </p>
-          )} */}
+          {/* dev OTP display disabled in production builds */}
         </AuthField>
 
         <AuthField label="OTP" hint="Nhập mã 6 chữ số vừa nhận được trong email.">

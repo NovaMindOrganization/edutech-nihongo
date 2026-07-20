@@ -1,0 +1,174 @@
+# Deploy on self-hosted runner (on the VPS).
+#
+# Production app path (bind-mount compose): /opt/edutech-nihongo
+# Secrets (not in git): /etc/edutech-nihongo/env → .env symlink
+#
+# Runner once:
+#   labels: self-hosted, linux
+#   user in docker group
+#   sudo mkdir -p /opt/edutech-nihongo /etc/edutech-nihongo
+#   sudo chown -R <runner-user>:<runner-user> /opt/edutech-nihongo
+#   sudo install -m 600 /path/to/env /etc/edutech-nihongo/env
+
+name: Deploy production
+
+on:
+  push:
+    branches: [production]
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force docker compose rebuild'
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  DEPLOY_DIR: /opt/edutech-nihongo
+  HOST_ENV: /etc/edutech-nihongo/env
+
+jobs:
+  deploy:
+    name: Sync + deploy on VPS
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout production
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: production
+          path: src
+
+      - name: Detect rebuild need
+        id: detect
+        working-directory: src
+        run: |
+          set -euo pipefail
+          AFTER="${{ github.sha }}"
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="$(git rev-parse HEAD~1 2>/dev/null || true)"
+          fi
+
+          REBUILD=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force_rebuild }}" = "true" ]; then
+            REBUILD=true
+            echo "manual force_rebuild"
+          elif [ -z "$BEFORE" ]; then
+            REBUILD=true
+            echo "no before sha → rebuild"
+          else
+            PATTERN='(^|/)(package\.json|pnpm-lock\.yaml|package-lock\.json|yarn\.lock|requirements.*\.txt|Dockerfile|docker-compose\.ya?ml|\.dockerignore)$'
+            if git diff --name-only "$BEFORE" "$AFTER" | grep -Eq "$PATTERN"; then
+              REBUILD=true
+              echo "Changed image-related files:"
+              git diff --name-only "$BEFORE" "$AFTER" | grep -E "$PATTERN" || true
+            else
+              echo "No package/Dockerfile changes → light reload"
+              git diff --name-only "$BEFORE" "$AFTER" | head -40 || true
+            fi
+          fi
+
+          echo "rebuild=$REBUILD" >> "$GITHUB_OUTPUT"
+          echo "before=$BEFORE" >> "$GITHUB_OUTPUT"
+          echo "after=$AFTER" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Deploy plan"
+            if [ "$REBUILD" = "true" ]; then
+              echo "- **mode:** full docker compose build"
+            else
+              echo "- **mode:** light reload (bind mounts)"
+            fi
+            echo "- deploy dir: \`$DEPLOY_DIR\`"
+            echo "- before: \`$BEFORE\`"
+            echo "- after: \`$AFTER\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Sync code to deploy dir
+        run: |
+          set -euo pipefail
+          if [ ! -d "$DEPLOY_DIR" ]; then
+            echo "::error::Missing $DEPLOY_DIR — create once on VPS and chown to runner user"
+            exit 1
+          fi
+          if [ ! -w "$DEPLOY_DIR" ]; then
+            echo "::error::$DEPLOY_DIR not writable by runner user $(id -un)"
+            exit 1
+          fi
+
+          # Preserve runtime state: .env, certs, import dumps, docker volumes live outside sync
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude 'certbot/' \
+            --exclude 'import/' \
+            --exclude 'data/' \
+            --exclude 'node_modules/' \
+            --exclude '**/node_modules/' \
+            --exclude 'dist/' \
+            --exclude '.venv/' \
+            ./src/ "$DEPLOY_DIR/"
+
+          echo "Synced → $DEPLOY_DIR"
+          ls -la "$DEPLOY_DIR" | head -25
+
+      - name: Ensure .env exists
+        working-directory: ${{ env.DEPLOY_DIR }}
+        run: |
+          set -euo pipefail
+          if [ ! -f .env ] && [ -f "$HOST_ENV" ]; then
+            echo "Linking $HOST_ENV → .env"
+            ln -sfn "$HOST_ENV" .env
+          fi
+          if [ ! -f .env ]; then
+            echo "::error::Missing .env. On VPS once:"
+            echo "  sudo install -m 600 /path/to/env $HOST_ENV"
+            echo "  # DOMAIN/CORS/APP_PUBLIC=https://nihongo.com.vn + secrets"
+            exit 1
+          fi
+          test -x scripts/vps-deploy.sh || chmod +x scripts/vps-deploy.sh
+          ls -la .env docker-compose.yml scripts/vps-deploy.sh nginx/default.conf
+
+      - name: Deploy
+        working-directory: ${{ env.DEPLOY_DIR }}
+        env:
+          BEFORE_SHA: ${{ steps.detect.outputs.before }}
+          AFTER_SHA: ${{ steps.detect.outputs.after }}
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.detect.outputs.rebuild }}" = "true" ]; then
+            ./scripts/vps-deploy.sh --rebuild
+          else
+            ./scripts/vps-deploy.sh --reload
+          fi
+
+      - name: Health check
+        working-directory: ${{ env.DEPLOY_DIR }}
+        run: |
+          set -euo pipefail
+          docker compose --env-file .env ps
+          DOMAIN="$(grep -E '^DOMAIN=' .env 2>/dev/null | cut -d= -f2- | tr -d '\r' || true)"
+          DOMAIN="${DOMAIN:-nihongo.com.vn}"
+
+          # Prefer HTTPS (edge redirects HTTP→HTTPS)
+          if [ -f certbot/conf/live/"$DOMAIN"/fullchain.pem ]; then
+            curl -fsSk --resolve "${DOMAIN}:443:127.0.0.1" \
+              -o /dev/null -w "HTTPS SPA %{http_code}\n" "https://${DOMAIN}/"
+            curl -fsSk --resolve "${DOMAIN}:443:127.0.0.1" \
+              -o /dev/null -w "API pricing %{http_code}\n" "https://${DOMAIN}/api/public/pricing-plans"
+            code="$(curl -skS --resolve "${DOMAIN}:443:127.0.0.1" \
+              -o /dev/null -w "%{http_code}" "https://${DOMAIN}/api/auth/me" || true)"
+            echo "API auth/me ${code} (expect 401)"
+            [ "$code" = "401" ] || [ "$code" = "200" ]
+          else
+            HTTP_PORT="$(grep -E '^HTTP_PORT=' .env 2>/dev/null | cut -d= -f2- || true)"
+            HTTP_PORT="${HTTP_PORT:-80}"
+            curl -fsS -H "Host: ${DOMAIN}" -o /dev/null -w "HTTP %{http_code}\n" \
+              "http://127.0.0.1:${HTTP_PORT}/"
+          fi
