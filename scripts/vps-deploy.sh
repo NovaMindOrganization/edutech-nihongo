@@ -70,15 +70,16 @@ light_reload() {
     "${COMPOSE[@]}" up -d --no-deps client
   fi
 
-  # Edge nginx: reload when conf changed (no git in deploy dir after rsync — always cheap reload)
+  # Edge nginx: recreate when conf changed (bind mount + reload can keep stale conf)
   if [[ -n "${BEFORE_SHA:-}" ]] && git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
     && git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA:-HEAD}" 2>/dev/null | grep -qE '(^|/)nginx/'; then
-    log "reload edge nginx (nginx/ changed)"
-    "${COMPOSE[@]}" exec -T nginx nginx -t && "${COMPOSE[@]}" exec -T nginx nginx -s reload \
-      || "${COMPOSE[@]}" restart nginx
+    log "recreate edge nginx (nginx/ changed)"
+    "${COMPOSE[@]}" up -d --force-recreate --no-deps nginx
   else
     log "reload edge nginx (safe)"
-    "${COMPOSE[@]}" exec -T nginx nginx -s reload 2>/dev/null || true
+    "${COMPOSE[@]}" exec -T nginx nginx -t >/dev/null 2>&1 \
+      && "${COMPOSE[@]}" exec -T nginx nginx -s reload 2>/dev/null \
+      || "${COMPOSE[@]}" up -d --force-recreate --no-deps nginx
   fi
 }
 
